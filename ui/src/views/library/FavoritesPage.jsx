@@ -10,11 +10,14 @@ import { HeartIcon, PlayIcon, ShuffleIcon } from '../../design/icons'
 import { playTracks, shuffleTracks } from '../../actions'
 import { AlbumCard, ArtistCard, CardGrid, CardSkeletons } from '../shared/Cards'
 import { TrackList } from '../shared/TrackList'
+import { TrackColumnsMenu } from '../shared/TrackColumnsMenu'
+import { useTrackColumns } from '../shared/useTrackColumns'
 import { SelectionBar } from '../shared/SelectionBar'
 import { useTrackSelection } from '../shared/useTrackSelection'
 import chrome from './LibraryChrome.module.css'
 import styles from './FavoritesPage.module.css'
 
+const DEFAULT_COLUMNS = ['year', 'playCount', 'quality', 'rating']
 const TABS = ['songs', 'albums', 'artists']
 const starredSort = { field: 'starred_at', order: 'DESC' }
 
@@ -32,6 +35,7 @@ const FavouriteSongs = () => {
     [dispatch, data, ids],
   )
   const selection = useTrackSelection(ids)
+  const trackColumns = useTrackColumns('favourites', DEFAULT_COLUMNS)
   if (loaded && ids.length === 0) {
     return (
       <EmptyState
@@ -71,6 +75,8 @@ const FavouriteSongs = () => {
         columns={['cover', 'artist', 'album', 'love', 'duration', 'menu']}
         onPlay={onPlay}
         selection={selection}
+        optional={trackColumns.active}
+        columnsMenu={<TrackColumnsMenu columns={trackColumns} />}
         virtualized={ids.length > 100}
         label={t('ui.favourites.songs', 'Favourite songs')}
       />

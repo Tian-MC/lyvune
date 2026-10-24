@@ -9,6 +9,8 @@ import { playTracks } from '../../actions'
 import { PageHeader, Skeleton } from '../../design/Section'
 import { SongIcon } from '../../design/icons'
 import { TrackList } from '../shared/TrackList'
+import { TrackColumnsMenu } from '../shared/TrackColumnsMenu'
+import { useTrackColumns } from '../shared/useTrackColumns'
 import { SelectionBar } from '../shared/SelectionBar'
 import { useTrackSelection } from '../shared/useTrackSelection'
 import { ListEmpty, SortMenu } from './LibraryChrome'
@@ -16,11 +18,14 @@ import { ViewToggle } from './ViewToggle'
 import { useViewMode } from './useViewMode'
 import styles from './SongsPage.module.css'
 
+const DEFAULT_COLUMNS = ['year', 'playCount', 'quality', 'rating']
+
 const SongRows = () => {
   const t = useT()
   const dispatch = useDispatch()
   const { ids, data, loaded } = useListContext()
   const selection = useTrackSelection(ids)
+  const trackColumns = useTrackColumns('songs', DEFAULT_COLUMNS)
   const onPlay = useCallback(
     (record) => dispatch(playTracks(data, ids, record.id)),
     [dispatch, data, ids],
@@ -43,17 +48,11 @@ const SongRows = () => {
       <TrackList
         ids={ids}
         data={data}
-        columns={[
-          'cover',
-          'artist',
-          'album',
-          'plays',
-          'love',
-          'duration',
-          'menu',
-        ]}
+        columns={['cover', 'artist', 'album', 'love', 'duration', 'menu']}
         onPlay={onPlay}
         selection={selection}
+        optional={trackColumns.active}
+        columnsMenu={<TrackColumnsMenu columns={trackColumns} />}
         label={t('resources.song.name', 'Songs', { smart_count: 2 })}
       />
       <SelectionBar selection={selection} data={data} />

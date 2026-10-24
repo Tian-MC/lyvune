@@ -3,12 +3,14 @@ import {
   SET_OMITTED_FIELDS,
   SET_SIDEBAR_PLAYLISTS_FAVOURITES,
   SET_TOGGLEABLE_FIELDS,
+  SET_TRACK_COLUMNS,
 } from '../actions'
 
 const initialState = {
   notifications: false,
   toggleableFields: {},
   omittedFields: {},
+  trackColumns: {},
   sidebarPlaylistsOnlyFavourites: false,
 }
 
@@ -34,6 +36,17 @@ export const settingsReducer = (previousState = initialState, payload) => {
         omittedFields: {
           ...previousState.omittedFields,
           ...data,
+        },
+      }
+    case SET_TRACK_COLUMNS:
+      return {
+        ...previousState,
+        trackColumns: {
+          ...previousState.trackColumns,
+          [data.list]: {
+            ...previousState.trackColumns?.[data.list],
+            ...data.columns,
+          },
         },
       }
     case SET_SIDEBAR_PLAYLISTS_FAVOURITES:

@@ -21,7 +21,7 @@ import {
   isWritable,
   useResourceRefresh,
 } from '../../common'
-import { formatDuration2 } from '../../utils/formatters'
+import { formatBytes, formatDuration2 } from '../../utils/formatters'
 import { playTracks, shuffleTracks } from '../../actions'
 import { Cover } from '../../design/Cover'
 import { Button } from '../../design/Button'
@@ -42,9 +42,13 @@ import { songQuery } from '../../playback/actions'
 import { Hero } from '../shared/Hero'
 import { TrackList } from '../shared/TrackList'
 import { CollectionMenu } from '../shared/CollectionMenu'
+import { TrackColumnsMenu } from '../shared/TrackColumnsMenu'
+import { useTrackColumns } from '../shared/useTrackColumns'
 import { SelectionBar } from '../shared/SelectionBar'
 import { useTrackSelection } from '../shared/useTrackSelection'
 import styles from './PlaylistPage.module.css'
+
+const DEFAULT_COLUMNS = ['rating', 'quality']
 
 const exportM3U = (record) =>
   httpClient(`${REST_URL}/playlist/${record.id}/tracks`, {
@@ -86,6 +90,7 @@ const PlaylistBody = ({ playlist }) => {
     [ids, data],
   )
   const selection = useTrackSelection(ids)
+  const trackColumns = useTrackColumns('playlist', DEFAULT_COLUMNS)
 
   // Tracks changed elsewhere (another tab, another client): the playlist
   // record is refreshed by SSE, so reload the entries when it changes.
@@ -212,6 +217,7 @@ const PlaylistBody = ({ playlist }) => {
       smart_count: playlist.songCount || 0,
     }),
     playlist.duration > 0 && formatDuration2(playlist.duration),
+    playlist.size > 0 && formatBytes(playlist.size),
     playlist.updatedAt &&
       `${t('resources.playlist.fields.updatedAt', 'Updated')} ${new Date(
         playlist.updatedAt,
@@ -311,6 +317,8 @@ const PlaylistBody = ({ playlist }) => {
             onPlay={onPlay}
             extraMenuItems={extraMenuItems}
             selection={selection}
+            optional={trackColumns.active}
+            columnsMenu={<TrackColumnsMenu columns={trackColumns} />}
             onReorder={editable ? onReorder : undefined}
             virtualized={ids.length > 100}
             label={playlist.name}

@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useRef } from 'react'
+import React, { memo, useCallback, useMemo, useRef } from 'react'
 import clsx from 'clsx'
 import { Link } from 'react-router-dom'
 import { useSelector } from 'react-redux'
@@ -16,6 +16,12 @@ import { selectCurrentItem } from '../../reducers/playerReducer'
 import { useTransport } from '../../playback/hooks'
 import engine from '../../playback/engine'
 import { MenuTrigger, SongMenuPopup } from './CollectionMenu'
+import {
+  COLUMN_FIELD_LABELS,
+  OPTIONAL_COLUMNS,
+  gridTemplate,
+} from './trackColumns'
+import { useDateLocale } from '../../i18n/useDateLocale'
 import styles from './TrackList.module.css'
 
 const songIdOf = (r) => r.mediaFileId || r.id
@@ -47,9 +53,56 @@ const useLongPress = (onLongPress) => {
   }
 }
 
+const NO_COLUMNS = []
+
+const TrackListHeader = ({
+  columns,
+  optional,
+  template,
+  selectable,
+  columnsMenu,
+  t,
+}) => (
+  <div
+    className={clsx(styles.head, selectable && styles.withCheck)}
+    style={{ '--row-cols': template }}
+    role="row"
+  >
+    {selectable && <span role="columnheader" aria-hidden />}
+    <span role="columnheader" aria-hidden />
+    <span className={styles.headLabel} role="columnheader">
+      {t('resources.song.fields.title', 'Title')}
+    </span>
+    {columns.includes('album') && (
+      <span
+        className={clsx(styles.headLabel, styles.hideSm)}
+        role="columnheader"
+      >
+        {t('resources.song.fields.album', 'Album')}
+      </span>
+    )}
+    {optional.map((key) => (
+      <span
+        key={key}
+        className={clsx(styles.headLabel, styles.optional)}
+        role="columnheader"
+      >
+        {t(...COLUMN_FIELD_LABELS[key])}
+      </span>
+    ))}
+    <span
+      className={clsx(styles.headLabel, styles.headTrail)}
+      role="columnheader"
+    >
+      {columnsMenu}
+    </span>
+  </div>
+)
+
 /**
  * Columns: 'number' (track number), 'index' (position), 'cover',
- * 'artist' (under the title), 'album', 'duration', 'plays', 'love', 'menu'.
+ * 'artist' (under the title), 'album', 'duration', 'love', 'menu'; extra columns
+ * come from the `optional` prop (see trackColumns.jsx).
  */
 const TrackRow = memo(
   ({
@@ -68,6 +121,9 @@ const TrackRow = memo(
     onSelectAll,
     onReorder,
     listKey,
+    optional,
+    template,
+    locale,
   }) => {
     const t = useT()
     const menu = useActionMenu()
@@ -157,6 +213,7 @@ const TrackRow = memo(
           selectionActive && styles.selecting,
           over && styles.dropOver,
         )}
+        style={{ '--row-cols': template }}
         onDoubleClick={play}
         onClick={onClick}
         onKeyDown={onKeyDown}
@@ -286,14 +343,15 @@ const TrackRow = memo(
           </div>
         )}
 
-        {has('plays') && (
+        {optional.map((key) => (
           <div
-            className={clsx(styles.plays, styles.hideSm, 'nd-tabular')}
+            key={key}
+            className={clsx(styles.optional, 'nd-tabular')}
             role={cellRole}
           >
-            {record.playCount > 0 ? record.playCount : ''}
+            {OPTIONAL_COLUMNS[key].render(record, { locale })}
           </div>
-        )}
+        ))}
 
         <div className={styles.trail} role={cellRole}>
           {has('love') && !missing && (
@@ -347,11 +405,19 @@ export const TrackList = ({
   label,
   selection,
   onReorder,
+  optional = NO_COLUMNS,
+  columnsMenu,
 }) => {
+  const t = useT()
+  const locale = useDateLocale()
   const currentTrackId = useSelector(selectCurrentTrackId)
   const { paused } = useTransport()
   // Identifies drags that started in this list (for reordering)
   const listKey = useRef(Math.random().toString(36)).current
+  const template = useMemo(
+    () => gridTemplate(columns, optional, !!selection),
+    [columns, optional, selection],
+  )
 
   const renderRow = useCallback(
     (index, id) => {
@@ -375,6 +441,9 @@ export const TrackList = ({
           onSelectAll={selection?.selectAll}
           onReorder={onReorder}
           listKey={listKey}
+          optional={optional}
+          template={template}
+          locale={locale}
         />
       )
     },
@@ -389,7 +458,21 @@ export const TrackList = ({
       selection,
       onReorder,
       listKey,
+      optional,
+      template,
+      locale,
     ],
+  )
+
+  const header = (columnsMenu || optional.length > 0) && (
+    <TrackListHeader
+      columns={columns}
+      optional={optional}
+      template={template}
+      selectable={!!selection}
+      columnsMenu={columnsMenu}
+      t={t}
+    />
   )
 
   if (virtualized) {
@@ -400,6 +483,7 @@ export const TrackList = ({
         aria-label={label}
         aria-multiselectable={selection ? true : undefined}
       >
+        {header}
         <Virtuoso
           useWindowScroll
           data={ids}
@@ -419,6 +503,7 @@ export const TrackList = ({
       aria-label={label}
       aria-multiselectable={selection ? true : undefined}
     >
+      {header}
       {ids.map((id, index) => {
         const record = data[id]
         const group =

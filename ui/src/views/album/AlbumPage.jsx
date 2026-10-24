@@ -31,10 +31,14 @@ import { Hero } from '../shared/Hero'
 import { TrackList } from '../shared/TrackList'
 import { AlbumCard } from '../shared/Cards'
 import { CollectionMenu } from '../shared/CollectionMenu'
+import { TrackColumnsMenu } from '../shared/TrackColumnsMenu'
+import { useTrackColumns } from '../shared/useTrackColumns'
 import { SelectionBar } from '../shared/SelectionBar'
 import { useTrackSelection } from '../shared/useTrackSelection'
 import { genreAlbumsLink } from '../library/genres'
 import styles from './AlbumPage.module.css'
+
+const DEFAULT_COLUMNS = ['rating', 'quality']
 
 const tag = (record, name) => record?.tags?.[name]?.[0]
 
@@ -194,6 +198,7 @@ const AlbumBody = ({ album }) => {
     [ids, data],
   )
   const selection = useTrackSelection(ids)
+  const trackColumns = useTrackColumns('album', DEFAULT_COLUMNS)
   const onPlay = useCallback(
     (record) => dispatch(playTracks(data, playable, record.id)),
     [dispatch, data, playable],
@@ -355,6 +360,8 @@ const AlbumBody = ({ album }) => {
             ]}
             onPlay={onPlay}
             selection={selection}
+            optional={trackColumns.active}
+            columnsMenu={<TrackColumnsMenu columns={trackColumns} />}
             groupBy={multiDisc ? (r) => r?.discNumber : undefined}
             renderGroup={(r) => (
               <DiscHeader album={album} record={r} discs={album.discs} />

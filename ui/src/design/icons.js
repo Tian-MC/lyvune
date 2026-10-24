@@ -12,6 +12,7 @@ export {
   LuChevronUp as ChevronUpIcon,
   LuCircleAlert as AlertIcon,
   LuCircleUser as AccountIcon,
+  LuColumns3 as ColumnsIcon,
   LuClock as ClockIcon,
   LuCopy as CopyIcon,
   LuDisc3 as AlbumIcon,
