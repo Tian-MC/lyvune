@@ -3,6 +3,17 @@
 // word times only from real `cueLine` cues, translations/romanisations only
 // from entries of the matching kind.
 
+// LRC "ID tags" ([ti:Title], [ar:Artist], [by:Creator]…) are metadata about
+// the lyrics file, not words to sing; files sometimes carry them as text.
+const ID_TAG =
+  /^\[(ti|ar|al|au|by|re|ve|tool|length|offset|la|lang|#)\s*:[^\]]*\]$/i
+
+const dropLeadingIdTags = (lines) => {
+  let i = 0
+  while (i < lines.length && ID_TAG.test(lines[i].text.trim())) i++
+  return i ? lines.slice(i) : lines
+}
+
 const MAIN = 'main'
 const TRANSLATION = 'translation'
 const PRONUNCIATION = 'pronunciation'
@@ -104,7 +115,7 @@ export const parseLyrics = (structuredLyrics) => {
   // OpenSubsonic: a positive offset makes lyrics appear sooner
   const shift = (t) => (t == null ? null : Math.max(0, t - offset))
 
-  const lines = main.line.map((l, i) => {
+  const mapped = main.line.map((l, i) => {
     const cueLine = cuesByIndex.get(i)
     let words = null
     if (main.synced && cueLine) {
@@ -126,6 +137,8 @@ export const parseLyrics = (structuredLyrics) => {
       pronunciation: pronunciation ? pronunciation[i] : null,
     }
   })
+
+  const lines = dropLeadingIdTags(mapped)
 
   return {
     synced: !!main.synced && lines.some((l) => l.start != null),

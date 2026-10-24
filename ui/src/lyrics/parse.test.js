@@ -104,6 +104,51 @@ describe('parseLyrics', () => {
   })
 })
 
+describe('LRC id tags', () => {
+  it('hides leading metadata lines of unsynced lyrics but keeps real lines', () => {
+    const r = parseLyrics([
+      {
+        synced: false,
+        line: [
+          { value: '[ti:Iced, in Extremis]' },
+          { value: '[ar:Xanthochroid]' },
+          { value: '[by:Someone]' },
+          { value: 'In this tomb' },
+          { value: '[chorus] is not an id tag' },
+        ],
+      },
+    ])
+    expect(r.lines.map((l) => l.text)).toEqual([
+      'In this tomb',
+      '[chorus] is not an id tag',
+    ])
+  })
+
+  it('keeps translations aligned after dropping the header', () => {
+    const r = parseLyrics([
+      {
+        kind: 'main',
+        synced: false,
+        line: [{ value: '[ar:A]' }, { value: 'uno' }, { value: 'due' }],
+      },
+      {
+        kind: 'translation',
+        synced: false,
+        line: [{ value: '' }, { value: 'one' }, { value: 'two' }],
+      },
+    ])
+    expect(r.lines.map((l) => [l.text, l.translation])).toEqual([
+      ['uno', 'one'],
+      ['due', 'two'],
+    ])
+  })
+
+  it('leaves lyrics without a header untouched', () => {
+    const r = parseLyrics([{ synced: false, line: [{ value: 'hello' }] }])
+    expect(r.lines).toHaveLength(1)
+  })
+})
+
 describe('buildWords', () => {
   it('slices multi-byte text by UTF-8 byte offsets', () => {
     // "愛 love": 愛 is 3 bytes in UTF-8

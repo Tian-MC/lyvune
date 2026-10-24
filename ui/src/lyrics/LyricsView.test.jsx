@@ -1,0 +1,142 @@
+import React from 'react'
+import { render, screen, fireEvent } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+
+const mocks = vi.hoisted(() => ({
+  lyrics: { status: 'ready', lyrics: null },
+  seek: vi.fn(),
+  play: vi.fn(),
+  paused: true,
+}))
+
+vi.mock('react-admin', () => ({
+  useTranslate: () => (key, opts) => opts?._ ?? key,
+}))
+vi.mock('./useLyrics', () => ({ useLyrics: () => mocks.lyrics }))
+vi.mock('../playback/engine', () => ({
+  default: {
+    seek: mocks.seek,
+    play: mocks.play,
+    currentTime: () => 0,
+    getMedia: () => ({ paused: mocks.paused }),
+  },
+}))
+// The active line index is driven by the media clock; pin it
+vi.mock('../playback/hooks', () => ({ useMedia: () => 1 }))
+
+import { LyricsView } from './LyricsView'
+
+// FIXTURE data: synthetic text, not lyrics of any real recording
+const line = (text, start = null, extra = {}) => ({
+  start,
+  text,
+  words: null,
+  translation: null,
+  pronunciation: null,
+  ...extra,
+})
+
+const show = (lyrics, props = {}) => {
+  mocks.lyrics = { status: 'ready', lyrics }
+  return render(<LyricsView trackId="t1" {...props} />)
+}
+
+describe('<LyricsView /> (fixtures)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    // jsdom has neither
+    window.matchMedia = () => ({ matches: false })
+    Element.prototype.scrollTo = vi.fn()
+    mocks.paused = true
+    mocks.lyrics = { status: 'ready', lyrics: null }
+  })
+
+  it('explains that streams have no lyrics', () => {
+    show(null, { isRadio: true })
+    expect(
+      screen.getByText('Lyrics are not available for this stream'),
+    ).toBeInTheDocument()
+  })
+
+  it('shows a quiet fallback when the song has no lyrics', () => {
+    show(null)
+    expect(screen.getByText('No lyrics for this song')).toBeInTheDocument()
+  })
+
+  it('also falls back when loading fails', () => {
+    mocks.lyrics = { status: 'error', lyrics: null }
+    render(<LyricsView trackId="t1" />)
+    expect(screen.getByText('No lyrics for this song')).toBeInTheDocument()
+  })
+
+  it('shows unsynchronized lyrics as plain text with a notice', () => {
+    show({
+      synced: false,
+      lang: '',
+      hasWords: false,
+      hasTranslation: false,
+      hasPronunciation: false,
+      lines: [line('first'), line('second')],
+    })
+    expect(
+      screen.getByText('These lyrics are not synced to the music.'),
+    ).toBeInTheDocument()
+    expect(screen.getByText('first')).toBeInTheDocument()
+    expect(document.querySelectorAll('button[data-index]')).toHaveLength(0)
+  })
+
+  it('renders synchronized lines as buttons that seek and start playback', () => {
+    show({
+      synced: true,
+      lang: 'xxx',
+      hasWords: false,
+      hasTranslation: false,
+      hasPronunciation: false,
+      lines: [line('one', 0), line('two', 2500), line('終わり', 5000)],
+    })
+    const buttons = document.querySelectorAll('button[data-index]')
+    expect(buttons).toHaveLength(3)
+    // the pinned clock makes line 1 the active one
+    expect(buttons[1].getAttribute('aria-current')).toBe('true')
+    fireEvent.click(buttons[2])
+    expect(mocks.seek).toHaveBeenCalledWith(5)
+    expect(mocks.play).toHaveBeenCalled()
+  })
+
+  it('offers translation and romanization only when they exist', () => {
+    show({
+      synced: false,
+      lang: 'jpn',
+      hasWords: false,
+      hasTranslation: false,
+      hasPronunciation: false,
+      lines: [line('テスト')],
+    })
+    expect(screen.queryByText('Translation')).toBeNull()
+    expect(screen.queryByText('Romanization')).toBeNull()
+  })
+
+  it('shows translations by default and romanization on demand', () => {
+    show({
+      synced: false,
+      lang: 'jpn',
+      hasWords: false,
+      hasTranslation: true,
+      hasPronunciation: true,
+      lines: [
+        line('テスト', null, {
+          translation: 'FIXTURE TRANSLATION',
+          pronunciation: 'fixture romanization',
+        }),
+      ],
+    })
+    expect(screen.getByText('FIXTURE TRANSLATION')).toBeInTheDocument()
+    expect(screen.queryByText('fixture romanization')).toBeNull()
+
+    fireEvent.click(screen.getByText('Romanization'))
+    expect(screen.getByText('fixture romanization')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByText('Translation'))
+    expect(screen.queryByText('FIXTURE TRANSLATION')).toBeNull()
+  })
+})
