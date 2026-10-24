@@ -1,5 +1,3 @@
-import stylesheet from './tokyoNight.css.js'
-
 const background = '#1a1b26'
 const surface = '#24283b'
 const currentLine = '#292e42'
@@ -367,6 +365,5 @@ export default {
   },
   player: {
     theme: 'dark',
-    stylesheet,
   },
 }

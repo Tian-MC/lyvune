@@ -1,5 +1,3 @@
-import stylesheet from './SquiddiesGlass.css.js'
-
 /**
  * Color constants used throughout the Squiddies Glass theme.
  * Provides a consistent color palette with pink, gray, purple, and basic colors.
@@ -598,11 +596,10 @@ export default {
 
   /**
    * Player configuration settings.
-   * Specifies the player theme and associated stylesheet.
+   * Specifies the player theme.
    * @type {Object}
    */
   player: {
     theme: 'dark',
-    stylesheet,
   },
 }

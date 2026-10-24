@@ -1,5 +1,3 @@
-import stylesheet from './catppuccinLatte.css.js'
-
 export default {
   themeName: 'Catppuccin Latte',
   palette: {
@@ -99,6 +97,5 @@ export default {
 
   player: {
     theme: 'light',
-    stylesheet,
   },
 }

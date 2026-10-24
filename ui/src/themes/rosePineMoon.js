@@ -1,5 +1,3 @@
-import stylesheet from './rosePineMoon.css.js'
-
 export default {
   themeName: 'Rosé Pine Moon',
   palette: {
@@ -103,6 +101,5 @@ export default {
   },
   player: {
     theme: 'dark',
-    stylesheet,
   },
 }

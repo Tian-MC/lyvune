@@ -1,5 +1,3 @@
-import stylesheet from './amusic.css.js'
-
 export default {
   themeName: 'AMusic',
   typography: {
@@ -254,6 +252,5 @@ export default {
   },
   player: {
     theme: 'dark',
-    stylesheet,
   },
 }

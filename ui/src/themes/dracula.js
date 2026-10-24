@@ -1,5 +1,3 @@
-import stylesheet from './dracula.css.js'
-
 // Dracula color palette
 const background = '#282a36'
 const currentLine = '#44475a'
@@ -382,6 +380,5 @@ export default {
   },
   player: {
     theme: 'dark',
-    stylesheet,
   },
 }

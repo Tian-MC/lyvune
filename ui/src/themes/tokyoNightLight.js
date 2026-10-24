@@ -1,5 +1,3 @@
-import stylesheet from './tokyoNightLight.css.js'
-
 const background = '#e1e2e7'
 const surface = '#d5d6db'
 const currentLine = '#c4c8da'
@@ -367,6 +365,5 @@ export default {
   },
   player: {
     theme: 'light',
-    stylesheet,
   },
 }

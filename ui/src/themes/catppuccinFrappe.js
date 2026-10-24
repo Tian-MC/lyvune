@@ -1,5 +1,3 @@
-import stylesheet from './catppuccinFrappe.css.js'
-
 export default {
   themeName: 'Catppuccin Frappé',
   palette: {
@@ -101,6 +99,5 @@ export default {
   },
   player: {
     theme: 'dark',
-    stylesheet,
   },
 }

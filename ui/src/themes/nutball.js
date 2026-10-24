@@ -1,5 +1,3 @@
-import stylesheet from './nutball.css.js'
-
 export default {
   themeName: 'Nutball',
   palette: {
@@ -679,6 +677,5 @@ export default {
   },
   player: {
     theme: 'light',
-    stylesheet,
   },
 }

@@ -1,5 +1,3 @@
-import stylesheet from './catppuccinMocha.css.js'
-
 export default {
   themeName: 'Catppuccin Mocha',
   palette: {
@@ -101,6 +99,5 @@ export default {
   },
   player: {
     theme: 'dark',
-    stylesheet,
   },
 }
