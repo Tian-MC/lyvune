@@ -16,6 +16,7 @@ import { Button } from '../design/Button'
 import { EmptyState } from '../design/Section'
 import { AlertIcon } from '../design/icons'
 import { ShellProvider } from './ShellContext'
+import { useCheckboxNames } from './useCheckboxNames'
 import { usePresence } from './usePresence'
 import { useShell } from './useShell'
 import Sidebar from './Sidebar'
@@ -82,6 +83,8 @@ const ShellLayout = ({ children, logout }) => {
   useScrollRestoration()
   // Clearing a react-admin search box puts the cursor back in it
   useSearchRefocus()
+  // react-admin's table checkboxes come without an accessible name
+  useCheckboxNames()
 
   return (
     <div

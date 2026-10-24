@@ -75,6 +75,7 @@ const LibraryListItem = ({ library, isSelected, onToggle }) => {
           checked={isSelected}
           tabIndex={-1}
           disableRipple
+          inputProps={{ 'aria-label': library.name }}
         />
       </ListItemIcon>
       <ListItemText primary={library.name} />

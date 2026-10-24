@@ -188,6 +188,11 @@ const LibrarySelector = () => {
                 onChange={handleMasterCheckboxChange}
                 size="small"
                 className={classes.masterCheckbox}
+                inputProps={{
+                  'aria-label': translate(
+                    'menu.librarySelector.selectLibraries',
+                  ),
+                }}
               />
               <Typography>
                 {translate('menu.librarySelector.selectLibraries')}:
