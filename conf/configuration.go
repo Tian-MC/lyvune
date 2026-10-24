@@ -126,6 +126,7 @@ type configOptions struct {
 	Deezer                          deezerOptions       `json:",omitzero"`
 	ListenBrainz                    listenBrainzOptions `json:",omitzero"`
 	Jellyfin                        jellyfinOptions     `json:",omitzero"`
+	Lyrics                          lyricsOptions       `json:",omitzero"`
 	EnableScrobbleHistory           bool
 	Tags                            map[string]TagConf `json:",omitempty"`
 	Agents                          string
@@ -213,6 +214,21 @@ type lastfmOptions struct {
 
 	// Computed values
 	Languages []string `conf:"-"` // Computed from Language, split by comma
+}
+
+type lyricsOptions struct {
+	LRCLIB      lrclibOptions
+	Musixmatch  musixmatchOptions
+	HistoryKeep int // previous versions of a track's lyrics kept for undo
+}
+
+type lrclibOptions struct {
+	Enabled bool
+	BaseURL string
+}
+
+type musixmatchOptions struct {
+	ApiKey string //nolint:gosec
 }
 
 type deezerOptions struct {
@@ -1082,6 +1098,10 @@ func setViperDefaults() {
 	viper.SetDefault("transcoding.maxconcurrentperuser", 0)
 	viper.SetDefault("transcoding.enablecancellation", false)
 	viper.SetDefault("agents", "deezer,lastfm,listenbrainz")
+	viper.SetDefault("lyrics.lrclib.enabled", true)
+	viper.SetDefault("lyrics.lrclib.baseurl", "https://lrclib.net")
+	viper.SetDefault("lyrics.musixmatch.apikey", "")
+	viper.SetDefault("lyrics.historykeep", 10)
 	viper.SetDefault("lastfm.enabled", true)
 	viper.SetDefault("lastfm.language", consts.DefaultInfoLanguage)
 	viper.SetDefault("lastfm.apikey", "")
