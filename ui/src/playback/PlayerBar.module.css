@@ -79,6 +79,26 @@
   gap: 1px;
 }
 
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+/* Quality is revealed on hover/focus, as before, and always on touch */
+.quality {
+  flex: none;
+  margin: -4px 0 -4px -4px;
+  opacity: 0;
+  transition: opacity var(--duration-slow) var(--ease-standard);
+}
+
+.info:hover .quality,
+.info:focus-within .quality {
+  opacity: 1;
+}
+
 .title {
   overflow: hidden;
   text-overflow: ellipsis;

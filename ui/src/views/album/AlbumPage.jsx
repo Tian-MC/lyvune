@@ -8,14 +8,9 @@ import { useT } from '../../i18n/useT'
 import { useDateLocale } from '../../i18n/useDateLocale'
 import subsonic from '../../subsonic'
 import config from '../../config'
-import {
-  ArtistLinkField,
-  RatingField,
-  formatRange,
-  useResourceRefresh,
-} from '../../common'
+import { ArtistLinkField, RatingField, useResourceRefresh } from '../../common'
 import { SafeHTML } from '../../common/SafeHTML'
-import { formatBytes, formatFullDate } from '../../utils'
+import { formatBytes } from '../../utils'
 import { formatDuration2 } from '../../utils/formatters'
 import { playTracks, shuffleTracks } from '../../actions'
 import { Cover } from '../../design/Cover'
@@ -30,6 +25,8 @@ import {
   ShuffleIcon,
 } from '../../design/icons'
 import { songQuery, useCollectionPlayback } from '../../playback/actions'
+import { albumDateParts } from './albumDates'
+import { useAlbumInfo } from './useAlbumInfo'
 import { Hero } from '../shared/Hero'
 import { TrackList } from '../shared/TrackList'
 import { AlbumCard } from '../shared/Cards'
@@ -44,29 +41,13 @@ const tag = (record, name) => record?.tags?.[name]?.[0]
 const useAlbumDates = (record) => {
   const locale = useDateLocale()
   const t = useT()
-  if (!record) return []
-  const yearRange = formatRange(record, 'year')
-  const date = record.date ? formatFullDate(record.date, locale) : yearRange
-  const originalDate = record.originalDate
-    ? formatFullDate(record.originalDate, locale)
-    : formatRange(record, 'originalYear')
-  const releaseDate =
-    record.releaseDate && formatFullDate(record.releaseDate, locale)
-  const main = originalDate || date
-  const parts = []
-  if (main && main !== releaseDate) {
-    parts.push(
-      originalDate && main !== date
-        ? `${t('resources.album.fields.originalDate', 'Original')} ${main}`
-        : main,
-    )
-  }
-  if (releaseDate) {
-    parts.push(
-      `${t('resources.album.fields.releaseDate', 'Released')} ${releaseDate}`,
-    )
-  }
-  return parts
+  return albumDateParts(record, {
+    locale,
+    labels: {
+      original: t('resources.album.fields.originalDate', 'Original'),
+      released: t('resources.album.fields.releaseDate', 'Released'),
+    },
+  })
 }
 
 const DiscHeader = ({ album, record, discs }) => {
@@ -132,21 +113,8 @@ const MoreByArtist = ({ album }) => {
 
 const About = ({ album }) => {
   const t = useT()
-  const [info, setInfo] = useState(null)
+  const info = useAlbumInfo(album)
   const [expanded, setExpanded] = useState(false)
-  useEffect(() => {
-    let alive = true
-    subsonic
-      .getAlbumInfo(album.id)
-      .then((resp) => resp.json['subsonic-response'])
-      .then((data) => {
-        if (alive && data.status === 'ok') setInfo(data.albumInfo)
-      })
-      .catch(() => {})
-    return () => {
-      alive = false
-    }
-  }, [album.id])
   const notes = info?.notes || album.notes
   if (!notes && !album.comment) return null
   return (

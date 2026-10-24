@@ -287,3 +287,10 @@
     animation: none;
   }
 }
+
+/* Format / ReplayGain / transcode chip, tuned for the dark ambient */
+.quality {
+  margin: var(--space-2) 0 0 -4px;
+  border-color: rgb(255 255 255 / 25%) !important;
+  color: rgb(255 255 255 / 75%) !important;
+}

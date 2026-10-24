@@ -17,6 +17,8 @@ import { QueueList } from './QueueList'
 import { Timeline, TransportControls, VolumeControl } from './controls'
 import { useCurrentItem, useCurrentSong } from './hooks'
 import { coverRecordFor } from './coverRecord'
+import { trackTitle } from './trackTitle'
+import { TrackQuality } from './TrackQuality'
 import styles from './NowPlaying.module.css'
 
 /** Traps Tab inside the dialog and restores focus on close. */
@@ -70,6 +72,16 @@ const NowPlaying = () => {
   const { data: album } = useGetOne('album', song?.albumId, {
     enabled: !!song?.albumId && !isRadio,
   })
+  // Songs queued from a playlist remember it: link back there, as before
+  const { data: playlist } = useGetOne('playlist', song?.playlistId, {
+    enabled: !!song?.playlistId && !isRadio,
+  })
+  const origin =
+    song?.playlistId && playlist
+      ? { to: `/playlist/${playlist.id}/show`, name: playlist.name }
+      : song?.album
+        ? { to: `/album/${song.albumId}/show`, name: song.album }
+        : null
 
   useDialogFocus(ref, closeNowPlaying)
 
@@ -80,7 +92,7 @@ const NowPlaying = () => {
 
   if (!item) return null
 
-  const title = song?.title || item.name
+  const title = trackTitle(song, item.name)
   const toggle = (p) => setNowPlayingPanel(panel === p ? null : p)
 
   return (
@@ -108,16 +120,13 @@ const NowPlaying = () => {
           className={styles.light}
         />
         <div className={styles.context}>
-          {song?.album && !isRadio && (
+          {origin && !isRadio && (
             <>
               <span className={styles.contextLabel}>
                 {t('ui.player.playingFrom', 'Playing from')}
               </span>
-              <Link
-                to={`/album/${song.albumId}/show`}
-                className={styles.contextLink}
-              >
-                {song.album}
+              <Link to={origin.to} className={styles.contextLink}>
+                {origin.name}
               </Link>
             </>
           )}
@@ -173,6 +182,11 @@ const NowPlaying = () => {
                   )}
                 </p>
               )}
+              <TrackQuality
+                item={item}
+                song={song}
+                className={styles.quality}
+              />
             </div>
             {song && (
               <div className={styles.metaActions}>

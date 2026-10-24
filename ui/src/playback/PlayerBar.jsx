@@ -1,5 +1,6 @@
 import React, { memo } from 'react'
 import { Link } from 'react-router-dom'
+import { useDrag } from 'react-dnd'
 import { useT } from '../i18n/useT'
 import { useShell } from '../shell/useShell'
 import { IconButton } from '../design/IconButton'
@@ -9,6 +10,9 @@ import { ExpandIcon, LyricsIcon, NextIcon, QueueIcon } from '../design/icons'
 import engine from './engine'
 import { useCurrentItem, useCurrentSong } from './hooks'
 import { coverRecordFor } from './coverRecord'
+import { trackTitle } from './trackTitle'
+import { TrackQuality } from './TrackQuality'
+import { DraggableTypes } from '../consts'
 import {
   PlayPauseButton,
   ProgressLine,
@@ -19,12 +23,27 @@ import {
 import styles from './PlayerBar.module.css'
 
 const TrackInfo = ({ item, song, compact }) => {
-  const title = song?.title || item.name
+  const title = trackTitle(song, item.name)
   const artist = item.isRadio ? null : song?.artist || item.singer
+  // The playing song can be dragged onto a playlist in the sidebar
+  const [, dragRef] = useDrag(
+    () => ({
+      type: DraggableTypes.SONG,
+      item: { ids: [item.trackId] },
+      canDrag: !item.isRadio,
+      options: { dropEffect: 'copy' },
+    }),
+    [item.trackId, item.isRadio],
+  )
   return (
-    <div className={styles.info}>
-      <span className={styles.title} title={title}>
-        {title}
+    <div className={styles.info} ref={dragRef}>
+      <span className={styles.titleRow}>
+        <span className={styles.title} title={title}>
+          {title}
+        </span>
+        {!compact && (
+          <TrackQuality item={item} song={song} className={styles.quality} />
+        )}
       </span>
       {artist && (
         <span className={styles.artist}>

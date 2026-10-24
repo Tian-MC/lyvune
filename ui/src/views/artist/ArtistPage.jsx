@@ -21,7 +21,7 @@ import {
   processSongsForPlayback,
   playSimilar,
 } from '../../common/playbackActions'
-import { playShuffle } from '../../artist/actions'
+import { playShuffle, playTopSongs } from '../../artist/actions'
 import ArtistExternalLinks from '../../artist/ArtistExternalLink'
 import { playTracks } from '../../actions'
 import { Cover } from '../../design/Cover'
@@ -30,6 +30,7 @@ import { LoveToggle } from '../../design/LoveToggle'
 import { EmptyState, Section, Shelf } from '../../design/Section'
 import { AlbumIcon, PlayIcon, RadioIcon, ShuffleIcon } from '../../design/icons'
 import { songQuery } from '../../playback/actions'
+import { useArtistInfo } from './useArtistInfo'
 import { Hero } from '../shared/Hero'
 import { TrackList } from '../shared/TrackList'
 import { AlbumCard, ArtistCard, CardGrid, CardSkeletons } from '../shared/Cards'
@@ -37,25 +38,6 @@ import { CollectionMenu } from '../shared/CollectionMenu'
 import styles from './ArtistPage.module.css'
 
 const TOP_SONGS = 10
-
-const useArtistInfo = (record) => {
-  const [info, setInfo] = useState(null)
-  useEffect(() => {
-    let alive = true
-    subsonic
-      .getArtistInfo(record.id)
-      .then((resp) => resp.json['subsonic-response'])
-      .then((data) => {
-        if (alive && data.status === 'ok') setInfo(data.artistInfo)
-      })
-      .catch(() => {})
-    return () => {
-      alive = false
-    }
-    // Keyed on the record so a refreshed record re-fetches
-  }, [record])
-  return info
-}
 
 const useTopSongs = (name) => {
   const [state, setState] = useState({ loaded: false, data: {}, ids: [] })
@@ -258,18 +240,10 @@ const ArtistBody = ({ artist }) => {
     }
   }
 
-  const playTop = runAction('top', async () => {
-    const res = await subsonic.getTopSongs(artist.name, 100)
-    const data = res.json['subsonic-response']
-    const songs = data.topSongs?.song || []
-    if (!songs.length) {
-      // Fall back to every song by the artist, shuffled
-      await playShuffle(dataProvider, dispatch, artist.id)
-      return
-    }
-    const { songData, ids } = processSongsForPlayback(songs)
-    dispatch(playTracks(songData, ids))
-  })
+  // Same behaviour as before: warns when there are no top songs
+  const playTop = runAction('top', () =>
+    playTopSongs(dispatch, notify, artist.name),
+  )
 
   const albumCount = artist.stats?.maincredit?.albumCount ?? artist.albumCount
   const songCount = artist.stats?.maincredit?.songCount ?? artist.songCount
@@ -322,7 +296,7 @@ const ArtistBody = ({ artist }) => {
               disabled={!!busy}
               onClick={playTop}
             >
-              {t('ui.artist.play', 'Play')}
+              {t('resources.artist.actions.topSongs', 'Top Songs')}
             </Button>
             <Button
               variant="secondary"
