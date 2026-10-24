@@ -56,7 +56,7 @@ index.jsx → App.jsx
   `startScan/getScanStatus`, `getNowPlaying`, `getArtistInfo`, `getAlbumInfo`,
   `getTopSongs`, `getSimilarSongs2`, `getAvatar`, `getLyricsBySongId`.
 
-### Playback (legacy)
+### Playback (legacy, as found — replaced by `playback/engine.js`)
 * `navidrome-music-player` owns the `<audio>` element **and** its UI. Redux mirrors it
   through a fragile `playIndex/clear/syncQueue` handshake (`reducers/playerReducer.js`).
 * `audioplayer/Player.jsx` adds: playback reporting (`starting/playing/paused/stopped`,
@@ -122,11 +122,11 @@ about dialog, quick connect.
 | react-admin core (store, cache, i18n, routing, resources) | **keep as infrastructure** | love/rating/refresh flows, SSE refreshes, admin CRUD all depend on its cache; migrating would rewrite reliable logic without benefit |
 | `transcode/`, `utils/calculateReplayGain`, `eventStream` | **keep** | pure logic |
 | Action creators (`playTracks`, `addTracks`, `playNext`, `shuffleTracks`, `setTrack`, …) | **keep the public API** | ~20 call sites dispatch them |
-| `playerReducer` | **rewrite** | the jinke handshake disappears with the new engine |
-| `navidrome-music-player` | **replace** in the app (kept only for the public SharePlayer until Phase 7) | it owns both UI and audio, cannot be restyled into the new Now Playing |
-| Layout, AppBar, Menu, all list/show pages, Personal | **rebuild** | presentation layer |
+| `playerReducer` | **rewritten** | the jinke handshake disappeared with the new engine |
+| `navidrome-music-player` | **replaced and removed** (also from `package.json`) | it owned both UI and audio, cannot be restyled into the new Now Playing |
+| Layout, AppBar, Menu, all list/show pages, Personal | **rebuilt; legacy files removed** | presentation layer |
 | Dialogs, context menus, admin CRUD forms | **keep logic, restyle** through a token-driven MUI theme | complex, well tested forms; visual consistency comes from the theme |
-| 29 legacy themes | **superseded** by the Navidrome design system | strict black-and-blue identity; files kept until Phase 8 cleanup |
+| 29 legacy themes | **kept as palette data only** (`src/themes/*.js`) | their stylesheets are gone; `design/legacyThemes.js` maps each to successor / tinted / unsupported (see `DESIGN_SYSTEM.md` §13) |
 
 ## 6. Target architecture
 
@@ -170,6 +170,11 @@ Boundaries:
   works offline/PWA). CJK and other scripts fall back to system fonts.
 * Icons: `react-icons/lu` (Lucide) — **already a dependency**, consistent 1.5–2px strokes.
 
+### Dependencies removed
+`navidrome-music-player`, `react-drag-listview`, `react-measure` — used only by the
+removed legacy player, layout and pages (import-graph and symbol analysis against
+upstream `master`).
+
 No framework migration. React 17 stays (react-admin 3 requires it).
 
 ## 7. Roadmap & acceptance criteria
@@ -190,33 +195,37 @@ Validation after each phase: `npm run lint`, `npm run type-check`, `npm test`,
 `npm run build`, plus browser checks (desktop + mobile viewport) against a local
 backend scanning the read-only library.
 
-## 8. Status (end of first implementation pass)
+## 8. Status (release-readiness pass)
 
 | Phase | Status |
 | --- | --- |
 | 0 Audit | done |
 | 1 Design system | done — tokens, global styles, MUI theme, primitives, `DESIGN_SYSTEM.md` |
-| 2 Shell + engine | done — AppShell, collapsible sidebar with playlists, top bar with global search, mobile tab bar, new audio engine, PlayerBar, hotkeys |
-| 3 Home + library + search | done — Home, Albums (all list types, legacy filters), Artists (grid + table), Genres, Favourites, Library hub, Search. Songs keeps the (themed) data table |
-| 4 Album + artist | done |
-| 5 Now Playing | done — overlay with history entry, ambient light, desktop + mobile layouts |
-| 6 Lyrics + queue | done — synced / unsynced / word-level / translation / romanisation; queue panel with jump, reorder (drag + buttons), remove, clear, save |
-| 7 Playlists, settings, rest | partial — playlists list/detail and personal settings rebuilt; radios, shares and admin screens use the new theme but keep their react-admin layouts; the public share player is unchanged |
-| 8 Polish & cleanup | partial — validation green; removal of unused legacy presentation code pending confirmation |
+| 2 Shell + engine | done — AppShell, collapsible sidebar with playlists, top bar with global search, mobile tab bar, audio engine, PlayerBar, hotkeys, scroll restoration, `/` search refocus |
+| 3 Home + library + search | done — Home, Albums (all list types, legacy filters), Artists, Songs, Genres, Favourites, Library hub (`/browse`), Search |
+| 4 Album + artist | done — plus quality chip, subtitle, playlist origin link, drag to queue, per-list columns and rating |
+| 5 Now Playing | done — overlay with history entry, ambient light, focus trap, desktop + mobile layouts |
+| 6 Lyrics + queue | done — synced / unsynced / word-level / translation / romanisation (fixture-verified; LRC id tags hidden); queue panel closes when emptied |
+| 7 Playlists, settings, rest | done — playlists (create, add, remove, reorder, edit, delete), personal settings, theme compatibility, public share player on the new engine; radios, shares and admin screens keep their react-admin layouts under the new theme |
+| 8 Polish & cleanup | done — legacy player, layout, show pages, theme stylesheets and three dependencies removed |
 
-Validation run: `npm run lint`, `npm run check-formatting`, `npm run type-check`,
-`npm test` (95 files, 843 tests), `vite build`; browser checks at 1440×900,
-1904×879 and 390×844 against the local library.
+Validation (this pass, run fresh): `npm run lint`, `npm run check-formatting`,
+`npm run type-check`, `npm test` (94 files, 913 tests), `vite build`, `make test-i18n`
+(with `gojq` standing in for `jq`). Browser checks against a local backend that scans
+the read-only library: viewports 1920×1080, 1440×900, 1280×800, 768×1024, 390×844 and
+360×800 (320×800 for overflow), a touch-enabled mobile context, a non-admin user, EN and
+IT.
 
-### Known gaps
-* Public share page (`share/SharePlayer.jsx`) still uses `navidrome-music-player`.
-* Album/playlist tracklists have no multi-select bulk actions yet (Songs table does);
-  playlist reordering is by menu (move up/down), not drag.
-* Word-level karaoke, translations and romanisation are covered by unit tests only:
-  the local library has no lyrics with cues or companion kinds.
-* New strings exist in English and Italian; other languages fall back to English.
-  `make test-i18n` needs `jq` (not installed here) and was not run.
-* Unused legacy code still present: `audioplayer/`, `layout/{Layout,Menu,AppBar,SubMenu,PlaylistsSubMenu,PersonalMenu,UserMenu}`,
-  legacy show pages, 29 legacy theme files.
-* React warning on the playlist page ("Cannot update a component while rendering a
-  different component", from react-admin hooks) to investigate.
+### Known limitations
+* Selection checkboxes in react-admin data tables (shares, libraries, players, users)
+  have no accessible name.
+* Dev-only prop-type warnings from upstream react-admin forms (`PlaylistEdit`, the
+  `NullableBooleanInput` star filters) and a transient MUI "out-of-range `it`" warning
+  while the language list loads. None occur in production builds.
+* The nine light legacy themes are not supported by the dark-only UI; Navidrome is used
+  instead and the picker says so.
+* Languages other than English and Italian fall back to English for the new `ui.*`
+  strings.
+* Not verified: Safari/Firefox/Windows, a physical touch device, a real screen reader,
+  Lighthouse scores, and word-level lyrics on real data (the library has none; covered by
+  labelled fixtures and unit tests).

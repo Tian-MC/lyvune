@@ -127,8 +127,11 @@ Product components: `shell/` (AppShell, Sidebar, TopBar, MobileNav, UserMenu),
   current track = playing bars + blue title; toggles = blue + dot + `aria-pressed`.
 * Every icon-only control has an accessible name; dialogs trap focus, close on
   Escape and restore focus; Now Playing is `role=dialog aria-modal`.
-* Touch targets ≥ 40px (44px for primary mobile actions); hover-only affordances
-  become always-visible on `(hover: none)` devices.
+* Touch targets ≥ 40px (44px for primary mobile actions); row actions grow to 40px on
+  `(pointer: coarse)`; hover-only affordances become always-visible on `(hover: none)`
+  devices.
+* Cover images always carry an `alt` (the title, or `""` when the text beside them
+  already names the item).
 * Contrast: body text ≥ 7:1, metadata ≥ 4.5:1, white on filled blue 4.6:1.
 
 ## 10. Layout & breakpoints
@@ -157,3 +160,34 @@ player and Now Playing.
 4. Hooks/helpers live in their own modules (fast-refresh lint rule).
 5. Playback is driven only through `playback/engine.js` and redux actions —
    components never touch an `<audio>` element.
+
+## 12. Tracklists
+
+`views/shared/TrackList` is the single tracklist used by albums, artists, playlists,
+Songs and search. Optional columns (rating, quality, year, plays, last played, album
+artist, composer, genre, mood, BPM, channels, size) are chosen per list from the
+column menu and stored in `settings.trackColumns` (falling back to the legacy
+`toggleableFields`). Below 900px the optional columns and the header are hidden.
+Selection (`useTrackSelection` + `SelectionBar`), drag/Alt+Arrow reordering and the
+context menu are shared by every list.
+
+## 13. Theme compatibility
+
+The interface is dark-only. `design/legacyThemes.js` keeps the theme ids that
+users stored in earlier versions working, without rewriting what is stored:
+
+| Support | Themes | Result |
+| --- | --- | --- |
+| successor | Dark, Extra Dark | the official Navidrome and Navidrome OLED variants |
+| tinted | 18 dark community themes | their accent and background feed the tokens (`computeTint`); secondary text, muted text and filled-accent text are recomputed so contrast stays ≥ 7:1 / 4.5:1 / 4.5:1 |
+| unsupported | 9 light themes | Navidrome is used and the theme picker says so |
+
+The legacy theme definitions in `src/themes/` are data only; none of their
+player or layout stylesheets remain.
+
+## 14. Known limitations
+
+* Selection checkboxes inside react-admin data tables (admin screens: shares,
+  libraries, players, users) have no accessible name.
+* Dev-only prop-type warnings come from upstream react-admin forms
+  (`PlaylistEdit`, `NullableBooleanInput` filters) and do not occur in production.
