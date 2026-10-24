@@ -735,7 +735,9 @@
             "more": "Altro",
             "removeFavourite": "Rimuovi dai preferiti",
             "showLess": "Mostra meno",
-            "showMore": "Mostra altro"
+            "showMore": "Mostra altro",
+            "next": "Successivo",
+            "previous": "Precedente"
         },
         "album": {
             "about": "Informazioni sull’album",
@@ -782,7 +784,9 @@
             "noArtists": "Ancora nessun artista",
             "noGenres": "Nessun genere nella libreria",
             "noResults": "Nessun risultato con questi filtri",
-            "sort": "Ordina"
+            "sort": "Ordina",
+            "listView": "Elenco",
+            "noSongs": "Ancora nessun brano"
         },
         "lyrics": {
             "backToCurrent": "Torna alla riga corrente",
@@ -801,7 +805,8 @@
             "genres": "Generi",
             "home": "Home",
             "main": "Navigazione principale",
-            "search": "Cerca"
+            "search": "Cerca",
+            "skipToContent": "Vai al contenuto"
         },
         "player": {
             "label": "Player",
@@ -817,7 +822,8 @@
             "emptyHint": "Aggiungi brani dal menu di qualsiasi traccia, o trascinali sulla playlist nella barra laterale.",
             "new": "Nuova playlist",
             "removeTrack": "Rimuovi da questa playlist",
-            "smart": "Playlist smart"
+            "smart": "Playlist smart",
+            "removeTracks": "Rimuovi dalla playlist"
         },
         "queue": {
             "clear": "Svuota",
@@ -852,6 +858,23 @@
         },
         "track": {
             "missing": "File mancante"
+        },
+        "error": {
+            "retry": "Riprova",
+            "title": "Qualcosa è andato storto"
+        },
+        "selection": {
+            "clear": "Annulla selezione",
+            "count": "%{smart_count} selezionato |||| %{smart_count} selezionati",
+            "label": "Brani selezionati",
+            "select": "Seleziona",
+            "shareName": "Brani"
+        },
+        "share": {
+            "empty": "Niente da riprodurre",
+            "emptyHint": "Questo link condiviso non contiene brani riproducibili. Potrebbe essere stato modificato o rimosso.",
+            "playbackError": "Impossibile riprodurre questo brano. Il link potrebbe essere scaduto.",
+            "shared": "Condiviso con te"
         }
     }
 }

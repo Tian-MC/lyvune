@@ -3,6 +3,7 @@ import clsx from 'clsx'
 import { Link } from 'react-router-dom'
 import { ChevronLeftIcon, ChevronRightIcon } from './icons'
 import { IconButton } from './IconButton'
+import { useT } from '../i18n/useT'
 import styles from './Section.module.css'
 
 /** Titled block of content with an optional "see all" link and actions. */
@@ -58,6 +59,7 @@ export const Section = ({
  * previous/next buttons on pointer devices.
  */
 export const Shelf = ({ children, label, className, itemClassName }) => {
+  const t = useT()
   const ref = useRef(null)
   const [edges, setEdges] = useState({ start: true, end: true })
 
@@ -88,7 +90,7 @@ export const Shelf = ({ children, label, className, itemClassName }) => {
   return (
     <div className={clsx(styles.shelf, className)}>
       <IconButton
-        label="Previous"
+        label={t('ui.actions.previous', 'Previous')}
         icon={ChevronLeftIcon}
         size="sm"
         variant="subtle"
@@ -111,7 +113,7 @@ export const Shelf = ({ children, label, className, itemClassName }) => {
         )}
       </ul>
       <IconButton
-        label="Next"
+        label={t('ui.actions.next', 'Next')}
         icon={ChevronRightIcon}
         size="sm"
         variant="subtle"

@@ -1,16 +1,8 @@
 import { vi } from 'vitest'
-import * as React from 'react'
+import { renderHook } from '@testing-library/react-hooks'
 import * as Redux from 'react-redux'
 import * as RA from 'react-admin'
 import { useResourceRefresh } from './useResourceRefresh'
-
-vi.mock('react', async () => {
-  const actual = await vi.importActual('react')
-  return {
-    ...actual,
-    useState: vi.fn(),
-  }
-})
 
 vi.mock('react-redux', async () => {
   const actual = await vi.importActual('react-redux')
@@ -30,8 +22,6 @@ vi.mock('react-admin', async () => {
 })
 
 describe('useResourceRefresh', () => {
-  const setState = vi.fn()
-  const useStateMock = (initState) => [initState, setState]
   const refresh = vi.fn()
   const useRefreshMock = () => refresh
   const getMany = vi.fn()
@@ -60,7 +50,6 @@ describe('useResourceRefresh', () => {
     )
 
   beforeEach(() => {
-    vi.spyOn(React, 'useState').mockImplementation(useStateMock)
     vi.spyOn(RA, 'useRefresh').mockImplementation(useRefreshMock)
     vi.spyOn(RA, 'useDataProvider').mockImplementation(useDataProviderMock)
     lastTime = new Date(new Date().valueOf() + 1000)
@@ -70,21 +59,32 @@ describe('useResourceRefresh', () => {
     vi.clearAllMocks()
   })
 
-  it('stores last time checked, to avoid redundant runs', () => {
-    mockStore({ refresh: { lastReceived: lastTime } })
+  // Side effects run in an effect, after render
+  const run = (...resources) =>
+    renderHook(() => useResourceRefresh(...resources))
 
-    useResourceRefresh()
+  it('handles each refresh event once', () => {
+    mockStore({
+      refresh: { lastReceived: lastTime, resources: { '*': '*' } },
+    })
 
-    expect(setState).toHaveBeenCalledWith(lastTime)
+    const { rerender } = run()
+    rerender()
+
+    expect(refresh).toHaveBeenCalledTimes(1)
   })
 
-  it("does not run again if lastTime didn't change", () => {
-    vi.spyOn(React, 'useState').mockImplementation(() => [lastTime, setState])
-    mockStore({ refresh: { lastReceived: lastTime } })
+  it('ignores events received before it mounted', () => {
+    mockStore({
+      refresh: {
+        lastReceived: new Date(Date.now() - 60000),
+        resources: { '*': '*' },
+      },
+    })
 
-    useResourceRefresh()
+    run()
 
-    expect(setState).not.toHaveBeenCalled()
+    expect(refresh).not.toHaveBeenCalled()
   })
 
   describe('No visible resources specified', () => {
@@ -93,7 +93,7 @@ describe('useResourceRefresh', () => {
         refresh: { lastReceived: lastTime, resources: { '*': '*' } },
       })
 
-      useResourceRefresh()
+      run()
 
       expect(refresh).toHaveBeenCalledTimes(1)
       expect(getMany).not.toHaveBeenCalled()
@@ -104,7 +104,7 @@ describe('useResourceRefresh', () => {
         refresh: { lastReceived: lastTime, resources: { album: ['*'] } },
       })
 
-      useResourceRefresh()
+      run()
 
       expect(refresh).toHaveBeenCalledTimes(1)
       expect(getMany).not.toHaveBeenCalled()
@@ -119,7 +119,7 @@ describe('useResourceRefresh', () => {
         loaded: asStore({ album: ['al-1', 'al-2'], song: ['sg-1', 'sg-2'] }),
       })
 
-      useResourceRefresh()
+      run()
 
       expect(refresh).not.toHaveBeenCalled()
       expect(getMany).toHaveBeenCalledTimes(2)
@@ -136,7 +136,7 @@ describe('useResourceRefresh', () => {
         loaded: asStore({ album: ['al-2'] }),
       })
 
-      useResourceRefresh()
+      run()
 
       expect(getMany).toHaveBeenCalledTimes(1)
       expect(getMany).toHaveBeenCalledWith('album', { ids: ['al-2'] })
@@ -151,7 +151,7 @@ describe('useResourceRefresh', () => {
         loaded: asStore({ artist: ['ar-9'] }),
       })
 
-      useResourceRefresh()
+      run()
 
       expect(getMany).not.toHaveBeenCalled()
     })
@@ -163,7 +163,7 @@ describe('useResourceRefresh', () => {
         refresh: { lastReceived: lastTime, resources: { '*': '*' } },
       })
 
-      useResourceRefresh('album')
+      run('album')
 
       expect(refresh).toHaveBeenCalledTimes(1)
       expect(getMany).not.toHaveBeenCalled()
@@ -179,7 +179,7 @@ describe('useResourceRefresh', () => {
         loaded: asStore({ album: ['al-1', 'al-2'] }),
       })
 
-      useResourceRefresh('album')
+      run('album')
 
       expect(refresh).not.toHaveBeenCalled()
       expect(getMany).toHaveBeenCalledWith('album', { ids: ['al-1', 'al-2'] })
@@ -201,7 +201,7 @@ describe('useResourceRefresh', () => {
         },
       })
 
-      useResourceRefresh('song')
+      run('song')
 
       expect(refresh).not.toHaveBeenCalled()
       expect(getMany).toHaveBeenCalledWith('song', { ids: ['sg-1'] })
@@ -220,7 +220,7 @@ describe('useResourceRefresh', () => {
         },
       })
 
-      useResourceRefresh('playlistTrack', 'song', 'playlist')
+      run('playlistTrack', 'song', 'playlist')
 
       expect(refresh).not.toHaveBeenCalled()
       expect(getMany).toHaveBeenCalledWith('playlistTrack', { ids: ['pt-1'] })
@@ -235,7 +235,7 @@ describe('useResourceRefresh', () => {
         },
       })
 
-      useResourceRefresh('album')
+      run('album')
 
       expect(refresh).not.toHaveBeenCalled()
       expect(getMany).toHaveBeenCalledTimes(1)
@@ -250,7 +250,7 @@ describe('useResourceRefresh', () => {
         },
       })
 
-      useResourceRefresh('song')
+      run('song')
 
       expect(refresh).not.toHaveBeenCalled()
       expect(getMany).not.toHaveBeenCalled()
@@ -265,7 +265,7 @@ describe('useResourceRefresh', () => {
         loaded: asStore({ album: ['al-1', 'al-2'], song: ['sg-1', 'sg-2'] }),
       })
 
-      useResourceRefresh('song')
+      run('song')
 
       expect(refresh).not.toHaveBeenCalled()
       expect(getMany).toHaveBeenCalledTimes(1)

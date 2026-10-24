@@ -12,7 +12,7 @@ export const ViewToggle = ({ mode, onChange, primary = 'grid' }) => {
       ? {
           id: 'list',
           icon: ListIcon,
-          label: t('ra.toggleFieldsMenu.list', 'List'),
+          label: t('ui.library.listView', 'List'),
         }
       : {
           id: 'grid',

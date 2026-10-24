@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { createTheme, ThemeProvider } from '@material-ui/core/styles'
 import useCurrentTheme from '../themes/useCurrentTheme'
+import { useT } from '../i18n/useT'
 import authProvider from '../authProvider'
 import { startEventStream } from '../eventStream'
 import config from '../config'
@@ -51,10 +52,10 @@ class ErrorBoundary extends Component {
       return (
         <EmptyState
           icon={AlertIcon}
-          title="Something went wrong"
+          title={this.props.t('ui.error.title', 'Something went wrong')}
           action={
             <Button onClick={() => this.setState({ error: null })}>
-              Try again
+              {this.props.t('ui.error.retry', 'Try again')}
             </Button>
           }
         >
@@ -67,6 +68,7 @@ class ErrorBoundary extends Component {
 }
 
 const ShellLayout = ({ children, logout }) => {
+  const t = useT()
   const history = useHistory()
   const hasQueue = useSelector((state) => state.player.queue.length > 0)
   const { collapsed, nowPlaying, queueOpen } = useShell()
@@ -85,7 +87,7 @@ const ShellLayout = ({ children, logout }) => {
         className={styles.skipLink}
         onClick={() => document.getElementById('main-content')?.focus()}
       >
-        Skip to content
+        {t('ui.nav.skipToContent', 'Skip to content')}
       </button>
       <Sidebar />
       <div className={styles.main}>
@@ -93,7 +95,9 @@ const ShellLayout = ({ children, logout }) => {
         <main id="main-content" className={styles.content} tabIndex={-1}>
           {/* react-admin <Title> portals here: every screen gets the same heading */}
           <h1 id="react-admin-title" className={styles.pageTitle} />
-          <ErrorBoundary history={history}>{children}</ErrorBoundary>
+          <ErrorBoundary history={history} t={t}>
+            {children}
+          </ErrorBoundary>
         </main>
       </div>
       <PlayerBar />

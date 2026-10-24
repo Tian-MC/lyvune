@@ -6,6 +6,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon'
 import Divider from '@material-ui/core/Divider'
 import { ChevronRightIcon, MoreIcon } from './icons'
 import { IconButton } from './IconButton'
+import { useT } from '../i18n/useT'
 import styles from './ActionMenu.module.css'
 
 /**
@@ -94,26 +95,30 @@ export const ActionMenuList = ({ menu, items, label }) => {
 /** The "…" button plus its menu. */
 export const ActionMenu = ({
   items,
-  label = 'More',
+  label,
   size = 'sm',
   className,
   menu: externalMenu,
   onOpen,
 }) => {
+  const t = useT()
   const internal = useActionMenu(onOpen)
+  const menuLabel = label || t('ui.actions.more', 'More')
   const menu = externalMenu || internal
   return (
     <>
       <IconButton
         size={size}
         icon={MoreIcon}
-        label={label}
+        label={menuLabel}
         className={className}
         aria-haspopup="menu"
         aria-expanded={!!menu.state}
         onClick={menu.open}
       />
-      {menu.state && <ActionMenuList menu={menu} items={items} label={label} />}
+      {menu.state && (
+        <ActionMenuList menu={menu} items={items} label={menuLabel} />
+      )}
     </>
   )
 }
