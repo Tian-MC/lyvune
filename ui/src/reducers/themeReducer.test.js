@@ -8,8 +8,9 @@ describe('themeReducer', () => {
 
   it.each([
     { configTheme: 'Auto', expected: 'NavidromeTheme' },
-    { configTheme: 'Dark', expected: 'NavidromeTheme' },
-    { configTheme: 'Extra Dark', expected: 'NavidromeOledTheme' },
+    { configTheme: 'Dark', expected: 'DarkTheme' },
+    { configTheme: 'Extra Dark', expected: 'ExtraDarkTheme' },
+    { configTheme: 'Dracula', expected: 'DraculaTheme' },
     { configTheme: 'NonExistent', expected: 'NavidromeTheme' },
   ])(
     'returns $expected when defaultTheme config is $configTheme',
@@ -22,13 +23,16 @@ describe('themeReducer', () => {
     },
   )
 
-  it('resolves legacy theme ids on change', async () => {
+  it('keeps legacy theme ids so the previous choice is not lost', async () => {
     const { themeReducer } = await import('./themeReducer')
     expect(
       themeReducer('NavidromeTheme', {
         type: CHANGE_THEME,
         payload: 'DraculaTheme',
       }),
+    ).toBe('DraculaTheme')
+    expect(
+      themeReducer('NavidromeTheme', { type: CHANGE_THEME, payload: 'nope' }),
     ).toBe('NavidromeTheme')
     expect(
       themeReducer('NavidromeTheme', {

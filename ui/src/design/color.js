@@ -44,3 +44,50 @@ export const ambientFrom = (hex, fallback = '212 30% 22%') => {
   const light = clamp(l * 100, 20, 42)
   return `${Math.round(h)} ${Math.round(sat)}% ${Math.round(light)}%`
 }
+
+const toHex = ({ r, g, b }) =>
+  '#' +
+  [r, g, b]
+    .map((v) =>
+      Math.round(clamp(v, 0, 255))
+        .toString(16)
+        .padStart(2, '0'),
+    )
+    .join('')
+
+/** Linear mix of two hex colours; `amount` of `b` into `a`. */
+export const mix = (a, b, amount) => {
+  const x = hexToRgb(a)
+  const y = hexToRgb(b)
+  if (!x || !y) return a
+  return toHex({
+    r: x.r + (y.r - x.r) * amount,
+    g: x.g + (y.g - x.g) * amount,
+    b: x.b + (y.b - x.b) * amount,
+  })
+}
+
+const channel = (v) => {
+  const c = v / 255
+  return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+}
+
+export const luminance = (hex) => {
+  const rgb = hexToRgb(hex)
+  if (!rgb) return 0
+  return (
+    0.2126 * channel(rgb.r) + 0.7152 * channel(rgb.g) + 0.0722 * channel(rgb.b)
+  )
+}
+
+/** WCAG contrast ratio between two hex colours. */
+export const contrast = (a, b) => {
+  const la = luminance(a)
+  const lb = luminance(b)
+  return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05)
+}
+
+export const withAlpha = (hex, alpha) => {
+  const rgb = hexToRgb(hex)
+  return rgb ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})` : hex
+}

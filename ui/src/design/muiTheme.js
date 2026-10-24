@@ -34,14 +34,24 @@ export const tokens = {
   ease: 'cubic-bezier(0.2, 0, 0, 1)',
 }
 
-const t = tokens
-
-export const createNavidromeTheme = ({ name, oled = false } = {}) => {
+/**
+ * `tint` (legacy dark themes) overrides the accent and surface tokens; see
+ * design/legacyThemes.js. The official variants never pass one.
+ */
+export const createNavidromeTheme = ({
+  name,
+  oled = false,
+  tint = null,
+  legacy = null,
+} = {}) => {
+  const t = tint ? { ...tokens, ...tint } : tokens
   const bgApp = oled ? '#000000' : t.bgApp
   const paper = oled ? '#0b0b0d' : t.surface1
   return {
     themeName: name,
     oled,
+    tint,
+    legacy,
     palette: {
       type: 'dark',
       primary: { main: t.blue, light: t.blueHover, dark: t.blueSolid },

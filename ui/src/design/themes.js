@@ -1,7 +1,11 @@
-import { NavidromeTheme, NavidromeOledTheme } from './muiTheme'
+import {
+  NavidromeTheme,
+  NavidromeOledTheme,
+  createNavidromeTheme,
+} from './muiTheme'
+import { describeLegacyTheme } from './legacyThemes'
 
-// The redesigned UI ships two variants of the black-and-blue identity.
-// Ids persisted by the legacy theme picker resolve to the closest variant.
+// The two official variants of the black-and-blue identity
 const themes = {
   NavidromeTheme,
   NavidromeOledTheme,
@@ -9,15 +13,36 @@ const themes = {
 
 export const DEFAULT_THEME_ID = 'NavidromeTheme'
 
-const legacyAliases = {
-  ExtraDarkTheme: 'NavidromeOledTheme',
-}
-
+/**
+ * Normalises a theme id for storage. Official and legacy ids are kept as
+ * they are, so a previous choice is never lost; unknown ids fall back.
+ */
 export const resolveThemeId = (id) => {
-  if (themes[id]) return id
-  return legacyAliases[id] || DEFAULT_THEME_ID
+  if (themes[id] || describeLegacyTheme(id)) return id
+  return DEFAULT_THEME_ID
 }
 
-export const getTheme = (id) => themes[resolveThemeId(id)]
+const tinted = new Map()
+
+/**
+ * The theme to render for a stored id. Legacy themes carry a `legacy`
+ * descriptor; unsupported ones render the default theme.
+ */
+export const getTheme = (id) => {
+  if (themes[id]) return themes[id]
+  const legacy = describeLegacyTheme(id)
+  if (!legacy) return themes[DEFAULT_THEME_ID]
+  if (legacy.support === 'successor') return themes[legacy.successor]
+  if (legacy.support === 'tinted') {
+    if (!tinted.has(id)) {
+      tinted.set(
+        id,
+        createNavidromeTheme({ name: legacy.name, tint: legacy.tint, legacy }),
+      )
+    }
+    return tinted.get(id)
+  }
+  return { ...themes[DEFAULT_THEME_ID], legacy }
+}
 
 export default themes

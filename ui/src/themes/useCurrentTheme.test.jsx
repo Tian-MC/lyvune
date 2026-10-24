@@ -21,11 +21,37 @@ describe('useCurrentTheme', () => {
     expect(document.documentElement.dataset.theme).toBe('default')
   })
 
-  it('maps legacy theme ids to the Navidrome theme', () => {
+  it('tints dark legacy themes with their accent', () => {
     const { result } = renderHook(() => useCurrentTheme(), {
       wrapper: wrapperFor('DraculaTheme'),
     })
+    expect(result.current.themeName).toBe('Dracula')
+    expect(result.current.legacy.support).toBe('tinted')
+    expect(document.documentElement.style.getPropertyValue('--nd-blue')).toBe(
+      '#bd93f9',
+    )
+  })
+
+  it('falls back to Navidrome for light legacy themes and says so', () => {
+    const { result } = renderHook(() => useCurrentTheme(), {
+      wrapper: wrapperFor('LightTheme'),
+    })
     expect(result.current.themeName).toBe('Navidrome')
+    expect(result.current.legacy.support).toBe('unsupported')
+    expect(document.documentElement.style.getPropertyValue('--nd-blue')).toBe(
+      '',
+    )
+  })
+
+  it('maps Dark and Extra Dark to the official variants', () => {
+    const dark = renderHook(() => useCurrentTheme(), {
+      wrapper: wrapperFor('DarkTheme'),
+    })
+    expect(dark.result.current.themeName).toBe('Navidrome')
+    const extra = renderHook(() => useCurrentTheme(), {
+      wrapper: wrapperFor('ExtraDarkTheme'),
+    })
+    expect(extra.result.current.oled).toBe(true)
   })
 
   it('applies the OLED variant', () => {
