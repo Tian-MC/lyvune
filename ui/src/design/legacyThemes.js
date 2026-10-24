@@ -14,6 +14,7 @@ const BRAND = '#0084ff'
 const DEFAULT_BG = '#08090b'
 const WHITE = '#ffffff'
 const BLACK = '#000000'
+const TEXT = '#ebeef5'
 
 const SUCCESSORS = {
   DarkTheme: 'NavidromeTheme',
@@ -31,16 +32,32 @@ const ensureContrast = (color, bg, ratio, target) => {
   return c
 }
 
+// Lightest-touch secondary text that still reaches `ratio` on the surface
+// where metadata sits (cards are lighter than the page background).
+const readable = (surface, ratio) => {
+  for (let a = 0.5; a <= 1; a += 0.02) {
+    const c = mix(surface, TEXT, a)
+    if (contrast(c, surface) >= ratio) return c
+  }
+  return TEXT
+}
+
 /** Token overrides derived from an accent and a background colour. */
 export const computeTint = (accent, bg) => {
   const textOnAccent = contrast(accent, WHITE) >= 3 ? WHITE : BLACK
   const solid =
     textOnAccent === WHITE ? ensureContrast(accent, WHITE, 4.5, BLACK) : accent
+  const surface2 = mix(bg, WHITE, 0.07)
   return {
     blue: accent,
     blueHover: mix(accent, WHITE, 0.15),
     blueSolid: solid,
     blueSolidHover: mix(solid, WHITE, 0.08),
+    blueSoftHover: withAlpha(accent, 0.2),
+    blueBorder: withAlpha(accent, 0.5),
+    text2: readable(surface2, 7),
+    text3: readable(surface2, 4.5),
+    surface3Hover: mix(bg, WHITE, 0.15),
     blueText: ensureContrast(accent, bg, 4.5, WHITE),
     blueSoft: withAlpha(accent, 0.14),
     blueSofter: withAlpha(accent, 0.08),
@@ -50,7 +67,7 @@ export const computeTint = (accent, bg) => {
     bgSidebar: mix(bg, BLACK, 0.3),
     bgElevated: mix(bg, WHITE, 0.03),
     surface1: mix(bg, WHITE, 0.04),
-    surface2: mix(bg, WHITE, 0.07),
+    surface2,
     surface3: mix(bg, WHITE, 0.11),
   }
 }
@@ -66,6 +83,8 @@ export const tintCssVars = (tint) => ({
   '--nd-blue-softer': tint.blueSofter,
   '--nd-blue-glow': tint.blueGlow,
   '--text-on-accent': tint.textOnAccent,
+  '--text-2': tint.text2,
+  '--text-3': tint.text3,
   '--bg-app': tint.bgApp,
   '--bg-sidebar': tint.bgSidebar,
   '--bg-elevated': tint.bgElevated,

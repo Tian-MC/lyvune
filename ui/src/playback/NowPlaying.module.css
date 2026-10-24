@@ -109,7 +109,8 @@
 .player {
   display: flex;
   flex-direction: column;
-  width: min(100%, 520px, calc((100dvh - 64px) * 0.62));
+  /* the art takes what the other rows leave: title, quality, timeline, controls, volume */
+  width: min(100%, 520px, max(240px, calc(100dvh - 450px)));
   min-width: 0;
 }
 
