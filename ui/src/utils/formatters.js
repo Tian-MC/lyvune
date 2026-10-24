@@ -102,3 +102,13 @@ export const formatNumber = (value, locale) => {
   if (value === null || value === undefined) return '0'
   return value.toLocaleString(locale)
 }
+
+// Player-style clock: 3:07, 1:02:45
+export const formatClock = (seconds) => {
+  if (!Number.isFinite(seconds) || seconds < 0) seconds = 0
+  const s = Math.floor(seconds)
+  const h = Math.floor(s / 3600)
+  const m = Math.floor((s % 3600) / 60)
+  const ss = String(s % 60).padStart(2, '0')
+  return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${ss}` : `${m}:${ss}`
+}

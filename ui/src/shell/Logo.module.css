@@ -1,0 +1,17 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mark {
+  flex: none;
+  display: block;
+}
+
+.word {
+  font-size: 1.0625rem;
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.025em;
+  color: var(--text-1);
+}

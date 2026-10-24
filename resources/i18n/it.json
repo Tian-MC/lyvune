@@ -723,5 +723,135 @@
             "vol_down": "Abbassa il volume",
             "toggle_love": "Aggiungi questa traccia ai preferiti"
         }
+    },
+    "ui": {
+        "account": {
+            "admin": "Amministratore"
+        },
+        "actions": {
+            "addFavourite": "Aggiungi ai preferiti",
+            "goToAlbum": "Vai all'album",
+            "goToArtist": "Vai all'artista",
+            "more": "Altro",
+            "removeFavourite": "Rimuovi dai preferiti",
+            "showLess": "Mostra meno",
+            "showMore": "Mostra altro"
+        },
+        "album": {
+            "about": "Informazioni sull’album",
+            "missing": "Alcuni file di questo album non sono più presenti nella libreria.",
+            "moreBy": "Altro di %{artist}",
+            "noTracks": "Nessun brano disponibile",
+            "viewArtwork": "Mostra copertina"
+        },
+        "artist": {
+            "about": "Biografia",
+            "appearsOn": "Compare in",
+            "play": "Riproduci",
+            "similar": "Artisti simili nella tua libreria"
+        },
+        "count": {
+            "albums": "%{smart_count} album |||| %{smart_count} album",
+            "songs": "%{smart_count} brano |||| %{smart_count} brani"
+        },
+        "favourites": {
+            "hint": "Tocca il cuore su ciò che ami e lo ritroverai qui.",
+            "noAlbums": "Ancora nessun album preferito",
+            "noArtists": "Ancora nessun artista preferito",
+            "noSongs": "Ancora nessun brano preferito",
+            "songs": "Brani preferiti"
+        },
+        "home": {
+            "continueListening": "Continua ad ascoltare",
+            "emptyLibrary": "La libreria è vuota. Appena lo scanner troverà della musica, comparirà qui.",
+            "favouriteAlbums": "Album preferiti",
+            "favouriteArtists": "Artisti preferiti",
+            "fromYourLibrary": "Dalla tua libreria",
+            "greetingAfternoon": "Buon pomeriggio",
+            "greetingEvening": "Buonasera",
+            "greetingMorning": "Buongiorno",
+            "greetingNight": "Buonanotte",
+            "rediscover": "Riscopri",
+            "resume": "Riprendi",
+            "seeAll": "Mostra tutto",
+            "shuffleLibrary": "Libreria in shuffle"
+        },
+        "library": {
+            "clearFilters": "Rimuovi filtri",
+            "noAlbums": "Ancora nessun album",
+            "noArtists": "Ancora nessun artista",
+            "noGenres": "Nessun genere nella libreria",
+            "noResults": "Nessun risultato con questi filtri",
+            "sort": "Ordina"
+        },
+        "lyrics": {
+            "backToCurrent": "Torna alla riga corrente",
+            "none": "Nessun testo per questo brano",
+            "noneHint": "I testi incorporati nei file o salvati accanto a essi (.lrc, .txt) appaiono qui.",
+            "pronunciation": "Romanizzazione",
+            "translation": "Traduzione",
+            "unavailable": "Testi non disponibili per questo stream",
+            "unsynced": "Questi testi non sono sincronizzati con la musica."
+        },
+        "nav": {
+            "collapse": "Comprimi barra laterale",
+            "expand": "Espandi barra laterale",
+            "favorites": "Preferiti",
+            "forward": "Avanti",
+            "genres": "Generi",
+            "home": "Home",
+            "main": "Navigazione principale",
+            "search": "Cerca"
+        },
+        "player": {
+            "label": "Player",
+            "live": "Live",
+            "nowPlaying": "In riproduzione",
+            "openNowPlaying": "Apri In riproduzione",
+            "playingFrom": "In riproduzione da",
+            "repeatOff": "Ripeti: disattivato",
+            "seek": "Posizione"
+        },
+        "playlist": {
+            "empty": "Questa playlist è vuota",
+            "emptyHint": "Aggiungi brani dal menu di qualsiasi traccia, o trascinali sulla playlist nella barra laterale.",
+            "new": "Nuova playlist",
+            "removeTrack": "Rimuovi da questa playlist",
+            "smart": "Playlist smart"
+        },
+        "queue": {
+            "clear": "Svuota",
+            "drag": "Trascina per riordinare",
+            "empty": "La coda è vuota",
+            "emptyHint": "Riproduci un album o aggiungi brani per iniziare.",
+            "lastTrack": "Ultimo brano in coda",
+            "moveDown": "Sposta giù",
+            "moveUp": "Sposta su",
+            "remove": "Rimuovi dalla coda",
+            "save": "Salva",
+            "upNext": "%{smart_count} brano in arrivo |||| %{smart_count} brani in arrivo"
+        },
+        "search": {
+            "browseGenres": "Sfoglia per genere",
+            "moreSongs": "Altri brani",
+            "noResults": "Nessun risultato per “%{q}”",
+            "noResultsHint": "Controlla l’ortografia o prova con meno parole.",
+            "placeholder": "Cerca nella libreria",
+            "prompt": "Trova artisti, album e brani",
+            "resultsFor": "Risultati per “%{q}”",
+            "topResult": "Risultato principale"
+        },
+        "settings": {
+            "appearance": "Aspetto",
+            "appearanceHint": "Come appare Navidrome e quale pagina apre all’avvio.",
+            "notifications": "Notifiche",
+            "playback": "Riproduzione",
+            "playbackHint": "Normalizzazione del volume tramite i tag ReplayGain dei file.",
+            "scrobbling": "Scrobbling",
+            "scrobblingHint": "Condividi ciò che ascolti con servizi esterni."
+        },
+        "track": {
+            "missing": "File mancante"
+        }
     }
 }

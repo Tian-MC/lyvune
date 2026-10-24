@@ -1,0 +1,289 @@
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-now-playing);
+  display: flex;
+  flex-direction: column;
+  padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
+  background: #050506;
+  color: #fff;
+  overflow: hidden;
+  isolation: isolate;
+  animation: enter var(--duration-slow) var(--ease-emphasized) both;
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.99);
+  }
+}
+
+.light {
+  color: rgb(255 255 255 / 75%) !important;
+}
+
+.light:hover:not(:disabled) {
+  color: #fff !important;
+  background: rgb(255 255 255 / 10%) !important;
+}
+
+.top {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  height: 64px;
+  padding: 0 var(--space-5);
+  flex: none;
+}
+
+.context {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  text-align: center;
+}
+
+.contextLabel {
+  color: rgb(255 255 255 / 55%);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+}
+
+.contextLink {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #fff;
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+}
+
+.contextLink:hover {
+  text-decoration: underline;
+}
+
+.panelToggles {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.panelToggles :global([aria-pressed='true']) {
+  color: #fff !important;
+  background: rgb(255 255 255 / 14%) !important;
+}
+
+.panelToggles :global([aria-pressed='true'])::after {
+  display: none;
+}
+
+/* Stage: player alone (centred) or player + side panel */
+.stage {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  align-items: center;
+  gap: clamp(var(--space-8), 5vw, 96px);
+  padding: 0 clamp(var(--space-5), 5vw, 96px) var(--space-6);
+}
+
+.withPanel .stage {
+  grid-template-columns: minmax(320px, 1fr) minmax(0, 1.1fr);
+  max-width: 1500px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.player {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 520px, calc((100dvh - 64px) * 0.62));
+  min-width: 0;
+}
+
+.artWrap {
+  width: 100%;
+  margin-bottom: var(--space-6);
+}
+
+.art {
+  animation: artIn var(--duration-cinematic) var(--ease-emphasized) both;
+}
+
+@keyframes artIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.titles {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: clamp(1.25rem, 1rem + 0.8vw, 1.75rem);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-heading);
+  line-height: 1.2;
+}
+
+.artist {
+  margin: 2px 0 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: rgb(255 255 255 / 70%);
+  font-size: var(--text-title);
+}
+
+.artist a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.artist a:hover {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.metaActions {
+  display: flex;
+  flex: none;
+}
+
+.transport {
+  justify-content: space-between;
+  margin-top: var(--space-3);
+}
+
+.transport > button:not([data-primary]) {
+  color: rgb(255 255 255 / 80%);
+}
+
+.transport > button:not([data-primary]):hover:not(:disabled) {
+  color: #fff;
+}
+
+.bottom {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-4);
+  min-height: 34px;
+}
+
+.volume button {
+  color: rgb(255 255 255 / 70%);
+}
+
+.panel {
+  align-self: stretch;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  padding: var(--space-4) 0;
+  animation: panelIn var(--duration-slow) var(--ease-emphasized) both;
+}
+
+@keyframes panelIn {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+}
+
+/* ---------------------------------------------------------------- mobile */
+@media (max-width: 899px) {
+  .top {
+    padding: 0 var(--space-3);
+  }
+
+  .stage,
+  .withPanel .stage {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+    padding: 0 var(--space-5) var(--space-4);
+    gap: 0;
+  }
+
+  .player {
+    width: 100%;
+    max-width: 520px;
+    margin: 0 auto;
+    justify-content: flex-end;
+  }
+
+  .artWrap {
+    width: min(100%, 46dvh);
+    margin: auto auto var(--space-6);
+  }
+
+  /* With a panel open, the art collapses into a compact header */
+  .withPanel .stage {
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+
+  .withPanel .player {
+    order: 2;
+    justify-content: flex-start;
+  }
+
+  .withPanel .artWrap {
+    display: none;
+  }
+
+  .withPanel .panel {
+    order: 1;
+    padding: 0 0 var(--space-4);
+  }
+
+  .bottom {
+    display: none;
+  }
+}
+
+@media (max-width: 899px) and (max-height: 500px) {
+  /* phone landscape */
+  .stage {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr);
+    align-items: center;
+  }
+
+  .artWrap {
+    width: min(100%, 60dvh);
+    margin: 0 auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root,
+  .art,
+  .panel {
+    animation: none;
+  }
+}

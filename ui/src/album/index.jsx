@@ -1,7 +1,7 @@
-import AlbumList from './AlbumList'
-import AlbumShow from './AlbumShow'
+import AlbumsPage from '../views/library/AlbumsPage'
+import AlbumPage from '../views/album/AlbumPage'
 
 export default {
-  list: AlbumList,
-  show: AlbumShow,
+  list: AlbumsPage,
+  show: AlbumPage,
 }

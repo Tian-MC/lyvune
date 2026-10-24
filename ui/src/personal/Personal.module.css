@@ -1,0 +1,55 @@
+.root {
+  max-width: 880px;
+}
+
+.groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.group {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: var(--space-6);
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  background: var(--surface-1);
+  box-shadow: inset 0 0 0 1px var(--border-subtle);
+}
+
+.groupTitle {
+  margin: 0;
+  font-size: var(--text-h3);
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.01em;
+}
+
+.groupText {
+  margin: var(--space-2) 0 0;
+  color: var(--text-2);
+  font-size: var(--text-small);
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.fields :global(.MuiFormControl-root) {
+  margin-top: 0;
+}
+
+.fields :global(.MuiFormControlLabel-root) {
+  margin-left: 0;
+  justify-content: space-between;
+}
+
+@media (max-width: 699px) {
+  .group {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+    padding: var(--space-5);
+  }
+}

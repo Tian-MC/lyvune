@@ -131,6 +131,11 @@ const getTopSongs = (artist, count = 50) => {
   return httpClient(url('getTopSongs', null, { artist, count }))
 }
 
+// OpenSubsonic structured lyrics; `enhanced` adds kinds (translation,
+// pronunciation) and word-level cues when the source provides them
+const getLyricsBySongId = (id) =>
+  httpClient(url('getLyricsBySongId', id, { enhanced: true }))
+
 const streamUrl = (id, options) => {
   return baseUrl(
     url('stream', id, {
@@ -160,4 +165,5 @@ export default {
   getArtistInfo,
   getTopSongs,
   getSimilarSongs2,
+  getLyricsBySongId,
 }

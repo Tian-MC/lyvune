@@ -10,7 +10,10 @@ import {
 import { HotKeys } from 'react-hotkeys'
 import dataProvider from './dataProvider'
 import authProvider from './authProvider'
-import { Layout, Login, Logout } from './layout'
+import { Login, Logout } from './layout'
+import { AppShell } from './shell/AppShell'
+import engine from './playback/engine'
+import Home from './views/home/Home'
 import transcoding from './transcoding'
 import player from './player'
 import user from './user'
@@ -22,7 +25,6 @@ import radio from './radio'
 import share from './share'
 import library from './library'
 import plugin from './plugin'
-import { Player } from './audioplayer'
 import customRoutes from './routes'
 import {
   libraryReducer,
@@ -83,6 +85,9 @@ const adminStore = createAdminStore({
   },
 })
 
+// The playback engine lives for the whole session, outside React
+engine.init(adminStore)
+
 const App = () => (
   <Provider store={adminStore}>
     <Admin />
@@ -118,7 +123,8 @@ const Admin = (props) => {
       i18nProvider={i18nProvider}
       customRoutes={customRoutes}
       history={history}
-      layout={Layout}
+      layout={AppShell}
+      dashboard={Home}
       loginPage={Login}
       logoutButton={Logout}
       {...props}
@@ -181,7 +187,6 @@ const Admin = (props) => {
         <Resource name="keepalive" />,
         <Resource name="insights" />,
         <Resource name="config" />,
-        <Player />,
       ]}
     </RAAdmin>
   )

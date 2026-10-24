@@ -1,0 +1,136 @@
+.mobileField {
+  display: none;
+}
+
+@media (max-width: 899px) {
+  .mobileField {
+    position: sticky;
+    top: calc(56px + var(--safe-top));
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    height: 46px;
+    margin-bottom: var(--space-6);
+    padding: 0 var(--space-2) 0 var(--space-4);
+    border-radius: var(--radius-md);
+    background: var(--surface-2);
+  }
+
+  .mobileField:focus-within {
+    box-shadow: 0 0 0 2px var(--nd-blue);
+  }
+
+  .mobileField input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: 0;
+    background: transparent;
+    color: var(--text-1);
+    font: inherit;
+    font-size: 1rem;
+    outline: none;
+    appearance: none;
+  }
+
+  .mobileField input::-webkit-search-cancel-button {
+    display: none;
+  }
+
+  .mobileField button {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text-2);
+  }
+}
+
+.mobileIcon {
+  color: var(--text-3);
+}
+
+.lead {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.8fr) minmax(0, 1.4fr);
+  gap: var(--space-8);
+  margin-bottom: var(--space-4);
+}
+
+.lead > :only-child {
+  grid-column: 1 / -1;
+}
+
+.heading {
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-heading);
+}
+
+.top {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  background: var(--surface-1);
+  color: var(--text-1);
+  text-decoration: none;
+  transition: background-color var(--duration-base) var(--ease-standard);
+}
+
+.top:hover {
+  background: var(--surface-2);
+}
+
+.top:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.topArt {
+  width: 120px;
+}
+
+.topBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.topName {
+  font-size: var(--text-h2);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-heading);
+  line-height: var(--leading-tight);
+  overflow-wrap: anywhere;
+}
+
+.topKind {
+  color: var(--text-2);
+  font-size: var(--text-small);
+}
+
+@media (max-width: 999px) {
+  .lead {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+
+  .top {
+    flex-direction: row;
+    align-items: center;
+    padding: var(--space-4);
+  }
+
+  .topArt {
+    width: 80px;
+    flex: none;
+  }
+}

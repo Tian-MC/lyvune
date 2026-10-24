@@ -1,0 +1,237 @@
+.root {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  width: var(--sidebar-width);
+  height: 100vh;
+  height: calc(100dvh - var(--bottom-chrome, 0px));
+  padding-top: var(--safe-top);
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border-subtle);
+  z-index: var(--z-sidebar);
+  transition: width var(--duration-slow) var(--ease-emphasized);
+  flex: none;
+}
+
+.collapsed {
+  width: var(--sidebar-collapsed);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--topbar-height);
+  padding: 0 var(--space-3) 0 var(--space-5);
+  flex: none;
+}
+
+.collapsed .brand {
+  flex-direction: column;
+  justify-content: center;
+  height: auto;
+  padding: var(--space-4) 0 var(--space-2);
+  gap: var(--space-2);
+}
+
+.logoLink {
+  display: inline-flex;
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+}
+
+.collapseButton {
+  opacity: 0;
+  transition: opacity var(--duration-base) var(--ease-standard);
+}
+
+.root:hover .collapseButton,
+.collapseButton:focus-visible,
+.collapsed .collapseButton {
+  opacity: 1;
+}
+
+.scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--space-2) var(--space-3) var(--space-4);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: var(--space-5);
+}
+
+.groupLabel,
+.subGroup {
+  margin: 0 0 var(--space-1);
+  padding: var(--space-2) var(--space-3) var(--space-1);
+  color: var(--text-3);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  height: 38px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+  font-size: 0.875rem;
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    color var(--duration-fast) var(--ease-standard),
+    background-color var(--duration-fast) var(--ease-standard);
+}
+
+.item:hover {
+  color: var(--text-1);
+  background: var(--surface-hover);
+}
+
+.itemIcon {
+  flex: none;
+  stroke-width: 1.75;
+}
+
+.itemLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Active: blue icon, white bold label, soft surface and an indicator bar */
+.active {
+  color: var(--text-1);
+  font-weight: var(--weight-semibold);
+  background: var(--nd-blue-softer);
+}
+
+.active .itemIcon {
+  color: var(--nd-blue);
+}
+
+.active::before {
+  content: '';
+  position: absolute;
+  left: -12px;
+  top: 9px;
+  bottom: 9px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--nd-blue);
+}
+
+.collapsed .item {
+  justify-content: center;
+  padding: 0;
+  height: 44px;
+}
+
+.collapsed .itemLabel {
+  display: none;
+}
+
+.collapsed .scroll {
+  padding-inline: var(--space-3);
+}
+
+/* Playlists */
+.playlists {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: var(--space-3);
+}
+
+.groupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: var(--space-3);
+  margin-bottom: var(--space-1);
+}
+
+.groupTitle {
+  color: var(--text-3);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.groupTitle:hover {
+  color: var(--text-1);
+}
+
+.groupActions {
+  display: flex;
+  gap: 2px;
+}
+
+.playlist {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+  font-size: var(--text-small);
+  text-decoration: none;
+}
+
+.playlist:hover {
+  color: var(--text-1);
+  background: var(--surface-hover);
+}
+
+.playlistName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.playlistActive {
+  color: var(--text-1);
+  background: var(--surface-hover);
+  font-weight: var(--weight-medium);
+}
+
+.dropTarget {
+  color: var(--text-1);
+  background: var(--nd-blue-soft);
+  box-shadow: inset 0 0 0 1px var(--nd-blue);
+}
+
+.emptyPlaylists {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  color: var(--text-3);
+  font-size: var(--text-small);
+}
+
+.footer {
+  flex: none;
+  padding: var(--space-2) var(--space-3) var(--space-3);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.librarySelector:empty {
+  display: none;
+}
+
+.librarySelector > * {
+  margin: 0 0 var(--space-2) !important;
+  padding: 0 !important;
+}

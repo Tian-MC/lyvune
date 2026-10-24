@@ -19,7 +19,6 @@ import {
   List,
   SongContextMenu,
   SongDatagrid,
-  SongInfo,
   SongTitleField,
   SongSimpleList,
   RatingField,
@@ -37,7 +36,6 @@ import { SongListActions } from './SongListActions'
 import { AlbumLinkField } from './AlbumLinkField'
 import { SongBulkActions, QualityInfo, useSelectedFields } from '../common'
 import config from '../config'
-import ExpandInfoDialog from '../dialogs/ExpandInfoDialog'
 
 const useStyles = makeStyles({
   contextHeader: {
@@ -67,7 +65,7 @@ const useStyles = makeStyles({
   },
 })
 
-const SongFilter = (props) => {
+export const SongFilter = (props) => {
   const classes = useStyles()
   const translate = useTranslate()
   const { permissions } = usePermissions()
@@ -250,7 +248,6 @@ const SongList = (props) => {
           </SongDatagrid>
         )}
       </List>
-      <ExpandInfoDialog content={<SongInfo />} />
     </>
   )
 }

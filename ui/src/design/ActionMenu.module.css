@@ -1,0 +1,21 @@
+.icon {
+  min-width: 30px !important;
+  color: var(--text-2);
+}
+
+.label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 320px;
+}
+
+.chevron {
+  margin-left: var(--space-3);
+  color: var(--text-3);
+}
+
+.divider {
+  margin: 6px 4px !important;
+}

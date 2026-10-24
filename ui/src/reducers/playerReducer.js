@@ -1,46 +1,46 @@
 import { v4 as uuidv4 } from 'uuid'
 import subsonic from '../subsonic'
-import { decisionService } from '../transcode'
 import {
   PLAYER_ADD_TRACKS,
   PLAYER_CLEAR_QUEUE,
-  PLAYER_CURRENT,
   PLAYER_PLAY_NEXT,
   PLAYER_PLAY_TRACKS,
   PLAYER_SET_TRACK,
   PLAYER_SET_VOLUME,
-  PLAYER_SYNC_QUEUE,
   PLAYER_SET_MODE,
-  PLAYER_REFRESH_QUEUE,
+  PLAYER_JUMP,
+  PLAYER_NEXT,
+  PLAYER_PREV,
+  PLAYER_ENDED,
+  PLAYER_REMOVE,
+  PLAYER_MOVE,
+  PLAYER_TOGGLE_SHUFFLE,
+  PLAYER_SET_REPEAT,
 } from '../actions'
 import config from '../config'
 
+// The player slice describes playback *intent*: what is queued, which item is
+// current, and how the queue advances. The audio itself lives in the playback
+// engine (playback/engine.js), which follows this state. `playRequest` is a
+// counter the engine watches to know the user asked for audio to start.
+//
+// `savedPlayIndex` is the persisted name of the current index (kept for
+// compatibility with queues saved by previous versions).
+export const REPEAT_OFF = 'off'
+export const REPEAT_ALL = 'all'
+export const REPEAT_ONE = 'one'
+
 const initialState = {
   queue: [],
-  current: {},
-  clear: false,
-  volume: config.defaultUIVolume / 100,
   savedPlayIndex: 0,
+  volume: config.defaultUIVolume / 100,
+  shuffle: false,
+  originalOrder: null,
+  repeat: REPEAT_OFF,
+  playRequest: 0,
 }
 
-const pad = (value) => {
-  const str = value.toString()
-  if (str.length === 1) {
-    return `0${str}`
-  } else {
-    return str
-  }
-}
-
-const makeMusicSrc = (trackId) =>
-  decisionService.getProfile()
-    ? () =>
-        decisionService
-          .resolveStreamUrl(trackId)
-          .catch(() => subsonic.streamUrl(trackId))
-    : subsonic.streamUrl(trackId)
-
-const mapToAudioLists = (item) => {
+export const mapToAudioLists = (item) => {
   // If item comes from a playlist, trackId is mediaFileId
   const trackId = item.mediaFileId || item.id
 
@@ -56,37 +56,13 @@ const mapToAudioLists = (item) => {
     }
   }
 
-  const { lyrics } = item
-  let lyricText = ''
-
-  if (lyrics) {
-    const structured = JSON.parse(lyrics)
-    for (const structuredLyric of structured) {
-      if (structuredLyric.synced) {
-        for (const line of structuredLyric.line) {
-          let time = Math.floor(line.start / 10)
-          const ms = time % 100
-          time = Math.floor(time / 100)
-          const sec = time % 60
-          time = Math.floor(time / 60)
-          const min = time % 60
-
-          ms.toString()
-          lyricText += `[${pad(min)}:${pad(sec)}.${pad(ms)}] ${line.value}\n`
-        }
-      }
-    }
-  }
-
   return {
     trackId,
     uuid: uuidv4(),
     song: item,
     name: item.title,
-    lyric: lyricText,
     singer: item.artist,
     duration: item.duration,
-    musicSrc: makeMusicSrc(trackId),
     cover: subsonic.getCoverArtUrl(
       {
         id: trackId,
@@ -98,7 +74,31 @@ const mapToAudioLists = (item) => {
   }
 }
 
-const reduceClearQueue = () => ({ ...initialState, clear: true })
+const clampIndex = (index, queue) =>
+  queue.length === 0 ? 0 : Math.min(Math.max(index, 0), queue.length - 1)
+
+const requestPlay = (state) => ({
+  ...state,
+  playRequest: (state.playRequest || 0) + 1,
+})
+
+const shuffleArray = (array) => {
+  const shuffled = [...array]
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  }
+  return shuffled
+}
+
+const withNewQueue = (state, queue, index) =>
+  requestPlay({
+    ...state,
+    queue,
+    savedPlayIndex: clampIndex(index, queue),
+    // A freshly loaded queue defines a new "original" order
+    originalOrder: state.shuffle ? queue.map((i) => i.uuid) : null,
+  })
 
 const reducePlayTracks = (state, { data, id }) => {
   let playIndex = 0
@@ -108,103 +108,171 @@ const reducePlayTracks = (state, { data, id }) => {
     }
     return mapToAudioLists(data[key])
   })
-  return {
-    ...state,
-    queue,
-    playIndex,
-    clear: true,
-  }
+  return withNewQueue(state, queue, playIndex)
 }
 
-const reduceSetTrack = (state, { data }) => {
-  return {
-    ...state,
-    queue: [mapToAudioLists(data)],
-    playIndex: 0,
-    clear: true,
-  }
-}
+const reduceSetTrack = (state, { data }) =>
+  withNewQueue(state, [mapToAudioLists(data)], 0)
+
+const appendToOriginal = (state, items) =>
+  state.originalOrder
+    ? [...state.originalOrder, ...items.map((i) => i.uuid)]
+    : state.originalOrder
 
 const reduceAddTracks = (state, { data }) => {
-  const queue = state.queue
-  Object.keys(data).forEach((id) => {
-    queue.push(mapToAudioLists(data[id]))
-  })
-  return { ...state, queue, clear: false }
+  const items = Object.keys(data).map((id) => mapToAudioLists(data[id]))
+  const next = {
+    ...state,
+    queue: [...state.queue, ...items],
+    originalOrder: appendToOriginal(state, items),
+  }
+  return state.queue.length === 0 && items.length > 0
+    ? requestPlay({ ...next, savedPlayIndex: 0 })
+    : next
 }
 
 const reducePlayNext = (state, { data }) => {
-  const newTracks = Object.keys(data).map((id) => mapToAudioLists(data[id]))
-  const newQueue = []
-  const current = state.current || {}
-  let foundPos = false
-  state.queue.forEach((item) => {
-    newQueue.push(item)
-    if (item.uuid === current.uuid) {
-      foundPos = true
-      newQueue.push(...newTracks)
+  const items = Object.keys(data).map((id) => mapToAudioLists(data[id]))
+  if (state.queue.length === 0) {
+    return requestPlay({ ...state, queue: items, savedPlayIndex: 0 })
+  }
+  const at = clampIndex(state.savedPlayIndex, state.queue) + 1
+  const queue = [
+    ...state.queue.slice(0, at),
+    ...items,
+    ...state.queue.slice(at),
+  ]
+  return { ...state, queue, originalOrder: appendToOriginal(state, items) }
+}
+
+const reduceJump = (state, { data: { index } }) => {
+  if (index < 0 || index >= state.queue.length) return state
+  return requestPlay({ ...state, savedPlayIndex: index })
+}
+
+const reduceNext = (state) => {
+  const { queue, savedPlayIndex } = state
+  if (queue.length === 0) return state
+  if (savedPlayIndex < queue.length - 1) {
+    return requestPlay({ ...state, savedPlayIndex: savedPlayIndex + 1 })
+  }
+  if (state.repeat === REPEAT_ALL) {
+    return requestPlay({ ...state, savedPlayIndex: 0 })
+  }
+  return state
+}
+
+const reducePrev = (state) => {
+  const { queue, savedPlayIndex } = state
+  if (queue.length === 0) return state
+  if (savedPlayIndex > 0) {
+    return requestPlay({ ...state, savedPlayIndex: savedPlayIndex - 1 })
+  }
+  if (state.repeat === REPEAT_ALL) {
+    return requestPlay({ ...state, savedPlayIndex: queue.length - 1 })
+  }
+  // At the head of the queue "previous" restarts the first track
+  return requestPlay(state)
+}
+
+const reduceEnded = (state) => {
+  if (state.repeat === REPEAT_ONE) {
+    return requestPlay(state)
+  }
+  return reduceNext(state)
+}
+
+const reduceRemove = (state, { data: { uuids } }) => {
+  const remove = new Set(uuids)
+  const current = state.queue[state.savedPlayIndex]
+  const before = state.queue
+    .slice(0, state.savedPlayIndex)
+    .filter((i) => remove.has(i.uuid)).length
+  const queue = state.queue.filter((i) => !remove.has(i.uuid))
+  if (queue.length === 0) {
+    return reduceClearQueue(state)
+  }
+  let index = state.savedPlayIndex - before
+  if (current && !remove.has(current.uuid)) {
+    index = queue.findIndex((i) => i.uuid === current.uuid)
+  }
+  return {
+    ...state,
+    queue,
+    savedPlayIndex: clampIndex(index, queue),
+    originalOrder: state.originalOrder
+      ? state.originalOrder.filter((u) => !remove.has(u))
+      : null,
+  }
+}
+
+const reduceMove = (state, { data: { from, to } }) => {
+  const { queue } = state
+  if (from === to || from < 0 || to < 0 || from >= queue.length) return state
+  const current = queue[state.savedPlayIndex]
+  const next = [...queue]
+  const [moved] = next.splice(from, 1)
+  next.splice(Math.min(to, next.length), 0, moved)
+  return {
+    ...state,
+    queue: next,
+    savedPlayIndex: current
+      ? next.findIndex((i) => i.uuid === current.uuid)
+      : state.savedPlayIndex,
+  }
+}
+
+const reduceToggleShuffle = (state) => {
+  const { queue, savedPlayIndex } = state
+  const current = queue[savedPlayIndex]
+  if (!state.shuffle) {
+    // Keep what was already played (and the current track) in place,
+    // shuffle what is up next.
+    const head = queue.slice(0, savedPlayIndex + 1)
+    const tail = shuffleArray(queue.slice(savedPlayIndex + 1))
+    return {
+      ...state,
+      shuffle: true,
+      originalOrder: queue.map((i) => i.uuid),
+      queue: [...head, ...tail],
     }
+  }
+  const order = new Map((state.originalOrder || []).map((u, i) => [u, i]))
+  const restored = [...queue].sort((a, b) => {
+    const ia = order.has(a.uuid) ? order.get(a.uuid) : Infinity
+    const ib = order.has(b.uuid) ? order.get(b.uuid) : Infinity
+    return ia - ib
   })
-  if (!foundPos) {
-    newQueue.push(...newTracks)
-  }
-
   return {
     ...state,
-    queue: newQueue,
-    clear: true,
+    shuffle: false,
+    originalOrder: null,
+    queue: restored,
+    savedPlayIndex: current
+      ? restored.findIndex((i) => i.uuid === current.uuid)
+      : 0,
   }
 }
 
-const reduceSetVolume = (state, { data: { volume } }) => {
-  return {
-    ...state,
-    volume,
-  }
-}
+const reduceClearQueue = (state = initialState) => ({
+  ...initialState,
+  volume: state.volume ?? initialState.volume,
+  shuffle: state.shuffle ?? false,
+  repeat: state.repeat ?? REPEAT_OFF,
+  playRequest: state.playRequest || 0,
+})
 
-const reduceSyncQueue = (state, { data: { audioInfo, audioLists } }) => {
-  // Keep clear and playIndex alive when there is a pending track switch.
-  // A switch is pending when playIndex is set AND either:
-  //   - playIndex differs from savedPlayIndex, OR
-  //   - clear is true (a new queue was loaded, e.g. after clearQueue + playTracks)
-  // The clear check handles the edge case where both playIndex and
-  // savedPlayIndex are 0 (close player then play a new album from track 1).
-  const hasPendingSwitch =
-    state.playIndex != null &&
-    (state.clear || state.playIndex !== state.savedPlayIndex)
-  return {
-    ...state,
-    queue: audioLists,
-    clear: hasPendingSwitch ? state.clear : false,
-    playIndex: hasPendingSwitch ? state.playIndex : undefined,
-  }
-}
-
-const reduceCurrent = (state, { data }) => {
-  const current = data.ended ? {} : data
-  const savedPlayIndex = state.queue.findIndex(
-    (item) => item.uuid === current.uuid,
-  )
-  // When a track selection is pending (playIndex is set), keep it alive
-  // until the music player confirms it actually switched to the requested
-  // track. Without this, a premature onAudioPlay callback for the
-  // still-playing old track would overwrite the pending selection.
-  const pending = state.playIndex != null && savedPlayIndex !== state.playIndex
-  return {
-    ...state,
-    current,
-    playIndex: pending ? state.playIndex : undefined,
-    clear: pending ? state.clear : false,
-    savedPlayIndex: pending ? state.savedPlayIndex : savedPlayIndex,
-    volume: data.volume,
-  }
-}
-
+// Legacy play modes (navidrome-music-player) mapped onto shuffle + repeat
 const reduceMode = (state, { data: { mode } }) => {
-  return {
-    ...state,
-    mode,
+  switch (mode) {
+    case 'orderLoop':
+      return { ...state, repeat: REPEAT_ALL }
+    case 'singleLoop':
+      return { ...state, repeat: REPEAT_ONE }
+    case 'shufflePlay':
+      return state.shuffle ? state : reduceToggleShuffle(state)
+    default:
+      return { ...state, repeat: REPEAT_OFF }
   }
 }
 
@@ -212,7 +280,7 @@ export const playerReducer = (previousState = initialState, payload) => {
   const { type } = payload
   switch (type) {
     case PLAYER_CLEAR_QUEUE:
-      return reduceClearQueue()
+      return reduceClearQueue(previousState)
     case PLAYER_PLAY_TRACKS:
       return reducePlayTracks(previousState, payload)
     case PLAYER_SET_TRACK:
@@ -222,30 +290,30 @@ export const playerReducer = (previousState = initialState, payload) => {
     case PLAYER_PLAY_NEXT:
       return reducePlayNext(previousState, payload)
     case PLAYER_SET_VOLUME:
-      return reduceSetVolume(previousState, payload)
-    case PLAYER_SYNC_QUEUE:
-      return reduceSyncQueue(previousState, payload)
-    case PLAYER_CURRENT:
-      return reduceCurrent(previousState, payload)
+      return { ...previousState, volume: payload.data.volume }
     case PLAYER_SET_MODE:
       return reduceMode(previousState, payload)
-    case PLAYER_REFRESH_QUEUE: {
-      const resolvedUrls = payload.data || {}
-      return {
-        ...previousState,
-        queue: previousState.queue.map((item) => ({
-          ...item,
-          musicSrc: item.isRadio
-            ? item.musicSrc
-            : resolvedUrls[item.trackId] || subsonic.streamUrl(item.trackId),
-        })),
-        clear: true,
-        autoPlay: false,
-        playIndex:
-          previousState.savedPlayIndex >= 0 ? previousState.savedPlayIndex : 0,
-      }
-    }
+    case PLAYER_JUMP:
+      return reduceJump(previousState, payload)
+    case PLAYER_NEXT:
+      return reduceNext(previousState)
+    case PLAYER_PREV:
+      return reducePrev(previousState)
+    case PLAYER_ENDED:
+      return reduceEnded(previousState)
+    case PLAYER_REMOVE:
+      return reduceRemove(previousState, payload)
+    case PLAYER_MOVE:
+      return reduceMove(previousState, payload)
+    case PLAYER_TOGGLE_SHUFFLE:
+      return reduceToggleShuffle(previousState)
+    case PLAYER_SET_REPEAT:
+      return { ...previousState, repeat: payload.data.repeat }
     default:
       return previousState
   }
 }
+
+// Selectors
+export const selectCurrentItem = (state) =>
+  state.player.queue[state.player.savedPlayIndex] || null

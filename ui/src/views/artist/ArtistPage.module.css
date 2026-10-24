@@ -1,0 +1,79 @@
+.art {
+  position: relative;
+  border-radius: 50%;
+}
+
+.artButton {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: 50%;
+  cursor: zoom-in;
+}
+
+.artButton:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.secondary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+  margin-bottom: var(--space-2);
+}
+
+.links {
+  margin-left: auto;
+  color: var(--text-2);
+}
+
+.tracks {
+  margin-inline: calc(var(--space-3) * -1);
+}
+
+.more {
+  margin-top: var(--space-3);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-1);
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+}
+
+.more:hover {
+  text-decoration: underline;
+}
+
+.about {
+  max-width: 72ch;
+  color: var(--text-2);
+  line-height: 1.65;
+}
+
+.bio {
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.bio a,
+.bioOpen a {
+  color: var(--nd-blue-text);
+}
+
+@media (max-width: 699px) {
+  .secondary {
+    justify-content: center;
+  }
+
+  .links {
+    margin-left: 0;
+  }
+}

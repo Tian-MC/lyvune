@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { AUTO_THEME_ID, AUTO_THEME_CONFIG_VALUE } from '../consts'
+import { CHANGE_THEME } from '../actions'
 
 describe('themeReducer', () => {
   beforeEach(() => {
@@ -7,26 +7,34 @@ describe('themeReducer', () => {
   })
 
   it.each([
-    {
-      configTheme: AUTO_THEME_CONFIG_VALUE,
-      expected: AUTO_THEME_ID,
-      description: 'is "Auto"',
-    },
-    { configTheme: 'Dark', expected: 'DarkTheme', description: 'is "Dark"' },
-    {
-      configTheme: 'NonExistent',
-      expected: 'DarkTheme',
-      description: 'is unrecognized',
-    },
+    { configTheme: 'Auto', expected: 'NavidromeTheme' },
+    { configTheme: 'Dark', expected: 'NavidromeTheme' },
+    { configTheme: 'Extra Dark', expected: 'NavidromeOledTheme' },
+    { configTheme: 'NonExistent', expected: 'NavidromeTheme' },
   ])(
-    'returns $expected when defaultTheme config $description',
+    'returns $expected when defaultTheme config is $configTheme',
     async ({ configTheme, expected }) => {
       vi.doMock('../config', () => ({
         default: { defaultTheme: configTheme },
       }))
       const { themeReducer } = await import('./themeReducer')
-      const result = themeReducer(undefined, { type: 'UNKNOWN' })
-      expect(result).toBe(expected)
+      expect(themeReducer(undefined, { type: 'UNKNOWN' })).toBe(expected)
     },
   )
+
+  it('resolves legacy theme ids on change', async () => {
+    const { themeReducer } = await import('./themeReducer')
+    expect(
+      themeReducer('NavidromeTheme', {
+        type: CHANGE_THEME,
+        payload: 'DraculaTheme',
+      }),
+    ).toBe('NavidromeTheme')
+    expect(
+      themeReducer('NavidromeTheme', {
+        type: CHANGE_THEME,
+        payload: 'NavidromeOledTheme',
+      }),
+    ).toBe('NavidromeOledTheme')
+  })
 })

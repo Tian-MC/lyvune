@@ -3,8 +3,10 @@ import {
   getStoredDefaultView,
   isResourceDefaultView,
   resourceDefaultViews,
+  defaultViewPath,
+  HOME_VIEW,
 } from './defaultViews'
-import albumLists, { defaultAlbumList } from '../album/albumLists'
+import albumLists from '../album/albumLists'
 
 describe('defaultViews', () => {
   beforeEach(() => {
@@ -17,6 +19,7 @@ describe('defaultViews', () => {
     )
 
     expect(choices.map((choice) => choice.id)).toEqual([
+      HOME_VIEW,
       ...Object.keys(albumLists),
       ...resourceDefaultViews,
     ])
@@ -38,8 +41,15 @@ describe('defaultViews', () => {
     expect(isResourceDefaultView('recentlyAdded')).toBe(false)
   })
 
-  it('falls back to the default album list when no default view is stored', () => {
-    expect(getStoredDefaultView()).toBe(defaultAlbumList)
+  it('falls back to Home when no default view is stored', () => {
+    expect(getStoredDefaultView()).toBe(HOME_VIEW)
+  })
+
+  it('maps default views to routes', () => {
+    expect(defaultViewPath(HOME_VIEW)).toBeNull()
+    expect(defaultViewPath('artist')).toBe('/artist')
+    expect(defaultViewPath('recentlyAdded')).toBe('/album/recentlyAdded')
+    expect(defaultViewPath('unknown')).toBeNull()
   })
 
   it('returns the stored default view', () => {

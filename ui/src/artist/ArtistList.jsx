@@ -67,7 +67,7 @@ const useStyles = makeStyles({
   },
 })
 
-const ArtistFilter = (props) => {
+export const ArtistFilter = (props) => {
   const translate = useTranslate()
   const { permissions } = usePermissions()
   const isAdmin = permissions === 'admin'

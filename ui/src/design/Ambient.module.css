@@ -1,0 +1,86 @@
+.root {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+  contain: strict;
+}
+
+.canvas {
+  position: absolute;
+  inset: -10%;
+  width: 120%;
+  height: 120%;
+  filter: blur(48px) saturate(1.15);
+  transform: translateZ(0);
+  animation: fadeIn var(--duration-cinematic) var(--ease-standard) both;
+}
+
+.wash {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      90% 70% at 25% 0%,
+      hsl(var(--ambient) / 55%),
+      transparent 70%
+    ),
+    radial-gradient(
+      70% 60% at 90% 10%,
+      hsl(var(--ambient) / 30%),
+      transparent 70%
+    );
+  transition: background var(--duration-cinematic) var(--ease-standard);
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+}
+
+/* Album / artist hero: light from the top, fading into the page */
+.subtle .canvas {
+  opacity: 0.45;
+}
+
+.subtle .scrim {
+  background: linear-gradient(
+    180deg,
+    rgb(8 9 11 / 35%) 0%,
+    rgb(8 9 11 / 70%) 55%,
+    var(--bg-app) 100%
+  );
+}
+
+/* Now Playing: the whole canvas is lit */
+.immersive .canvas {
+  opacity: 0.7;
+  filter: blur(64px) saturate(1.2);
+}
+
+.immersive .wash {
+  background:
+    radial-gradient(
+      80% 80% at 20% 20%,
+      hsl(var(--ambient) / 60%),
+      transparent 70%
+    ),
+    radial-gradient(
+      70% 70% at 85% 85%,
+      hsl(var(--ambient) / 35%),
+      transparent 70%
+    );
+}
+
+.immersive .scrim {
+  background:
+    radial-gradient(120% 90% at 50% 40%, rgb(0 0 0 / 25%), rgb(0 0 0 / 70%)),
+    linear-gradient(180deg, rgb(0 0 0 / 20%), rgb(0 0 0 / 55%));
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+}

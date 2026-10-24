@@ -59,7 +59,7 @@ const useStyles = makeStyles({
 const formatReleaseType = (record) =>
   record?.tagValue ? humanize(record?.tagValue) : '-- None --'
 
-const AlbumFilter = (props) => {
+export const AlbumFilter = (props) => {
   const classes = useStyles()
   const translate = useTranslate()
   const { permissions } = usePermissions()

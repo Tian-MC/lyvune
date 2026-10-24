@@ -1,0 +1,19 @@
+.root svg {
+  transition: transform var(--duration-base) var(--ease-emphasized);
+}
+
+.loved {
+  color: var(--nd-blue);
+}
+
+.loved:hover {
+  color: var(--nd-blue-hover);
+}
+
+.loved svg {
+  fill: currentColor;
+}
+
+.loved:active svg {
+  transform: scale(0.85);
+}

@@ -1,25 +1,20 @@
 import { CHANGE_THEME } from '../actions'
-import { AUTO_THEME_ID, AUTO_THEME_CONFIG_VALUE } from '../consts'
 import config from '../config'
-import themes from '../themes'
+import { DEFAULT_THEME_ID, resolveThemeId } from '../design/themes'
 
-const defaultTheme = () => {
-  if (config.defaultTheme === AUTO_THEME_CONFIG_VALUE) {
-    return AUTO_THEME_ID
-  }
-  return (
-    Object.keys(themes).find(
-      (t) => themes[t].themeName === config.defaultTheme,
-    ) || 'DarkTheme'
-  )
-}
+// The server-side DefaultTheme names a legacy theme ("Dark", "Auto", ...);
+// "Extra Dark" maps to the OLED variant, everything else to the default one.
+const defaultTheme = () =>
+  config.defaultTheme === 'Extra Dark'
+    ? resolveThemeId('ExtraDarkTheme')
+    : DEFAULT_THEME_ID
 
 export const themeReducer = (
   previousState = defaultTheme(),
   { type, payload },
 ) => {
   if (type === CHANGE_THEME) {
-    return payload
+    return resolveThemeId(payload)
   }
   return previousState
 }
