@@ -98,11 +98,6 @@ button {
   font-variant-numeric: tabular-nums;
 }
 
-/* Legacy share-page player (navidrome-music-player) */
-.rc-slider {
-  z-index: 78;
-}
-
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
