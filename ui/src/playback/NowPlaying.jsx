@@ -16,48 +16,11 @@ import config from '../config'
 import { QueueList } from './QueueList'
 import { Timeline, TransportControls, VolumeControl } from './controls'
 import { useCurrentItem, useCurrentSong } from './hooks'
+import { useDialogFocus } from './useDialogFocus'
 import { coverRecordFor } from './coverRecord'
 import { trackTitle } from './trackTitle'
 import { TrackQuality } from './TrackQuality'
 import styles from './NowPlaying.module.css'
-
-/** Traps Tab inside the dialog and restores focus on close. */
-const useDialogFocus = (ref, onClose) => {
-  useEffect(() => {
-    const previous = document.activeElement
-    const root = ref.current
-    root?.querySelector('[data-autofocus]')?.focus()
-    const onKey = (e) => {
-      if (e.key === 'Escape') {
-        e.stopPropagation()
-        onClose()
-        return
-      }
-      if (e.key !== 'Tab' || !root) return
-      const focusable = root.querySelectorAll(
-        'button:not([disabled]), a[href], input:not([disabled]), [tabindex]:not([tabindex="-1"])',
-      )
-      if (!focusable.length) return
-      const first = focusable[0]
-      const last = focusable[focusable.length - 1]
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault()
-        last.focus()
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault()
-        first.focus()
-      }
-    }
-    document.addEventListener('keydown', onKey)
-    const overflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = overflow
-      previous && previous.focus && previous.focus()
-    }
-  }, [ref, onClose])
-}
 
 const NowPlaying = () => {
   const t = useT()
