@@ -16,6 +16,7 @@ import { Button } from '../design/Button'
 import { EmptyState } from '../design/Section'
 import { AlertIcon } from '../design/icons'
 import { ShellProvider } from './ShellContext'
+import { usePresence } from './usePresence'
 import { useShell } from './useShell'
 import Sidebar from './Sidebar'
 import TopBar from './TopBar'
@@ -23,6 +24,9 @@ import MobileNav from './MobileNav'
 import PlayerBar from '../playback/PlayerBar'
 import PlaybackHotkeys from '../playback/PlaybackHotkeys'
 import styles from './AppShell.module.css'
+
+// Keep in step with the `leave` animation in playback/NowPlaying.module.css
+const NOW_PLAYING_EXIT_MS = 240
 
 const NowPlaying = lazy(() => import('../playback/NowPlaying'))
 const QueuePanel = lazy(() => import('../playback/QueuePanel'))
@@ -73,6 +77,7 @@ const ShellLayout = ({ children, logout }) => {
   const history = useHistory()
   const hasQueue = useSelector((state) => state.player.queue.length > 0)
   const { collapsed, nowPlaying, queueOpen } = useShell()
+  const npPresence = usePresence(nowPlaying.open, NOW_PLAYING_EXIT_MS)
   // New pages open at the top; going back restores the previous offset
   useScrollRestoration()
   // Clearing a react-admin search box puts the cursor back in it
@@ -109,7 +114,7 @@ const ShellLayout = ({ children, logout }) => {
       <MobileNav />
       <Suspense fallback={null}>
         {queueOpen && <QueuePanel />}
-        {nowPlaying.open && <NowPlaying />}
+        {npPresence.mounted && <NowPlaying closing={npPresence.closing} />}
       </Suspense>
       <Notification />
       <Dialogs />

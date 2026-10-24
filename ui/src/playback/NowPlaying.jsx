@@ -22,7 +22,9 @@ import { trackTitle } from './trackTitle'
 import { TrackQuality } from './TrackQuality'
 import styles from './NowPlaying.module.css'
 
-const NowPlaying = () => {
+const noop = () => {}
+
+const NowPlaying = ({ closing = false }) => {
   const t = useT()
   const ref = useRef(null)
   const item = useCurrentItem()
@@ -46,7 +48,8 @@ const NowPlaying = () => {
         ? { to: `/album/${song.albumId}/show`, name: song.album }
         : null
 
-  useDialogFocus(ref, closeNowPlaying)
+  // Escape while the exit animation plays must not close (and pop history) twice
+  useDialogFocus(ref, closing ? noop : closeNowPlaying)
 
   // The queue was cleared while open
   useEffect(() => {
@@ -61,7 +64,11 @@ const NowPlaying = () => {
   return (
     <div
       ref={ref}
-      className={clsx(styles.root, panel && styles.withPanel)}
+      className={clsx(
+        styles.root,
+        panel && styles.withPanel,
+        closing && styles.leaving,
+      )}
       role="dialog"
       aria-modal="true"
       aria-label={t('ui.player.nowPlaying', 'Now playing')}

@@ -19,6 +19,19 @@
   }
 }
 
+/* Mounted for 240ms after closing; see NOW_PLAYING_EXIT_MS in AppShell */
+.leaving {
+  pointer-events: none;
+  animation: leave 240ms var(--ease-exit) both;
+}
+
+@keyframes leave {
+  to {
+    opacity: 0;
+    transform: translateY(24px) scale(0.99);
+  }
+}
+
 .light {
   color: rgb(255 255 255 / 75%) !important;
 }
@@ -283,6 +296,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .root,
+  .leaving,
   .art,
   .panel {
     animation: none;
