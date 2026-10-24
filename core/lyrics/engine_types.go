@@ -205,6 +205,8 @@ type BulkRequest struct {
 	Action   string
 	TrackIDs []string
 	AlbumIDs []string
+	// All covers every track in the library (up to a safety limit).
+	All bool
 	// Confirm is required for BulkReplaceManual, which can supersede lyrics the
 	// user supplied.
 	Confirm bool

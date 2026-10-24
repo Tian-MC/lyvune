@@ -824,6 +824,14 @@ var _ = Describe("Lyrics engine", func() {
 			Expect(filepath.Join(dir(), "t2.lyrics.json")).To(BeAnExistingFile())
 		})
 
+		It("covers the whole library when asked, without listing every track", func() {
+			fake.set(remote("fake", "1", syncedOf("fetched"), 0.97))
+			st, err := engine.StartBulk(ctx, lyrics.BulkRequest{Action: lyrics.BulkMissing, All: true})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(st.Total).To(Equal(3))
+			Expect(wait(st.ID).Found).To(Equal(3))
+		})
+
 		It("skips tracks that already have lyrics, so a rerun resumes where it stopped", func() {
 			Expect(os.WriteFile(filepath.Join(dir(), "t1.lrc"), []byte("[00:01.00]mine"), 0o644)).To(Succeed())
 			fake.set(remote("fake", "1", syncedOf("fetched"), 0.97))

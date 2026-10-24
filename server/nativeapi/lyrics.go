@@ -337,13 +337,14 @@ func (api *Router) startLyricsBulk(w http.ResponseWriter, r *http.Request) {
 		Action   string   `json:"action"`
 		TrackIDs []string `json:"trackIds"`
 		AlbumIDs []string `json:"albumIds"`
+		All      bool     `json:"all"`
 		Confirm  bool     `json:"confirm"`
 	}
 	if !decodeLyricsBody(w, r, &body) {
 		return
 	}
 	st, err := api.lyrics.StartBulk(r.Context(), lyrics.BulkRequest{
-		Action: body.Action, TrackIDs: body.TrackIDs, AlbumIDs: body.AlbumIDs, Confirm: body.Confirm,
+		Action: body.Action, TrackIDs: body.TrackIDs, AlbumIDs: body.AlbumIDs, All: body.All, Confirm: body.Confirm,
 	})
 	if err != nil {
 		if errors.Is(err, lyrics.ErrConfirmRequired) || errors.Is(err, lyrics.ErrBusy) {

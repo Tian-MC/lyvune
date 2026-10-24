@@ -58,13 +58,14 @@ func (l *lyricsService) StartBulk(ctx context.Context, req BulkRequest) (BulkSta
 	if len(req.AlbumIDs) > 0 {
 		filters = append(filters, Eq{"media_file.album_id": req.AlbumIDs})
 	}
-	if len(filters) == 0 {
+	if len(filters) == 0 && !req.All {
 		return BulkStatus{}, fmt.Errorf("choose tracks or albums")
 	}
-	files, err := l.ds.MediaFile().GetAll(ctx, model.QueryOptions{
-		Filters: And{Eq{"missing": false}, Or(filters)},
-		Max:     maxBulkTracks,
-	})
+	where := And{Eq{"missing": false}}
+	if len(filters) > 0 {
+		where = append(where, Or(filters))
+	}
+	files, err := l.ds.MediaFile().GetAll(ctx, model.QueryOptions{Filters: where, Max: maxBulkTracks})
 	if err != nil {
 		return BulkStatus{}, err
 	}
