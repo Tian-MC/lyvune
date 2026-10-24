@@ -187,6 +187,13 @@ var _ = Describe("Store", func() {
 			Expect(sidecar()).ToNot(BeAnExistingFile())
 		})
 
+		It("ignores other files with the same base name, such as an LRC or a cover", func() {
+			Expect(lyrics.SidecarName("01 - Song.flac", []string{"01 - Song.flac", "01 - Song.lrc", "01 - Song.jpg", "01 - Song.lyrics.json"})).
+				To(Equal("01 - Song.lyrics.json"))
+			Expect(lyrics.SidecarName("01 - Song.flac", []string{"01 - Song.flac", "01 - Song.mp3"})).
+				To(Equal("01 - Song.flac.lyrics.json"))
+		})
+
 		It("finds an existing sidecar under either name", func() {
 			_, _ = store.Save(target, envelopeFor("first", lyrics.OriginManaged))
 			other := filepath.Join(root, "Artist", "Album", "01 - Song.mp3")

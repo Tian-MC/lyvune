@@ -1,0 +1,150 @@
+package lyrics
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"slices"
+	"strconv"
+	"time"
+
+	"github.com/navidrome/navidrome/model"
+)
+
+const (
+	settingsKey  = "Lyrics.Settings"
+	stateKeyFmt  = "Lyrics.State."
+	missKeyFmt   = "Lyrics.Miss."
+	missTTL      = 7 * 24 * time.Hour
+	upgradeEvery = 7 * 24 * time.Hour
+)
+
+// Settings are the server-wide lyrics preferences. They are stored in the
+// database, so they survive restarts; provider credentials are not part of
+// them and live only in the server configuration.
+type Settings struct {
+	// PreferLocal makes local files (sidecars, embedded tags) win over
+	// downloaded lyrics regardless of quality. Default true.
+	PreferLocal bool `json:"preferLocal"`
+	// AutoRetrieve fetches lyrics for tracks that have none. Default true.
+	AutoRetrieve bool `json:"autoRetrieve"`
+	// AutoUpgrade looks for better lyrics for Navidrome-managed lyrics. Default true.
+	AutoUpgrade bool `json:"autoUpgrade"`
+	// AutoReplaceManual lets an automatic upgrade supersede a sidecar or embedded
+	// lyrics the user supplied. Default false.
+	AutoReplaceManual bool `json:"autoReplaceManual"`
+	// Providers lists provider IDs, in order, that are searched. A provider not
+	// listed is off.
+	Providers []string `json:"providers"`
+	// MinConfidence is the lowest recording match accepted automatically.
+	MinConfidence float64 `json:"minConfidence"`
+}
+
+// DefaultSettings returns the recommended defaults.
+func DefaultSettings() Settings {
+	return Settings{
+		PreferLocal:       true,
+		AutoRetrieve:      true,
+		AutoUpgrade:       true,
+		AutoReplaceManual: false,
+		Providers:         []string{lrclibID},
+		MinConfidence:     ConfidenceAuto,
+	}
+}
+
+// Sanitize clamps values to safe bounds. Automatic selection can never be made
+// more lenient than the verified threshold.
+func (s Settings) Sanitize(known []string) Settings {
+	if s.MinConfidence < ConfidenceAuto {
+		s.MinConfidence = ConfidenceAuto
+	}
+	if s.MinConfidence > 1 {
+		s.MinConfidence = 1
+	}
+	var providers []string
+	for _, id := range s.Providers {
+		if slices.Contains(known, id) && !slices.Contains(providers, id) {
+			providers = append(providers, id)
+		}
+	}
+	s.Providers = providers
+	return s
+}
+
+// SongState is what is remembered for one track beyond its lyrics files.
+type SongState struct {
+	Locked    bool  `json:"locked,omitempty"`
+	OffsetMs  int64 `json:"offsetMs,omitempty"`
+	CheckedAt int64 `json:"checkedAt,omitempty"`
+}
+
+func (s SongState) zero() bool { return s == SongState{} }
+
+// propertyStore keeps settings, per-track state and "not found" markers in the
+// database property table.
+type propertyStore struct {
+	ds model.DataStore
+}
+
+func (p propertyStore) settings(ctx context.Context, known []string) Settings {
+	raw, err := p.ds.Property().Get(ctx, settingsKey)
+	if err != nil || raw == "" {
+		return DefaultSettings().Sanitize(known)
+	}
+	s := DefaultSettings()
+	if json.Unmarshal([]byte(raw), &s) != nil {
+		return DefaultSettings().Sanitize(known)
+	}
+	return s.Sanitize(known)
+}
+
+func (p propertyStore) putSettings(ctx context.Context, s Settings) error {
+	raw, err := json.Marshal(s)
+	if err != nil {
+		return err
+	}
+	return p.ds.Property().Put(ctx, settingsKey, string(raw))
+}
+
+func (p propertyStore) state(ctx context.Context, id string) SongState {
+	var st SongState
+	raw, err := p.ds.Property().Get(ctx, stateKeyFmt+id)
+	if err == nil && raw != "" {
+		_ = json.Unmarshal([]byte(raw), &st)
+	}
+	return st
+}
+
+func (p propertyStore) putState(ctx context.Context, id string, st SongState) error {
+	if st.zero() {
+		err := p.ds.Property().Delete(ctx, stateKeyFmt+id)
+		if errors.Is(err, model.ErrNotFound) {
+			return nil
+		}
+		return err
+	}
+	raw, err := json.Marshal(st)
+	if err != nil {
+		return err
+	}
+	return p.ds.Property().Put(ctx, stateKeyFmt+id, string(raw))
+}
+
+// recentMiss reports whether providers recently found nothing for the track, so
+// they are not asked again for every play.
+func (p propertyStore) recentMiss(ctx context.Context, id string, now time.Time) bool {
+	raw, err := p.ds.Property().Get(ctx, missKeyFmt+id)
+	if err != nil {
+		return false
+	}
+	at, err := strconv.ParseInt(raw, 10, 64)
+	return err == nil && now.Sub(time.Unix(at, 0)) < missTTL
+}
+
+func (p propertyStore) recordMiss(ctx context.Context, id string, now time.Time) {
+	_ = p.ds.Property().Put(ctx, missKeyFmt+id, strconv.FormatInt(now.Unix(), 10))
+}
+
+func (p propertyStore) clearMiss(ctx context.Context, id string) {
+	_ = p.ds.Property().Delete(ctx, missKeyFmt+id)
+}

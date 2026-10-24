@@ -15,6 +15,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/navidrome/navidrome/model"
 )
 
 // Errors returned by the sidecar store.
@@ -119,12 +121,14 @@ func localRoot(root string) (string, error) {
 
 // SidecarName is the file name used for a track's envelope. Tracks that share a
 // base name with another audio file (01 - Song.flac and 01 - Song.mp3) get the
-// audio extension in the name so the two never collide.
+// audio extension in the name so the two never collide. Other files with the
+// same base name, such as 01 - Song.lrc or a cover image, are not audio and do
+// not count.
 func SidecarName(audioName string, siblings []string) string {
 	ext := filepath.Ext(audioName)
 	base := strings.TrimSuffix(audioName, ext)
 	for _, other := range siblings {
-		if other != audioName && strings.TrimSuffix(other, filepath.Ext(other)) == base {
+		if other != audioName && model.IsAudioFile(other) && strings.TrimSuffix(other, filepath.Ext(other)) == base {
 			return audioName + EnvelopeSuffix
 		}
 	}
@@ -473,4 +477,44 @@ func mapWriteErr(err error) error {
 		return fmt.Errorf("%w: %v", ErrReadOnly, err)
 	}
 	return err
+}
+
+// Update changes the metadata of the track's Navidrome sidecar in place, such as
+// the lock or the sync offset. It is atomic like Save but does not add a history
+// entry: these are small, trivially reversible settings and must not push real
+// lyrics versions out of the bounded history. The lyrics are never touched.
+func (s *Store) Update(t Target, change func(*Envelope)) error {
+	r, err := s.resolve(t)
+	if err != nil {
+		return err
+	}
+	unlock := s.lock(r.path)
+	defer unlock()
+
+	exists, err := checkTarget(r.path)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return fs.ErrNotExist
+	}
+	data, err := os.ReadFile(r.path)
+	if err != nil {
+		return err
+	}
+	env, err := ParseEnvelope(data)
+	if err != nil {
+		return fmt.Errorf("%w: %s", ErrNotManaged, r.name)
+	}
+	lyricsBefore := env.Lyrics
+	change(&env)
+	env.Lyrics = lyricsBefore
+	out, err := env.Marshal()
+	if err != nil {
+		return err
+	}
+	if err := atomicWrite(r.path, out); err != nil {
+		return err
+	}
+	return verify(r.path, out)
 }

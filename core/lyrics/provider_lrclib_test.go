@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -60,6 +61,7 @@ var _ = Describe("LRCLIB provider", func() {
 		srv      *httptest.Server
 		handler  http.HandlerFunc
 		requests []*http.Request
+		reqMu    sync.Mutex
 		p        lyrics.OnlineProvider
 		rec      = lyrics.Recording{Title: "Song", Artist: "Band", Album: "Album", DurationSec: 200}
 	)
@@ -67,7 +69,9 @@ var _ = Describe("LRCLIB provider", func() {
 	serve := func(h http.HandlerFunc) {
 		handler = h
 		srv = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			reqMu.Lock()
 			requests = append(requests, r.Clone(context.Background()))
+			reqMu.Unlock()
 			handler(w, r)
 		}))
 		p = lyrics.NewLRCLIB(srv.URL, true)
@@ -79,7 +83,17 @@ var _ = Describe("LRCLIB provider", func() {
 		_ = json.NewEncoder(w).Encode(v)
 	}
 
-	BeforeEach(func() { requests = nil })
+	got := func() []*http.Request {
+		reqMu.Lock()
+		defer reqMu.Unlock()
+		return append([]*http.Request(nil), requests...)
+	}
+
+	BeforeEach(func() {
+		reqMu.Lock()
+		requests = nil
+		reqMu.Unlock()
+	})
 	AfterEach(func() {
 		if srv != nil {
 			srv.Close()
@@ -98,9 +112,9 @@ var _ = Describe("LRCLIB provider", func() {
 	It("identifies itself with a descriptive User-Agent", func() {
 		serve(func(w http.ResponseWriter, r *http.Request) { writeJSON(w, 404, map[string]any{}) })
 		_, _ = p.Search(context.Background(), rec)
-		Expect(requests).ToNot(BeEmpty())
-		Expect(requests[0].Header.Get("User-Agent")).To(HavePrefix("NavidromeReimagined/"))
-		Expect(requests[0].Header.Get("User-Agent")).To(ContainSubstring("github.com"))
+		Expect(got()).ToNot(BeEmpty())
+		Expect(got()[0].Header.Get("User-Agent")).To(HavePrefix("NavidromeReimagined/"))
+		Expect(got()[0].Header.Get("User-Agent")).To(ContainSubstring("github.com"))
 	})
 
 	It("tries the exact lookup first, with the rounded duration, then searches", func() {
@@ -140,7 +154,7 @@ var _ = Describe("LRCLIB provider", func() {
 	It("skips the exact lookup when the album or duration is unknown", func() {
 		serve(func(w http.ResponseWriter, r *http.Request) { writeJSON(w, 200, []any{}) })
 		_, _ = p.Search(context.Background(), lyrics.Recording{Title: "Song", Artist: "Band"})
-		for _, r := range requests {
+		for _, r := range got() {
 			Expect(r.URL.Path).To(Equal("/api/search"))
 		}
 	})
@@ -148,8 +162,8 @@ var _ = Describe("LRCLIB provider", func() {
 	It("queries with the clean title and the first artist", func() {
 		serve(func(w http.ResponseWriter, r *http.Request) { writeJSON(w, 200, []any{}) })
 		_, _ = p.Search(context.Background(), lyrics.Recording{Title: "Song (feat. X) [2011 Remaster]", Artist: "Band feat. X", DurationSec: 1})
-		Expect(requests[0].URL.Query().Get("track_name")).To(Equal("Song"))
-		Expect(requests[0].URL.Query().Get("artist_name")).To(Equal("Band"))
+		Expect(got()[0].URL.Query().Get("track_name")).To(Equal("Song"))
+		Expect(got()[0].URL.Query().Get("artist_name")).To(Equal("Band"))
 	})
 
 	Describe("choosing the lyrics inside a result", func() {
@@ -334,7 +348,7 @@ var _ = Describe("LRCLIB provider", func() {
 			Expect(off.Info().Status).To(Equal(lyrics.StatusDisabled))
 			_, err := off.Search(context.Background(), rec)
 			Expect(err).To(MatchError(lyrics.ErrProviderDisabled))
-			Expect(requests).To(BeEmpty())
+			Expect(got()).To(BeEmpty())
 		})
 	})
 })
