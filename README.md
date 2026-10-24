@@ -19,6 +19,39 @@ music collection from any browser or mobile device. It's like your personal Spot
 Please use [releases](https://github.com/navidrome/navidrome/releases) instead of 
 the `master` branch in order to get a stable set of binaries.
 
+## Navidrome Reimagined
+
+This branch (`redesign`) replaces the web interface with a new one: **quiet when browsing, immersive when listening**.
+The Go backend, the APIs (including Subsonic), authentication, scanning and streaming are unchanged.
+
+- **Persistent player** that never stops while you navigate, with a fullscreen **Now Playing** view whose colours
+  come from the album artwork
+- **Lyrics** with line-by-line and word-by-word highlighting, translations and romanisation, when your files provide them
+- **Queue panel** with drag-and-drop reordering, save as playlist and clear
+- **Albums, artists, songs and playlists** with configurable columns, multi-select actions and playlist reordering
+- Responsive from a 360px phone to a 1920px desktop, with a bottom tab bar and mini player on small screens
+- Accessible: keyboard operation, visible focus, reduced-motion support, named controls
+- Your saved theme keeps working: Dark and Extra Dark became the official *Navidrome* and *Navidrome Black (OLED)* themes,
+  and the community dark themes are kept as colour tints (the light ones fall back to Navidrome)
+- Translated to English and Italian; other languages fall back to English for the new interface text
+
+### Try it
+
+```sh
+make setup   # install dependencies
+make dev     # backend + frontend with hot reload on http://localhost:4533
+```
+
+Checks that should pass before a change is merged:
+
+```sh
+cd ui && npm run lint && npm run check-formatting && npm run type-check && npm test && npx vite build
+make test-i18n
+```
+
+Design decisions, architecture and status are documented in [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) and
+[REDESIGN_FOUNDATION.md](REDESIGN_FOUNDATION.md).
+
 ## [Check out our Live Demo!](https://www.navidrome.org/demo/)
 
 __Any feedback is welcome!__ If you need/want a new feature, find a bug or think of any way to improve Navidrome, 
@@ -60,7 +93,7 @@ Several cloud hosting providers partner with us to offer [officially supported, 
  - Ready to use binaries for all major platforms, including **Raspberry Pi**
  - Automatically **monitors your library** for changes, importing new files and reloading new metadata 
  - Supports **lyrics** from sidecar .ttml, .yaml/.yml Lyricsfile, .elrc, .lrc, .srt, .txt files and embedded TTML, Enhanced LRC, LRC, SRT, and plain-text tags (via `lyricspriority`)
- - **Themeable**, modern and responsive **Web interface** based on [Material UI](https://material-ui.com)
+ - **Cinematic, responsive Web interface** with a persistent player, synced lyrics and artwork-driven colours (see [Navidrome Reimagined](#navidrome-reimagined)); administration screens still use [Material UI](https://material-ui.com)
  - **Compatible** with all Subsonic/Madsonic/Airsonic [clients](https://www.navidrome.org/docs/overview/#apps)
  - **Transcoding** on the fly. Can be set per user/player. **Opus encoding is supported**
  - Translated to **various languages**
