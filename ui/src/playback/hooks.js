@@ -63,13 +63,6 @@ export const usePlayerSettings = () =>
     shallowEqual,
   )
 
-/** True when `trackId` is the current track. */
-export const useIsCurrentTrack = (trackId) =>
-  useSelector((state) => {
-    const item = selectCurrentItem(state)
-    return !!item && !!trackId && item.trackId === trackId
-  })
-
 /** Current song record from the shared cache (keeps love state in sync). */
 export const useCurrentSong = (item) => {
   const isRadio = !!item?.isRadio

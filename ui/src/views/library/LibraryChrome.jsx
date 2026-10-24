@@ -108,7 +108,3 @@ export const ListEmpty = ({ icon, title }) => {
     />
   )
 }
-
-export const LibraryToolbar = ({ children }) => (
-  <div className={styles.toolbar}>{children}</div>
-)

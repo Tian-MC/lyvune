@@ -15,7 +15,6 @@ import {
   playTracks,
   prevTrack,
   removeFromQueue,
-  setPlayMode,
   setRepeat,
   setTrack,
   setVolume,
@@ -200,18 +199,6 @@ describe('playerReducer', () => {
       expect(off.shuffle).toBe(false)
       expect(titles(off)).toEqual(ids)
       expect(current(off)).toBe(current(moved))
-    })
-
-    it('maps legacy play modes', () => {
-      expect(playerReducer(loaded, setPlayMode('orderLoop')).repeat).toBe(
-        REPEAT_ALL,
-      )
-      expect(playerReducer(loaded, setPlayMode('singleLoop')).repeat).toBe(
-        REPEAT_ONE,
-      )
-      expect(playerReducer(loaded, setPlayMode('shufflePlay')).shuffle).toBe(
-        true,
-      )
     })
   })
 })

@@ -86,17 +86,6 @@ export const CollectionMenu = ({
   )
 }
 
-/** Renders only the popup (for right-click on rows/cards). */
-export const CollectionMenuPopup = ({ menu, resource, record, query }) =>
-  menu.state ? (
-    <CollectionItems
-      menu={menu}
-      resource={resource}
-      record={record}
-      query={query}
-    />
-  ) : null
-
 export const SongMenuPopup = ({ menu, record, onAddToPlaylist, extraItems }) =>
   menu.state ? (
     <SongItems

@@ -5,6 +5,7 @@ import { useHistory } from 'react-router-dom'
 import { createTheme, ThemeProvider } from '@material-ui/core/styles'
 import useCurrentTheme from '../themes/useCurrentTheme'
 import { useT } from '../i18n/useT'
+import { useScrollRestoration, useSearchRefocus } from '../common'
 import authProvider from '../authProvider'
 import { startEventStream } from '../eventStream'
 import config from '../config'
@@ -72,6 +73,10 @@ const ShellLayout = ({ children, logout }) => {
   const history = useHistory()
   const hasQueue = useSelector((state) => state.player.queue.length > 0)
   const { collapsed, nowPlaying, queueOpen } = useShell()
+  // New pages open at the top; going back restores the previous offset
+  useScrollRestoration()
+  // Clearing a react-admin search box puts the cursor back in it
+  useSearchRefocus()
 
   return (
     <div

@@ -7,7 +7,6 @@ import {
   PLAYER_PLAY_TRACKS,
   PLAYER_SET_TRACK,
   PLAYER_SET_VOLUME,
-  PLAYER_SET_MODE,
   PLAYER_JUMP,
   PLAYER_NEXT,
   PLAYER_PREV,
@@ -262,20 +261,6 @@ const reduceClearQueue = (state = initialState) => ({
   playRequest: state.playRequest || 0,
 })
 
-// Legacy play modes (navidrome-music-player) mapped onto shuffle + repeat
-const reduceMode = (state, { data: { mode } }) => {
-  switch (mode) {
-    case 'orderLoop':
-      return { ...state, repeat: REPEAT_ALL }
-    case 'singleLoop':
-      return { ...state, repeat: REPEAT_ONE }
-    case 'shufflePlay':
-      return state.shuffle ? state : reduceToggleShuffle(state)
-    default:
-      return { ...state, repeat: REPEAT_OFF }
-  }
-}
-
 export const playerReducer = (previousState = initialState, payload) => {
   const { type } = payload
   switch (type) {
@@ -291,8 +276,6 @@ export const playerReducer = (previousState = initialState, payload) => {
       return reducePlayNext(previousState, payload)
     case PLAYER_SET_VOLUME:
       return { ...previousState, volume: payload.data.volume }
-    case PLAYER_SET_MODE:
-      return reduceMode(previousState, payload)
     case PLAYER_JUMP:
       return reduceJump(previousState, payload)
     case PLAYER_NEXT:

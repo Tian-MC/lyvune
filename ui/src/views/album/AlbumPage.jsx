@@ -27,6 +27,7 @@ import {
 import { songQuery, useCollectionPlayback } from '../../playback/actions'
 import { albumDateParts } from './albumDates'
 import { useAlbumInfo } from './useAlbumInfo'
+import { Comment } from '../shared/Comment'
 import { Hero } from '../shared/Hero'
 import { TrackList } from '../shared/TrackList'
 import { AlbumCard } from '../shared/Cards'
@@ -124,7 +125,7 @@ const About = ({ album }) => {
   return (
     <Section id="album-about" title={t('ui.album.about', 'About this album')}>
       <div className={styles.about}>
-        {album.comment && <p className={styles.comment}>{album.comment}</p>}
+        <Comment text={album.comment} className={styles.comment} />
         {notes && (
           <>
             <div className={expanded ? styles.notesOpen : styles.notes}>

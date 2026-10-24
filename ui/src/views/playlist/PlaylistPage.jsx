@@ -39,6 +39,7 @@ import {
   TrashIcon,
 } from '../../design/icons'
 import { songQuery } from '../../playback/actions'
+import { Comment } from '../shared/Comment'
 import { Hero } from '../shared/Hero'
 import { TrackList } from '../shared/TrackList'
 import { CollectionMenu } from '../shared/CollectionMenu'
@@ -285,9 +286,7 @@ const PlaylistBody = ({ playlist }) => {
           </>
         }
       >
-        {playlist.comment && (
-          <p className={styles.comment}>{playlist.comment}</p>
-        )}
+        <Comment text={playlist.comment} className={styles.comment} />
       </Hero>
 
       <section

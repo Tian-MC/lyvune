@@ -154,6 +154,7 @@
   line-height: 1.65;
 }
 
+/* Comment text colour/spacing come from shared/Comment */
 .comment {
   margin: 0 0 var(--space-4);
   white-space: pre-line;

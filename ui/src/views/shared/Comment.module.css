@@ -1,0 +1,15 @@
+.comment {
+  margin: 0;
+  max-width: 72ch;
+  overflow-wrap: anywhere;
+}
+
+.comment a {
+  color: var(--nd-blue-text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.comment a:hover {
+  color: var(--text-1);
+}
