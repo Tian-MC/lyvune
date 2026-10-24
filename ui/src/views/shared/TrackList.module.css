@@ -261,6 +261,15 @@
   }
 }
 
+/* Finger-sized hit areas for the row actions */
+@media (pointer: coarse) {
+  .trail .love,
+  .trail .more {
+    width: 40px;
+    height: 40px;
+  }
+}
+
 @media (max-width: 899px) {
   .optional,
   .head {

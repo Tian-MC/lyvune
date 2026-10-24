@@ -48,6 +48,14 @@ describe('Artwork', () => {
     expect(container.querySelector('canvas')).toBeNull()
   })
 
+  it('always gives the image an alt attribute, empty when it has no title', () => {
+    useImageUrl.mockReturnValue({ imgUrl: 'blob:art', loading: false })
+    const { container, rerender } = render(<Artwork record={withArt} />)
+    expect(container.querySelector('img').getAttribute('alt')).toBe('')
+    rerender(<Artwork record={withArt} title="Album" />)
+    expect(container.querySelector('img').getAttribute('alt')).toBe('Album')
+  })
+
   // The placeholder has to land exactly where the image will, or it jumps when the image swaps in.
   it('shapes the placeholder like the artwork and fits it like the image', () => {
     useImageUrl.mockReturnValue({ imgUrl: null, loading: true })

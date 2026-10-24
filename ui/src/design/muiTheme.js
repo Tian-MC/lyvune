@@ -418,10 +418,16 @@ export const createNavidromeTheme = ({
           paddingLeft: 0,
           paddingRight: 0,
           backgroundColor: 'transparent',
+          // filters and sort wrap instead of widening the page on phones
+          flexWrap: 'wrap',
         },
       },
       RaTopToolbar: {
-        root: { backgroundColor: 'transparent', paddingTop: 12 },
+        root: {
+          backgroundColor: 'transparent',
+          paddingTop: 12,
+          flexWrap: 'wrap',
+        },
       },
       RaDatagrid: {
         headerCell: { backgroundColor: 'transparent' },
