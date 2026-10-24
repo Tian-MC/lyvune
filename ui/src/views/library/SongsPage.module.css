@@ -1,0 +1,8 @@
+.rows {
+  margin-inline: calc(var(--space-3) * -1);
+}
+
+.rowSkeleton {
+  height: 44px;
+  margin: 6px 0;
+}

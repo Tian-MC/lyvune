@@ -1,5 +1,4 @@
 import blue from '@material-ui/core/colors/blue'
-import stylesheet from './dark.css.js'
 
 export default {
   themeName: 'Dark',
@@ -47,6 +46,5 @@ export default {
   },
   player: {
     theme: 'dark',
-    stylesheet,
   },
 }

@@ -1,0 +1,38 @@
+.root {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-art);
+  background:
+    radial-gradient(
+      120% 120% at 30% 20%,
+      rgb(255 255 255 / 6%),
+      transparent 60%
+    ),
+    var(--surface-2);
+  isolation: isolate;
+}
+
+.root::after {
+  /* hairline that separates dark covers from dark backgrounds */
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 6%);
+  pointer-events: none;
+}
+
+.art {
+  width: 100%;
+  height: 100%;
+}
+
+.round {
+  border-radius: 50%;
+}
+
+.elevated {
+  box-shadow: var(--shadow-art);
+}

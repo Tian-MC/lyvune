@@ -1,0 +1,161 @@
+/*
+ * Navidrome design tokens — the single source of truth for the visual language.
+ * design/muiTheme.js mirrors these values for Material-UI based screens; keep the
+ * two in sync (see DESIGN_SYSTEM.md).
+ */
+:root {
+  /* Brand — Navidrome Blue, extracted from the official logo (#0084FF) */
+  --nd-blue: #0084ff;
+  --nd-blue-hover: #2a97ff;
+  --nd-blue-solid: #0073de; /* filled controls with text: 4.6:1 against white */
+  --nd-blue-solid-hover: #0a7ce9;
+  --nd-blue-text: #4ba6ff; /* blue used for small text on dark surfaces */
+  --nd-blue-soft: rgb(0 132 255 / 14%);
+  --nd-blue-softer: rgb(0 132 255 / 8%);
+  --nd-blue-glow: rgb(0 132 255 / 35%);
+
+  /* Surfaces — neutral near-blacks with a hint of cool */
+  --bg-app: #08090b;
+  --bg-sidebar: #050607;
+  --bg-elevated: #101114;
+  --surface-1: #121317;
+  --surface-2: #181a1f;
+  --surface-3: #202228;
+  --surface-hover: rgb(255 255 255 / 5%);
+  --surface-active: rgb(255 255 255 / 8%);
+  --surface-glass: rgb(16 17 20 / 72%);
+  --scrim: rgb(0 0 0 / 60%);
+
+  --border-subtle: rgb(255 255 255 / 6%);
+  --border-default: rgb(255 255 255 / 10%);
+  --border-strong: rgb(255 255 255 / 18%);
+
+  /* Text */
+  --text-1: #f4f5f7;
+  --text-2: rgb(235 238 245 / 66%);
+  --text-3: rgb(235 238 245 / 50%);
+  --text-disabled: rgb(235 238 245 / 30%);
+  --text-on-accent: #ffffff;
+
+  /* Feedback */
+  --danger: #ff5c5c;
+  --warning: #f5b84a;
+  --success: #3ccf91;
+  --star: #f5c451;
+
+  /* Typography */
+  --font-sans:
+    'Inter Variable', Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    'Noto Sans', 'Hiragino Sans', 'Noto Sans CJK JP', 'PingFang SC',
+    'Microsoft YaHei', sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  --text-display: clamp(2.25rem, 1.2rem + 3.6vw, 4.5rem);
+  --text-h1: clamp(1.75rem, 1.2rem + 1.6vw, 2.5rem);
+  --text-h2: 1.5rem;
+  --text-h3: 1.1875rem;
+  --text-title: 1rem;
+  --text-body: 0.9375rem;
+  --text-small: 0.8125rem;
+  --text-micro: 0.6875rem;
+
+  --leading-tight: 1.1;
+  --leading-snug: 1.3;
+  --leading-normal: 1.5;
+
+  --tracking-display: -0.035em;
+  --tracking-heading: -0.02em;
+  --tracking-overline: 0.08em;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* Spacing — 4px base */
+  --space-0: 2px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+
+  --page-gutter: clamp(16px, 3.2vw, 48px);
+
+  /* Radius */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-full: 999px;
+  --radius-art: 6px;
+
+  /* Elevation */
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 40%);
+  --shadow-2: 0 8px 24px rgb(0 0 0 / 40%);
+  --shadow-pop: 0 16px 48px rgb(0 0 0 / 55%), 0 0 0 1px var(--border-default);
+  --shadow-art: 0 18px 50px rgb(0 0 0 / 50%);
+
+  /* Motion */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.3, 0, 0, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+  --duration-cinematic: 600ms;
+
+  /* Layout */
+  --sidebar-width: 248px;
+  --sidebar-collapsed: 72px;
+  --topbar-height: 60px;
+  --player-height: 84px;
+  --mobile-player-height: 64px;
+  --mobile-nav-height: 58px;
+  --content-max: 1680px;
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+
+  /* Focus */
+  --focus-ring: 0 0 0 2px var(--bg-app), 0 0 0 4px var(--nd-blue);
+
+  /* Layers */
+  --z-sticky: 10;
+  --z-sidebar: 20;
+  --z-player: 40;
+  --z-mobile-nav: 45;
+  --z-now-playing: 1200;
+  --z-toast: 1500;
+
+  color-scheme: dark;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+    --duration-slow: 0ms;
+    --duration-cinematic: 0ms;
+  }
+}
+
+/* OLED variant: pure black canvas, surfaces a step darker */
+:root[data-theme='oled'] {
+  --bg-app: #000000;
+  --bg-sidebar: #000000;
+  --bg-elevated: #0b0b0d;
+  --surface-1: #0b0b0d;
+  --surface-2: #121316;
+  --surface-3: #1a1b1f;
+  --surface-glass: rgb(8 8 10 / 76%);
+}

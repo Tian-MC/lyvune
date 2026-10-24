@@ -41,9 +41,6 @@ const createAdminStore = ({
     compose
 
   const persistedState = loadState()
-  if (persistedState?.player?.savedPlayIndex) {
-    persistedState.player.playIndex = persistedState.player.savedPlayIndex
-  }
   const store = createStore(
     resettableAppReducer,
     persistedState,
@@ -58,10 +55,20 @@ const createAdminStore = ({
       saveState({
         theme: state.theme,
         library: state.library,
-        player: (({ queue, volume, savedPlayIndex }) => ({
+        player: (({
           queue,
           volume,
           savedPlayIndex,
+          shuffle,
+          originalOrder,
+          repeat,
+        }) => ({
+          queue,
+          volume,
+          savedPlayIndex,
+          shuffle,
+          originalOrder,
+          repeat,
         }))(state.player),
         albumView: state.albumView,
         settings: state.settings,

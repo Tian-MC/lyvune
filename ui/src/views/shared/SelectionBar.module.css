@@ -1,0 +1,71 @@
+.bar {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--bottom-chrome, 0px) + var(--space-4));
+  z-index: calc(var(--z-player) + 1);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: calc(100vw - 32px);
+  padding: 6px 6px 6px var(--space-4);
+  border-radius: var(--radius-full);
+  background: rgb(28 30 35 / 96%);
+  backdrop-filter: saturate(150%) blur(24px);
+  -webkit-backdrop-filter: saturate(150%) blur(24px);
+  box-shadow: var(--shadow-pop);
+  transform: translateX(-50%);
+  animation: rise var(--duration-slow) var(--ease-emphasized) both;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 12px);
+  }
+}
+
+.count {
+  flex: none;
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+}
+
+.actions {
+  display: flex;
+  gap: 2px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.actions::-webkit-scrollbar {
+  display: none;
+}
+
+@media (max-width: 899px) {
+  .bar {
+    left: 8px;
+    right: 8px;
+    max-width: none;
+    transform: none;
+    border-radius: var(--radius-lg);
+    animation-name: riseMobile;
+  }
+
+  /* icon-only on phones; the button keeps its accessible name via title */
+  .label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+}
+
+@keyframes riseMobile {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}

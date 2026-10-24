@@ -1,23 +1,21 @@
-import { render, act } from '@testing-library/react'
-import SharePlayer, { DOWNLOAD_FEEDBACK_MS } from './SharePlayer'
+import { render, act, screen, fireEvent } from '@testing-library/react'
 
-let playerProps
-let renderCount
-
-vi.mock('navidrome-music-player', () => ({
-  default: (props) => {
-    playerProps = props
-    renderCount++
-    return <div data-testid="player" />
+const mockShare = vi.hoisted(() => ({
+  info: {
+    id: 'share-1',
+    description: 'Road trip',
+    downloadable: true,
+    tracks: [
+      { id: 't1', title: 'One', artist: 'A', album: 'X', duration: 100 },
+      { id: 't2', title: 'Two', artist: 'B', album: 'X', duration: 200 },
+    ],
   },
 }))
 
 vi.mock('../config', () => ({
   default: { enableDownloads: true },
-  shareInfo: {
-    id: 'share-1',
-    downloadable: true,
-    tracks: [{ id: 't1', title: 'One', artist: 'A', duration: 100 }],
+  get shareInfo() {
+    return mockShare.info
   },
 }))
 
@@ -27,13 +25,23 @@ vi.mock('../utils', () => ({
   shareCoverUrl: (id) => `/share/img/${id}`,
 }))
 
+vi.mock('../i18n', () => ({
+  i18nProvider: { translate: (key, opts) => opts?._ ?? key },
+}))
+
+import SharePlayer, { DOWNLOAD_FEEDBACK_MS } from './SharePlayer'
+
+// jsdom has no media playback; unmounting pauses the page's audio element
+window.HTMLMediaElement.prototype.pause = () => {}
+
 describe('SharePlayer', () => {
   let clickSpy
 
   beforeEach(() => {
     vi.useFakeTimers()
-    playerProps = null
-    renderCount = 0
+    vi.spyOn(HTMLMediaElement.prototype, 'play').mockImplementation(() =>
+      Promise.resolve(),
+    )
     // Downloading for real would navigate the jsdom window.
     clickSpy = vi
       .spyOn(HTMLAnchorElement.prototype, 'click')
@@ -46,94 +54,72 @@ describe('SharePlayer', () => {
     vi.restoreAllMocks()
   })
 
+  it('shows the share description and every shared track', () => {
+    render(<SharePlayer />)
+    expect(screen.getByRole('heading', { name: 'Road trip' })).toBeTruthy()
+    expect(screen.getAllByText('One').length).toBeGreaterThan(0)
+    expect(screen.getByText('Two')).toBeTruthy()
+  })
+
   it('downloads via an anchor so the service worker does not intercept it', () => {
     render(<SharePlayer />)
-
     let anchor
     clickSpy.mockImplementation(function () {
       anchor = { href: this.href, download: this.download }
     })
-
     act(() => {
-      playerProps.customDownloader()
+      fireEvent.click(screen.getByRole('button', { name: 'Download' }))
     })
-
     expect(clickSpy).toHaveBeenCalledTimes(1)
     expect(anchor.href).toContain('/share/d/share-1')
     // Empty, so the server's Content-Disposition filename wins.
     expect(anchor.download).toBe('')
-  })
-
-  it('removes the anchor from the document after clicking', () => {
-    render(<SharePlayer />)
-
-    act(() => {
-      playerProps.customDownloader()
-    })
-
     expect(document.querySelectorAll('a[download]')).toHaveLength(0)
   })
 
-  // The inert styling itself is driven by JSS function values, which jsdom does
-  // not evaluate; it is verified in a browser. What is checked here is the
-  // state machine feeding it -- that the component re-renders on download and
-  // again when the window closes.
-  it('re-renders when the feedback window opens and closes', () => {
+  it('keeps the download button inert during the feedback window', () => {
     render(<SharePlayer />)
-
-    const beforeDownload = renderCount
+    const button = screen.getByRole('button', { name: 'Download' })
     act(() => {
-      playerProps.customDownloader()
+      fireEvent.click(button)
     })
-    expect(renderCount).toBeGreaterThan(beforeDownload)
-
-    const beforeExpiry = renderCount
+    expect(button.disabled).toBe(true)
     act(() => {
-      vi.runAllTimers()
+      vi.advanceTimersByTime(DOWNLOAD_FEEDBACK_MS)
     })
-    expect(renderCount).toBeGreaterThan(beforeExpiry)
+    expect(button.disabled).toBe(false)
   })
 
-  it('restarts the feedback window on a repeat download', () => {
+  it('selects a track from the list', () => {
     render(<SharePlayer />)
-
+    const row = () =>
+      screen
+        .getAllByText('Two')
+        .map((el) => el.closest('button'))
+        .find(Boolean)
     act(() => {
-      playerProps.customDownloader()
+      fireEvent.click(row())
     })
-    const elapsedBeforeRepeat = Math.floor(DOWNLOAD_FEEDBACK_MS / 2)
-    act(() => {
-      vi.advanceTimersByTime(elapsedBeforeRepeat)
-    })
-    act(() => {
-      playerProps.customDownloader()
-    })
-
-    // Past the first timer's deadline, which it would have fired at had the
-    // repeat download not replaced it.
-    const beforeOriginalDeadline = renderCount
-    act(() => {
-      vi.advanceTimersByTime(DOWNLOAD_FEEDBACK_MS - elapsedBeforeRepeat + 1)
-    })
-    expect(renderCount).toBe(beforeOriginalDeadline)
-
-    act(() => {
-      vi.runAllTimers()
-    })
-    expect(renderCount).toBeGreaterThan(beforeOriginalDeadline)
+    expect(row().getAttribute('aria-current')).toBe('true')
   })
 
-  it('does not update state after unmount', () => {
-    const { unmount } = render(<SharePlayer />)
-    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+  it('disables next for a single shared track and hides the list', () => {
+    mockShare.info = {
+      id: 'share-2',
+      downloadable: false,
+      tracks: [{ id: 't1', title: 'Solo', artist: 'A', duration: 10 }],
+    }
+    render(<SharePlayer />)
+    expect(screen.getByRole('button', { name: 'Next track' }).disabled).toBe(
+      true,
+    )
+    expect(screen.queryByRole('button', { name: 'Download' })).toBeNull()
+    expect(screen.queryByRole('list')).toBeNull()
+  })
 
-    act(() => {
-      playerProps.customDownloader()
-    })
-    unmount()
-    act(() => {
-      vi.runAllTimers()
-    })
-
-    expect(errorSpy).not.toHaveBeenCalled()
+  it('explains an empty share instead of rendering a broken player', () => {
+    mockShare.info = { id: 'share-3', tracks: [] }
+    render(<SharePlayer />)
+    expect(screen.getByText('Nothing to play')).toBeTruthy()
   })
 })

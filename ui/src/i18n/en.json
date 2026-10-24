@@ -269,7 +269,8 @@
         "streamUrl": "Stream URL",
         "homePageUrl": "Home Page URL",
         "updatedAt": "Updated at",
-        "createdAt": "Created at"
+        "createdAt": "Created at",
+        "coverArt": "Cover"
       },
       "actions": {
         "playNow": "Play Now"
@@ -784,6 +785,161 @@
       "vol_up": "Volume Up",
       "vol_down": "Volume Down",
       "toggle_love": "Add this track to favourites"
+    }
+  },
+  "ui": {
+    "account": {
+      "admin": "Administrator"
+    },
+    "actions": {
+      "addFavourite": "Add to favourites",
+      "goToAlbum": "Go to album",
+      "goToArtist": "Go to artist",
+      "more": "More",
+      "removeFavourite": "Remove from favourites",
+      "showLess": "Show less",
+      "showMore": "Show more",
+      "next": "Next",
+      "previous": "Previous"
+    },
+    "album": {
+      "about": "About this album",
+      "missing": "Some files of this album are missing from the library.",
+      "moreBy": "More by %{artist}",
+      "noTracks": "No tracks available",
+      "viewArtwork": "View artwork"
+    },
+    "artist": {
+      "about": "About",
+      "appearsOn": "Appears on",
+      "similar": "Similar artists in your library"
+    },
+    "count": {
+      "albums": "%{smart_count} album |||| %{smart_count} albums",
+      "songs": "%{smart_count} song |||| %{smart_count} songs"
+    },
+    "favourites": {
+      "hint": "Tap the heart on anything you love and it will appear here.",
+      "noAlbums": "No favourite albums yet",
+      "noArtists": "No favourite artists yet",
+      "noSongs": "No favourite songs yet",
+      "songs": "Favourite songs"
+    },
+    "home": {
+      "continueListening": "Continue listening",
+      "emptyLibrary": "Your library is empty. Once the scanner finds music, it will appear here.",
+      "favouriteAlbums": "Favourite albums",
+      "favouriteArtists": "Favourite artists",
+      "fromYourLibrary": "From your library",
+      "greetingAfternoon": "Good afternoon",
+      "greetingEvening": "Good evening",
+      "greetingMorning": "Good morning",
+      "greetingNight": "Good night",
+      "rediscover": "Rediscover",
+      "resume": "Resume",
+      "seeAll": "See all",
+      "shuffleLibrary": "Shuffle library"
+    },
+    "library": {
+      "clearFilters": "Clear filters",
+      "noAlbums": "No albums yet",
+      "noArtists": "No artists yet",
+      "noGenres": "No genres in your library",
+      "noResults": "Nothing matches these filters",
+      "sort": "Sort",
+      "listView": "List",
+      "noSongs": "No songs yet"
+    },
+    "lyrics": {
+      "backToCurrent": "Back to current line",
+      "none": "No lyrics for this song",
+      "noneHint": "Lyrics embedded in your files or stored alongside them (.lrc, .txt) show up here.",
+      "pronunciation": "Romanization",
+      "translation": "Translation",
+      "unavailable": "Lyrics are not available for this stream",
+      "unsynced": "These lyrics are not synced to the music."
+    },
+    "nav": {
+      "collapse": "Collapse sidebar",
+      "expand": "Expand sidebar",
+      "favorites": "Favourites",
+      "forward": "Forward",
+      "genres": "Genres",
+      "home": "Home",
+      "main": "Main navigation",
+      "search": "Search",
+      "skipToContent": "Skip to content"
+    },
+    "player": {
+      "label": "Player",
+      "live": "Live",
+      "nowPlaying": "Now playing",
+      "openNowPlaying": "Open Now Playing",
+      "playingFrom": "Playing from",
+      "repeatOff": "Repeat: off",
+      "seek": "Seek"
+    },
+    "playlist": {
+      "empty": "This playlist is empty",
+      "emptyHint": "Add songs from any track menu, or drag them onto the playlist in the sidebar.",
+      "new": "New playlist",
+      "removeTrack": "Remove from this playlist",
+      "smart": "Smart playlist",
+      "removeTracks": "Remove from playlist"
+    },
+    "queue": {
+      "clear": "Clear",
+      "drag": "Drag to reorder",
+      "empty": "Your queue is empty",
+      "emptyHint": "Play an album or add songs to start listening.",
+      "lastTrack": "Last track in the queue",
+      "moveDown": "Move down",
+      "moveUp": "Move up",
+      "remove": "Remove from queue",
+      "save": "Save",
+      "upNext": "%{smart_count} track up next |||| %{smart_count} tracks up next"
+    },
+    "search": {
+      "browseGenres": "Browse by genre",
+      "moreSongs": "More songs",
+      "noResults": "No results for “%{q}”",
+      "noResultsHint": "Check the spelling or try fewer words.",
+      "placeholder": "Search your library",
+      "prompt": "Find artists, albums and songs",
+      "resultsFor": "Results for “%{q}”",
+      "topResult": "Top result"
+    },
+    "settings": {
+      "appearance": "Appearance",
+      "appearanceHint": "How Navidrome looks and which page it opens with.",
+      "notifications": "Notifications",
+      "playback": "Playback",
+      "playbackHint": "Volume normalisation using the ReplayGain tags of your files.",
+      "scrobbling": "Scrobbling",
+      "scrobblingHint": "Share what you listen to with external services.",
+      "legacyTinted": "legacy, colours only",
+      "legacyUnsupported": "light, not supported",
+      "legacyNotice": "Your saved theme is not supported by the new interface, so Navidrome is shown instead. Choose a theme to replace it."
+    },
+    "track": {
+      "missing": "Missing file"
+    },
+    "error": {
+      "retry": "Try again",
+      "title": "Something went wrong"
+    },
+    "selection": {
+      "clear": "Clear selection",
+      "count": "%{smart_count} selected |||| %{smart_count} selected",
+      "label": "Selected songs",
+      "select": "Select",
+      "shareName": "Songs"
+    },
+    "share": {
+      "empty": "Nothing to play",
+      "emptyHint": "This shared link has no playable tracks. It may have been changed or removed.",
+      "playbackError": "This track cannot be played. The link may have expired.",
+      "shared": "Shared with you"
     }
   }
 }

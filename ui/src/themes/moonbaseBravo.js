@@ -1,5 +1,3 @@
-import stylesheet from './moonbaseBravo.css.js'
-
 export default {
   themeName: 'Moonbase - Bravo',
   palette: {
@@ -85,6 +83,5 @@ export default {
   },
   player: {
     theme: 'dark',
-    stylesheet,
   },
 }

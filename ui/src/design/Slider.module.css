@@ -1,0 +1,157 @@
+.root {
+  --track-h: 4px;
+  --thumb: 12px;
+  --track-bg: rgb(255 255 255 / 16%);
+  --fill: var(--text-1);
+
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 20px;
+  min-width: 60px;
+  touch-action: none;
+}
+
+.track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: var(--track-h);
+  border-radius: var(--radius-full);
+  background: var(--track-bg);
+  overflow: hidden;
+  transition: height var(--duration-fast) var(--ease-standard);
+}
+
+.buffered {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--buffered);
+  background: rgb(255 255 255 / 10%);
+}
+
+.fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--pct);
+  background: var(--fill);
+  border-radius: inherit;
+}
+
+.root:hover .fill,
+.dragging .fill,
+.root:focus-within .fill {
+  background: var(--nd-blue);
+}
+
+.root:hover .track,
+.dragging .track {
+  height: calc(var(--track-h) + 2px);
+}
+
+.input {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.input:focus-visible {
+  outline: none;
+}
+
+.input::-webkit-slider-runnable-track {
+  height: 100%;
+  background: transparent;
+}
+
+.input::-moz-range-track {
+  height: 100%;
+  background: transparent;
+}
+
+.input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: var(--thumb);
+  height: var(--thumb);
+  margin-top: calc((20px - var(--thumb)) / 2);
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 50%);
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard);
+}
+
+.input::-moz-range-thumb {
+  width: var(--thumb);
+  height: var(--thumb);
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 50%);
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard);
+}
+
+.root:hover .input::-webkit-slider-thumb,
+.dragging .input::-webkit-slider-thumb,
+.input:focus-visible::-webkit-slider-thumb {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.root:hover .input::-moz-range-thumb,
+.dragging .input::-moz-range-thumb,
+.input:focus-visible::-moz-range-thumb {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.input:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px var(--nd-blue);
+}
+
+.input:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 3px var(--nd-blue);
+}
+
+.disabled {
+  opacity: 0.4;
+}
+
+.disabled .input {
+  cursor: default;
+}
+
+/* Larger hit area and always-visible thumb for touch / Now Playing */
+.large {
+  --track-h: 5px;
+  --thumb: 14px;
+  height: 28px;
+}
+
+.large .input::-webkit-slider-thumb {
+  margin-top: calc((28px - var(--thumb)) / 2);
+}
+
+@media (hover: none) {
+  .input::-webkit-slider-thumb {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .input::-moz-range-thumb {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

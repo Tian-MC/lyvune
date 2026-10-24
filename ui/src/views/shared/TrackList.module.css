@@ -1,0 +1,379 @@
+.list {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  --lead: 40px;
+
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--row-cols);
+  align-items: center;
+  gap: var(--space-4);
+  min-height: 56px;
+  padding: 6px var(--space-3);
+  border-radius: var(--radius-sm);
+  cursor: default;
+  outline: none;
+  transition: background-color var(--duration-fast) var(--ease-standard);
+}
+
+.list > .row + .row,
+.list [data-index] + [data-index] .row {
+  margin-top: 0;
+}
+
+.row:hover,
+.menuOpen {
+  background: var(--surface-hover);
+}
+
+.row:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--nd-blue);
+}
+
+.current {
+  background: var(--nd-blue-softer);
+}
+
+.current:hover {
+  background: var(--nd-blue-soft);
+}
+
+.current .title {
+  color: var(--nd-blue-text);
+}
+
+.lead {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+}
+
+.number {
+  color: var(--text-3);
+  font-size: var(--text-small);
+  font-weight: var(--weight-medium);
+}
+
+.bars {
+  width: 14px;
+}
+
+.rowPlay {
+  position: absolute;
+  inset: 4px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-1);
+  cursor: pointer;
+  opacity: 0;
+}
+
+.row:hover .rowPlay,
+.row:focus-within .rowPlay {
+  opacity: 1;
+}
+
+.row:hover .number,
+.row:hover .bars,
+.row:focus-within .number,
+.row:focus-within .bars {
+  opacity: 0;
+}
+
+.coverWrap {
+  position: relative;
+  width: 40px;
+  height: 40px;
+}
+
+.cover {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-xs);
+  background: var(--surface-2);
+}
+
+.coverPlaying {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-xs);
+  background: rgb(0 0 0 / 55%);
+}
+
+.row:hover .coverPlaying {
+  opacity: 0;
+}
+
+.row:hover .rowPlay {
+  background: rgb(0 0 0 / 55%);
+  border-radius: var(--radius-xs);
+  inset: 0;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.title {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--text-1);
+  font-size: 0.875rem;
+  font-weight: var(--weight-medium);
+}
+
+.artist,
+.album {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-2);
+  font-size: var(--text-small);
+}
+
+.link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.link:hover {
+  color: var(--text-1);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.optional {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-2);
+  font-size: var(--text-small);
+}
+
+.optional a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.optional a:hover {
+  color: var(--text-1);
+  text-decoration: underline;
+}
+
+/* Column header */
+.head {
+  --lead: 40px;
+
+  display: grid;
+  grid-template-columns: var(--row-cols);
+  align-items: center;
+  gap: var(--space-4);
+  padding: 0 var(--space-3) var(--space-1);
+  margin-bottom: var(--space-1);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.headLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-3);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-overline);
+  text-transform: uppercase;
+}
+
+.headTrail {
+  display: flex;
+  justify-content: flex-end;
+  overflow: visible;
+}
+
+.trail {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-1);
+}
+
+.duration {
+  min-width: 44px;
+  color: var(--text-3);
+  font-size: var(--text-small);
+  text-align: right;
+}
+
+.love,
+.more {
+  opacity: 0;
+}
+
+.loved,
+.row:hover .love,
+.row:hover .more,
+.row:focus-within .love,
+.row:focus-within .more,
+.menuOpen .more {
+  opacity: 1;
+}
+
+.missing .title,
+.missing .artist {
+  color: var(--text-disabled);
+}
+
+.missingIcon {
+  display: inline-block;
+  margin-left: 6px;
+  vertical-align: -2px;
+  color: var(--warning);
+}
+
+.placeholderRow {
+  height: 56px;
+}
+
+@media (hover: none) {
+  .love,
+  .more {
+    opacity: 1;
+  }
+
+  .love:not(.loved) {
+    display: none;
+  }
+}
+
+/* Finger-sized hit areas for the row actions */
+@media (pointer: coarse) {
+  .trail .love,
+  .trail .more {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@media (max-width: 899px) {
+  .optional,
+  .head {
+    display: none;
+  }
+}
+
+@media (max-width: 699px) {
+  .row {
+    grid-template-columns: var(--lead) minmax(0, 1fr) auto;
+    gap: var(--space-3);
+    padding-inline: var(--space-1);
+  }
+
+  .hideSm {
+    display: none;
+  }
+
+  .duration {
+    display: none;
+  }
+}
+
+/* Selection: a narrow checkbox column before the number/cover */
+.withCheck {
+  --lead: 22px 40px;
+}
+
+.checkCell {
+  display: grid;
+  place-items: center;
+}
+
+.check {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.check input {
+  position: absolute;
+  inset: -6px;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.check span {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--text-3);
+  border-radius: 5px;
+  color: transparent;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard);
+}
+
+.check input:checked + span {
+  border-color: var(--nd-blue);
+  background: var(--nd-blue);
+  color: #fff;
+}
+
+.check input:focus-visible + span {
+  box-shadow:
+    0 0 0 2px var(--bg-app),
+    0 0 0 4px var(--nd-blue);
+}
+
+.row:hover .check,
+.check:focus-within,
+.selecting .check {
+  opacity: 1;
+}
+
+.selected,
+.selected:hover {
+  background: var(--nd-blue-soft);
+}
+
+.selecting {
+  cursor: pointer;
+  user-select: none;
+}
+
+@media (hover: none) {
+  .check {
+    opacity: 1;
+  }
+}
+
+/* Reorder drop target */
+.dropOver {
+  box-shadow: inset 0 2px 0 var(--nd-blue);
+}
+
+/* Empty rating stars only appear on hover/focus; given ratings stay visible */
+.row:not(:hover):not(:focus-within) .optional :global(.MuiRating-iconEmpty) {
+  opacity: 0;
+}

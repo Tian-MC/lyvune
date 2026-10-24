@@ -1,25 +1,18 @@
 import { CHANGE_THEME } from '../actions'
-import { AUTO_THEME_ID, AUTO_THEME_CONFIG_VALUE } from '../consts'
 import config from '../config'
-import themes from '../themes'
+import { DEFAULT_THEME_ID, resolveThemeId } from '../design/themes'
+import { legacyIdByName } from '../design/legacyThemes'
 
-const defaultTheme = () => {
-  if (config.defaultTheme === AUTO_THEME_CONFIG_VALUE) {
-    return AUTO_THEME_ID
-  }
-  return (
-    Object.keys(themes).find(
-      (t) => themes[t].themeName === config.defaultTheme,
-    ) || 'DarkTheme'
-  )
-}
+// The server-side DefaultTheme names a theme by its display name
+const defaultTheme = () =>
+  resolveThemeId(legacyIdByName(config.defaultTheme) || DEFAULT_THEME_ID)
 
 export const themeReducer = (
   previousState = defaultTheme(),
   { type, payload },
 ) => {
   if (type === CHANGE_THEME) {
-    return payload
+    return resolveThemeId(payload)
   }
   return previousState
 }

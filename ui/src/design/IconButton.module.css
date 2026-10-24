@@ -1,0 +1,124 @@
+.root {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+  transition:
+    color var(--duration-fast) var(--ease-standard),
+    background-color var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.root:hover {
+  color: var(--text-1);
+}
+
+.root:active {
+  transform: scale(0.94);
+}
+
+.root:disabled {
+  color: var(--text-disabled);
+  cursor: default;
+  transform: none;
+}
+
+.root:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.xs {
+  width: 28px;
+  height: 28px;
+}
+
+.sm {
+  width: 34px;
+  height: 34px;
+}
+
+.md {
+  width: 40px;
+  height: 40px;
+}
+
+.lg {
+  width: 48px;
+  height: 48px;
+}
+
+.xl {
+  width: 60px;
+  height: 60px;
+}
+
+.ghost:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+
+.subtle {
+  background: var(--surface-hover);
+  color: var(--text-1);
+}
+
+.subtle:hover:not(:disabled) {
+  background: var(--surface-active);
+}
+
+/* Primary playback action */
+.filled {
+  background: var(--nd-blue);
+  color: var(--text-on-accent);
+  box-shadow: 0 6px 18px rgb(0 132 255 / 28%);
+}
+
+.filled:hover:not(:disabled) {
+  background: var(--nd-blue-hover);
+  color: var(--text-on-accent);
+}
+
+/* White disc used on cinematic backgrounds (Now Playing) */
+.light {
+  background: var(--text-1);
+  color: #000;
+}
+
+.light:hover:not(:disabled) {
+  background: #fff;
+  color: #000;
+}
+
+/* Toggle on (shuffle, repeat, lyrics…) — colour plus a dot, never colour alone */
+.active {
+  color: var(--nd-blue);
+}
+
+.active:hover {
+  color: var(--nd-blue-hover);
+}
+
+.active::after {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.xs.active::after,
+.sm.active::after {
+  bottom: 1px;
+}

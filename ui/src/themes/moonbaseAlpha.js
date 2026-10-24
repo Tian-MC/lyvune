@@ -1,5 +1,3 @@
-import stylesheet from './moonbaseAlpha.css.js'
-
 export default {
   themeName: 'Moonbase - Alpha',
   palette: {
@@ -85,6 +83,5 @@ export default {
   },
   player: {
     theme: 'light',
-    stylesheet,
   },
 }

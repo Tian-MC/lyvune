@@ -1,0 +1,172 @@
+.card {
+  position: relative;
+  min-width: 0;
+}
+
+.artWrap {
+  position: relative;
+  margin-bottom: var(--space-3);
+}
+
+.artLink {
+  display: block;
+  border-radius: var(--radius-art);
+}
+
+.artLink > div {
+  transition:
+    transform var(--duration-slow) var(--ease-emphasized),
+    box-shadow var(--duration-slow) var(--ease-emphasized);
+}
+
+.card:hover .artLink > div {
+  box-shadow: 0 14px 34px rgb(0 0 0 / 45%);
+}
+
+.overlay {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: var(--space-2);
+  pointer-events: none;
+}
+
+.overlay > * {
+  pointer-events: auto;
+}
+
+.overlayRound {
+  justify-content: flex-end;
+}
+
+.play,
+.more {
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity var(--duration-base) var(--ease-standard),
+    transform var(--duration-base) var(--ease-emphasized),
+    background-color var(--duration-fast) var(--ease-standard);
+}
+
+.more {
+  background: rgb(0 0 0 / 55%) !important;
+  color: #fff !important;
+  backdrop-filter: blur(10px);
+}
+
+.card:hover .play,
+.card:hover .more,
+.card:focus-within .play,
+.card:focus-within .more,
+.more[aria-expanded='true'] {
+  opacity: 1;
+  transform: none;
+}
+
+@media (hover: none) {
+  .play {
+    display: none;
+  }
+
+  .more {
+    opacity: 1;
+    transform: none;
+    background: rgb(0 0 0 / 40%) !important;
+  }
+}
+
+.title {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-1);
+  font-size: 0.875rem;
+  font-weight: var(--weight-semibold);
+  line-height: 1.35;
+  text-decoration: none;
+}
+
+.title:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+.subtitle {
+  margin: 2px 0 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-2);
+  font-size: var(--text-small);
+  line-height: 1.35;
+}
+
+.subLink {
+  color: inherit;
+  text-decoration: none;
+}
+
+.subLink:hover {
+  color: var(--text-1);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.meta {
+  color: var(--text-3);
+}
+
+.center {
+  text-align: center;
+}
+
+.artistCard .artLink > div {
+  border-radius: 50%;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: var(--space-8) var(--space-5);
+}
+
+.gridDense {
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--space-6) var(--space-4);
+}
+
+@media (max-width: 599px) {
+  .grid,
+  .gridDense {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-6) var(--space-3);
+  }
+}
+
+.skeletonArt {
+  aspect-ratio: 1;
+  border-radius: var(--radius-art);
+  background: var(--surface-1);
+  margin-bottom: var(--space-3);
+}
+
+.skeletonRound {
+  border-radius: 50%;
+}
+
+.skeletonLine {
+  height: 12px;
+  width: 80%;
+  border-radius: 4px;
+  background: var(--surface-1);
+  margin-bottom: 6px;
+}
+
+.skeletonShort {
+  width: 50%;
+}

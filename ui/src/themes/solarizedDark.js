@@ -1,5 +1,3 @@
-import stylesheet from './solarizedDark.css.js'
-
 // Solarized palette by Ethan Schoonover: https://ethanschoonover.com/solarized/
 const background = '#002b36' // base03
 const surface = '#073642' // base02
@@ -375,6 +373,5 @@ export default {
   },
   player: {
     theme: 'dark',
-    stylesheet,
   },
 }

@@ -100,7 +100,7 @@ export const Artwork = ({
       {imgUrl && (
         <img
           src={imgUrl}
-          alt={title}
+          alt={title || ''}
           title={title}
           className={clsx(
             classes.fill,

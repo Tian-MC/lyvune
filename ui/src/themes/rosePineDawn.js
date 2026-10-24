@@ -1,5 +1,3 @@
-import stylesheet from './rosePineDawn.css.js'
-
 export default {
   themeName: 'Rosé Pine Dawn',
   palette: {
@@ -103,6 +101,5 @@ export default {
   },
   player: {
     theme: 'light',
-    stylesheet,
   },
 }

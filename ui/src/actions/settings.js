@@ -1,6 +1,7 @@
 export const SET_NOTIFICATIONS_STATE = 'SET_NOTIFICATIONS_STATE'
 export const SET_TOGGLEABLE_FIELDS = 'SET_TOGGLEABLE_FIELDS'
 export const SET_OMITTED_FIELDS = 'SET_OMITTED_FIELDS'
+export const SET_TRACK_COLUMNS = 'SET_TRACK_COLUMNS'
 export const SET_SIDEBAR_PLAYLISTS_FAVOURITES =
   'SET_SIDEBAR_PLAYLISTS_FAVOURITES'
 
@@ -22,4 +23,10 @@ export const setOmittedFields = (obj) => ({
 export const setSidebarPlaylistsOnlyFavourites = (enabled) => ({
   type: SET_SIDEBAR_PLAYLISTS_FAVOURITES,
   data: enabled,
+})
+
+// Optional columns of a tracklist: setTrackColumns('album', { rating: true })
+export const setTrackColumns = (list, columns) => ({
+  type: SET_TRACK_COLUMNS,
+  data: { list, columns },
 })

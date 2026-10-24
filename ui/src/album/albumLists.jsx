@@ -80,4 +80,3 @@ const albumLists = {
 }
 
 export default albumLists
-export const defaultAlbumList = 'recentlyAdded'

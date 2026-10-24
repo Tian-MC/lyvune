@@ -151,6 +151,7 @@ const PlaylistListItem = ({ playlist, isSelected, onToggle }) => {
           checked={isSelected}
           tabIndex={-1}
           disableRipple
+          inputProps={{ 'aria-label': playlist.name }}
         />
       </ListItemIcon>
       <ListItemText primary={playlist.name} />

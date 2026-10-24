@@ -52,7 +52,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
-const PlaylistFilter = (props) => {
+export const PlaylistFilter = (props) => {
   const { permissions } = usePermissions()
   return (
     <Filter {...props} variant={'outlined'}>

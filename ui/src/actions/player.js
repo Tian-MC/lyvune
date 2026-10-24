@@ -1,14 +1,18 @@
 export const PLAYER_ADD_TRACKS = 'PLAYER_ADD_TRACKS'
 export const PLAYER_PLAY_NEXT = 'PLAYER_PLAY_NEXT'
 export const PLAYER_SET_TRACK = 'PLAYER_SET_TRACK'
-export const PLAYER_SYNC_QUEUE = 'PLAYER_SYNC_QUEUE'
 export const PLAYER_CLEAR_QUEUE = 'PLAYER_CLEAR_QUEUE'
 export const PLAYER_PLAY_TRACKS = 'PLAYER_PLAY_TRACKS'
-export const PLAYER_CURRENT = 'PLAYER_CURRENT'
 export const PLAYER_SET_VOLUME = 'PLAYER_SET_VOLUME'
-export const PLAYER_SET_MODE = 'PLAYER_SET_MODE'
 export const TRANSCODING_SET_PROFILE = 'TRANSCODING_SET_PROFILE'
-export const PLAYER_REFRESH_QUEUE = 'PLAYER_REFRESH_QUEUE'
+export const PLAYER_JUMP = 'PLAYER_JUMP'
+export const PLAYER_NEXT = 'PLAYER_NEXT'
+export const PLAYER_PREV = 'PLAYER_PREV'
+export const PLAYER_ENDED = 'PLAYER_ENDED'
+export const PLAYER_REMOVE = 'PLAYER_REMOVE'
+export const PLAYER_MOVE = 'PLAYER_MOVE'
+export const PLAYER_TOGGLE_SHUFFLE = 'PLAYER_TOGGLE_SHUFFLE'
+export const PLAYER_SET_REPEAT = 'PLAYER_SET_REPEAT'
 
 export const setTrack = (data) => ({
   type: PLAYER_SET_TRACK,
@@ -78,21 +82,8 @@ export const playTracks = (data, ids, selectedId) => {
   }
 }
 
-export const syncQueue = (audioInfo, audioLists) => ({
-  type: PLAYER_SYNC_QUEUE,
-  data: {
-    audioInfo,
-    audioLists,
-  },
-})
-
 export const clearQueue = () => ({
   type: PLAYER_CLEAR_QUEUE,
-})
-
-export const currentPlaying = (audioInfo) => ({
-  type: PLAYER_CURRENT,
-  data: audioInfo,
 })
 
 export const setVolume = (volume) => ({
@@ -100,17 +91,33 @@ export const setVolume = (volume) => ({
   data: { volume },
 })
 
-export const setPlayMode = (mode) => ({
-  type: PLAYER_SET_MODE,
-  data: { mode },
-})
-
 export const setTranscodingProfile = (profile) => ({
   type: TRANSCODING_SET_PROFILE,
   data: profile,
 })
 
-export const refreshQueue = (resolvedUrls) => ({
-  type: PLAYER_REFRESH_QUEUE,
-  data: resolvedUrls,
+// Queue navigation, dispatched by the playback engine and the player UI.
+export const jumpTo = (index) => ({ type: PLAYER_JUMP, data: { index } })
+
+export const nextTrack = () => ({ type: PLAYER_NEXT })
+
+export const prevTrack = () => ({ type: PLAYER_PREV })
+
+export const trackEnded = () => ({ type: PLAYER_ENDED })
+
+export const removeFromQueue = (uuids) => ({
+  type: PLAYER_REMOVE,
+  data: { uuids: Array.isArray(uuids) ? uuids : [uuids] },
+})
+
+export const moveInQueue = (from, to) => ({
+  type: PLAYER_MOVE,
+  data: { from, to },
+})
+
+export const toggleShuffle = () => ({ type: PLAYER_TOGGLE_SHUFFLE })
+
+export const setRepeat = (repeat) => ({
+  type: PLAYER_SET_REPEAT,
+  data: { repeat },
 })

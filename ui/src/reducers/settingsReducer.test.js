@@ -3,6 +3,7 @@ import { settingsReducer } from './settingsReducer'
 import {
   SET_SIDEBAR_PLAYLISTS_FAVOURITES,
   setSidebarPlaylistsOnlyFavourites,
+  setTrackColumns,
 } from '../actions'
 
 describe('settingsReducer', () => {
@@ -32,5 +33,20 @@ describe('settingsReducer', () => {
     expect(off.sidebarPlaylistsOnlyFavourites).toBe(false)
     expect(off.notifications).toEqual(initial.notifications)
     expect(off.toggleableFields).toEqual(initial.toggleableFields)
+  })
+
+  it('stores tracklist columns per list without touching the others', () => {
+    let state = settingsReducer(
+      undefined,
+      setTrackColumns('album', { year: true }),
+    )
+    state = settingsReducer(state, setTrackColumns('album', { bpm: true }))
+    state = settingsReducer(
+      state,
+      setTrackColumns('playlist', { rating: false }),
+    )
+    expect(state.trackColumns.album).toEqual({ year: true, bpm: true })
+    expect(state.trackColumns.playlist).toEqual({ rating: false })
+    expect(state.toggleableFields).toEqual({})
   })
 })
