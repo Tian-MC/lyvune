@@ -15,6 +15,11 @@ import {
 } from '../actions'
 import { createReporter } from './reporter'
 import { setupMediaSession, updateMediaSession } from './mediaSession'
+import {
+  clearResumePoint,
+  readResumePoint,
+  saveResumePoint,
+} from './resumePoint'
 
 /**
  * The playback engine owns the single HTMLAudioElement of the application.
@@ -27,7 +32,6 @@ import { setupMediaSession, updateMediaSession } from './mediaSession'
  * never goes through redux.
  */
 
-const POSITION_KEY = 'nd-playback-position'
 const RESTART_THRESHOLD_S = 3
 const PREFETCH_AHEAD = 3
 
@@ -81,24 +85,9 @@ const currentItemOf = (s) => s.queue[s.savedPlayIndex] || null
 // Position persistence (resume after reload)
 
 const savePosition = () => {
-  if (!loadedItem || loadedItem.isRadio) return
-  try {
-    localStorage.setItem(
-      POSITION_KEY,
-      JSON.stringify({ uuid: loadedItem.uuid, t: media.currentTime }),
-    )
-  } catch {
-    // storage full or unavailable
-  }
-}
-
-const readSavedPosition = (uuid) => {
-  try {
-    const saved = JSON.parse(localStorage.getItem(POSITION_KEY))
-    return saved && saved.uuid === uuid ? saved.t || 0 : 0
-  } catch {
-    return 0
-  }
+  // An ended element still reports the end position; that is not a place to resume
+  if (!loadedItem || loadedItem.isRadio || audio.ended) return
+  saveResumePoint(loadedItem.uuid, media.currentTime)
 }
 
 // ---------------------------------------------------------------------------
@@ -290,7 +279,7 @@ const onStoreChange = () => {
     const autoplay = requested || wasPlaying
     load(item, {
       autoplay,
-      startAt: autoplay ? 0 : readSavedPosition(item.uuid),
+      startAt: autoplay ? 0 : readResumePoint(item.uuid, item.duration),
     })
     return
   }
@@ -366,6 +355,7 @@ const bindAudioEvents = () => {
 
   audio.addEventListener('ended', () => {
     announcedUuid = null
+    clearResumePoint()
     emit({ paused: true })
     reporter.ended(loadedItem, audio.duration)
     if (loadedItem && !loadedItem.isRadio) {
