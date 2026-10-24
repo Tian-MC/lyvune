@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react'
+import { useSelector } from 'react-redux'
 import { useT } from '../i18n/useT'
 import { useShell } from '../shell/useShell'
 import { IconButton } from '../design/IconButton'
@@ -11,6 +12,13 @@ const QueuePanel = () => {
   const t = useT()
   const { closeQueue } = useShell()
   const ref = useRef(null)
+  const queueLength = useSelector((state) => state.player.queue.length)
+
+  // The player bar (and its queue button) disappears with the last track, so
+  // an open panel would be left covering the page with no way to close it
+  useEffect(() => {
+    if (queueLength === 0) closeQueue()
+  }, [queueLength, closeQueue])
 
   useEffect(() => {
     const previous = document.activeElement

@@ -344,7 +344,11 @@ const bindAudioEvents = () => {
     switching = false
     emit({ paused: false })
     if (!loadedItem) return
-    reporter.play(loadedItem, audio.currentTime)
+    // A restored position is applied once metadata loads, after this event
+    reporter.play(
+      loadedItem,
+      pendingStart > 0 ? pendingStart : audio.currentTime,
+    )
     if (announcedUuid !== loadedItem.uuid) {
       announcedUuid = loadedItem.uuid
       announce(loadedItem)
