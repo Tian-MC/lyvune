@@ -16,7 +16,7 @@ const routes = [
     render={() => <FavoritesPage />}
     key={'favorites'}
   />,
-  <Route exact path="/library" render={() => <LibraryHub />} key={'library'} />,
+  <Route exact path="/browse" render={() => <LibraryHub />} key={'browse'} />,
 ]
 
 export default routes
