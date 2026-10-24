@@ -1,6 +1,6 @@
 import { SelectInput, useTranslate } from 'react-admin'
 import { useDispatch, useSelector } from 'react-redux'
-import themes, { resolveThemeId } from '../design/themes'
+import themes, { pickerThemeId, resolveThemeId } from '../design/themes'
 import { describeLegacyTheme, legacyThemeIds } from '../design/legacyThemes'
 import { changeTheme } from '../actions'
 
@@ -10,6 +10,7 @@ export const SelectTheme = (props) => {
   const translate = useTranslate()
   const dispatch = useDispatch()
   const currentTheme = useSelector((state) => resolveThemeId(state.theme))
+  const shownTheme = pickerThemeId(currentTheme)
   const t = (key, fallback) => translate(key, { _: fallback })
   const legacy = legacyThemeIds
     .map(describeLegacyTheme)
@@ -39,7 +40,7 @@ export const SelectTheme = (props) => {
       {...props}
       source="theme"
       label={translate('menu.personal.options.theme')}
-      defaultValue={currentTheme}
+      defaultValue={shownTheme}
       translateChoice={false}
       choices={choices}
       helperText={

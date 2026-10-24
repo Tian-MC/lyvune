@@ -22,6 +22,16 @@ export const resolveThemeId = (id) => {
   return DEFAULT_THEME_ID
 }
 
+/**
+ * The id the theme picker should show as selected. Dark and Extra Dark are not
+ * listed on their own (they became the official variants), so a stored one is
+ * shown as its successor. The stored id itself is left untouched.
+ */
+export const pickerThemeId = (id) => {
+  const legacy = describeLegacyTheme(resolveThemeId(id))
+  return legacy?.support === 'successor' ? legacy.successor : resolveThemeId(id)
+}
+
 const tinted = new Map()
 
 /**
