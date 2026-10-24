@@ -147,7 +147,7 @@ export const TopBar = ({ logout }) => {
   const { pathname } = useLocation()
   const scrolled = useScrolled()
   // Phones: detail pages get a back button in place of the logo
-  const isRootTab = ['/', '/search', '/library', '/playlist'].includes(pathname)
+  const isRootTab = ['/', '/search', '/browse', '/playlist'].includes(pathname)
   const { permissions } = usePermissions()
   const isAdmin = permissions === 'admin'
 

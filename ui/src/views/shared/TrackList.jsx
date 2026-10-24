@@ -1,15 +1,15 @@
-import React, { memo, useCallback } from 'react'
+import React, { memo, useCallback, useRef } from 'react'
 import clsx from 'clsx'
 import { Link } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { useDrag } from 'react-dnd'
+import { useDrag, useDrop } from 'react-dnd'
 import { Virtuoso } from 'react-virtuoso'
 import { useT } from '../../i18n/useT'
 import { Artwork } from '../../common/Artwork'
 import { LoveToggle } from '../../design/LoveToggle'
 import { PlayingBars } from '../../design/Section'
 import { useActionMenu } from '../../design/useActionMenu'
-import { AlertIcon, PlayIcon, PauseIcon } from '../../design/icons'
+import { AlertIcon, CheckIcon, PlayIcon, PauseIcon } from '../../design/icons'
 import { DraggableTypes } from '../../consts'
 import { formatClock } from '../../utils/formatters'
 import { selectCurrentItem } from '../../reducers/playerReducer'
@@ -19,6 +19,33 @@ import { MenuTrigger, SongMenuPopup } from './CollectionMenu'
 import styles from './TrackList.module.css'
 
 const songIdOf = (r) => r.mediaFileId || r.id
+
+const LONG_PRESS_MS = 450
+
+// Lets touch users enter selection with a long press
+const useLongPress = (onLongPress) => {
+  const timer = useRef(null)
+  const fired = useRef(false)
+  const cancel = () => clearTimeout(timer.current)
+  return {
+    fired,
+    handlers: onLongPress
+      ? {
+          onPointerDown: (e) => {
+            if (e.pointerType !== 'touch') return
+            fired.current = false
+            timer.current = setTimeout(() => {
+              fired.current = true
+              onLongPress()
+            }, LONG_PRESS_MS)
+          },
+          onPointerUp: cancel,
+          onPointerMove: cancel,
+          onPointerCancel: cancel,
+        }
+      : {},
+  }
+}
 
 /**
  * Columns: 'number' (track number), 'index' (position), 'cover',
@@ -34,16 +61,41 @@ const TrackRow = memo(
     onPlay,
     onAddToPlaylist,
     extraMenuItems,
+    selectable,
+    selected,
+    selectionActive,
+    onToggleSelect,
+    onSelectAll,
+    onReorder,
+    listKey,
   }) => {
     const t = useT()
     const menu = useActionMenu()
+    const ref = useRef(null)
+    // Rows drag as songs (onto sidebar playlists); within a reorderable list
+    // the same drag moves the row.
     const [, dragRef] = useDrag(
       () => ({
         type: DraggableTypes.SONG,
-        item: { ids: [songIdOf(record)] },
-        options: { dropEffect: 'copy' },
+        item: { ids: [songIdOf(record)], listKey, index: position },
+        options: { dropEffect: onReorder ? 'move' : 'copy' },
       }),
-      [record],
+      [record, listKey, position, onReorder],
+    )
+    const [{ over }, dropRef] = useDrop(
+      () => ({
+        accept: onReorder ? DraggableTypes.SONG : [],
+        canDrop: (item) => item.listKey === listKey && item.index !== position,
+        collect: (m) => ({ over: m.isOver() && m.canDrop() }),
+        drop: (item) => onReorder(item.index, position),
+      }),
+      [onReorder, listKey, position],
+    )
+    dragRef(dropRef(ref))
+    // Selectable lists are ARIA grids (rows carry aria-selected)
+    const cellRole = selectable ? 'gridcell' : 'cell'
+    const longPress = useLongPress(
+      selectable ? () => onToggleSelect(record.id, {}) : null,
     )
     const missing = !!record.missing
     const has = (c) => columns.includes(c)
@@ -57,25 +109,92 @@ const TrackRow = memo(
       else play()
     }
 
+    const onClick = (e) => {
+      if (!selectable || e.target.closest('a, button, input')) return
+      if (e.shiftKey) onToggleSelect(record.id, { range: true })
+      else if (e.metaKey || e.ctrlKey || selectionActive)
+        onToggleSelect(record.id, {})
+    }
+
+    const onKeyDown = (e) => {
+      if (e.target !== e.currentTarget) return
+      if (e.key === 'Enter') play()
+      else if (selectable && e.key === ' ') {
+        // Space selects here instead of toggling playback
+        e.preventDefault()
+        e.stopPropagation()
+        onToggleSelect(record.id, { range: e.shiftKey })
+      } else if (selectable && e.key === 'a' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault()
+        onSelectAll()
+      } else if (
+        onReorder &&
+        e.altKey &&
+        (e.key === 'ArrowUp' || e.key === 'ArrowDown')
+      ) {
+        e.preventDefault()
+        const target = position + (e.key === 'ArrowUp' ? -1 : 1)
+        onReorder(position, target)
+        // Rows are keyed by position: keep focus on the moved track
+        e.currentTarget
+          .closest('[role=grid],[role=table]')
+          ?.querySelector(`[data-position="${target}"]`)
+          ?.focus()
+      }
+    }
+
     return (
       <div
-        ref={dragRef}
+        ref={ref}
         role="row"
         className={clsx(
           styles.row,
           isCurrent && styles.current,
           missing && styles.missing,
           menu.state && styles.menuOpen,
+          selected && styles.selected,
+          selectable && styles.withCheck,
+          selectionActive && styles.selecting,
+          over && styles.dropOver,
         )}
         onDoubleClick={play}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' && e.target === e.currentTarget) play()
+        onClick={onClick}
+        onKeyDown={onKeyDown}
+        onContextMenu={(e) => {
+          // A long press already toggled selection on touch devices
+          if (longPress.fired.current) {
+            e.preventDefault()
+            longPress.fired.current = false
+            return
+          }
+          menu.openAt(e)
         }}
-        onContextMenu={menu.openAt}
+        {...longPress.handlers}
         tabIndex={0}
+        data-position={position}
         aria-current={isCurrent ? 'true' : undefined}
+        aria-selected={selectable ? selected : undefined}
       >
-        <div className={styles.lead} role="cell">
+        {selectable && (
+          <div className={styles.checkCell} role={cellRole}>
+            <label className={styles.check}>
+              <input
+                type="checkbox"
+                checked={selected}
+                onChange={(e) =>
+                  onToggleSelect(record.id, {
+                    range: e.nativeEvent.shiftKey,
+                  })
+                }
+                aria-label={`${t('ui.selection.select', 'Select')}: ${record.title}`}
+              />
+              <span aria-hidden>
+                <CheckIcon size={13} />
+              </span>
+            </label>
+          </div>
+        )}
+        <div className={styles.lead} role={cellRole}>
           {has('cover') ? (
             <div className={styles.coverWrap}>
               <Artwork
@@ -123,7 +242,7 @@ const TrackRow = memo(
           )}
         </div>
 
-        <div className={styles.main} role="cell">
+        <div className={styles.main} role={cellRole}>
           <span className={styles.title} title={record.title}>
             {record.title}
             {missing && (
@@ -152,7 +271,7 @@ const TrackRow = memo(
         </div>
 
         {has('album') && (
-          <div className={clsx(styles.album, styles.hideSm)} role="cell">
+          <div className={clsx(styles.album, styles.hideSm)} role={cellRole}>
             {record.albumId ? (
               <Link
                 to={`/album/${record.albumId}/show`}
@@ -170,13 +289,13 @@ const TrackRow = memo(
         {has('plays') && (
           <div
             className={clsx(styles.plays, styles.hideSm, 'nd-tabular')}
-            role="cell"
+            role={cellRole}
           >
             {record.playCount > 0 ? record.playCount : ''}
           </div>
         )}
 
-        <div className={styles.trail} role="cell">
+        <div className={styles.trail} role={cellRole}>
           {has('love') && !missing && (
             <LoveToggle
               record={{ ...record, id: songIdOf(record) }}
@@ -226,9 +345,13 @@ export const TrackList = ({
   renderGroup,
   className,
   label,
+  selection,
+  onReorder,
 }) => {
   const currentTrackId = useSelector(selectCurrentTrackId)
   const { paused } = useTransport()
+  // Identifies drags that started in this list (for reordering)
+  const listKey = useRef(Math.random().toString(36)).current
 
   const renderRow = useCallback(
     (index, id) => {
@@ -245,6 +368,13 @@ export const TrackList = ({
           onPlay={onPlay}
           onAddToPlaylist={onAddToPlaylist}
           extraMenuItems={extraMenuItems}
+          selectable={!!selection}
+          selected={!!selection && selection.isSelected(id)}
+          selectionActive={!!selection && selection.active}
+          onToggleSelect={selection?.toggle}
+          onSelectAll={selection?.selectAll}
+          onReorder={onReorder}
+          listKey={listKey}
         />
       )
     },
@@ -256,6 +386,9 @@ export const TrackList = ({
       onPlay,
       onAddToPlaylist,
       extraMenuItems,
+      selection,
+      onReorder,
+      listKey,
     ],
   )
 
@@ -263,8 +396,9 @@ export const TrackList = ({
     return (
       <div
         className={clsx(styles.list, className)}
-        role="table"
+        role={selection ? 'grid' : 'table'}
         aria-label={label}
+        aria-multiselectable={selection ? true : undefined}
       >
         <Virtuoso
           useWindowScroll
@@ -281,8 +415,9 @@ export const TrackList = ({
   return (
     <div
       className={clsx(styles.list, className)}
-      role="table"
+      role={selection ? 'grid' : 'table'}
       aria-label={label}
+      aria-multiselectable={selection ? true : undefined}
     >
       {ids.map((id, index) => {
         const record = data[id]

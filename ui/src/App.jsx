@@ -85,8 +85,11 @@ const adminStore = createAdminStore({
   },
 })
 
-// The playback engine lives for the whole session, outside React
-engine.init(adminStore)
+// The playback engine lives for the whole session, outside React. Public
+// share pages have their own player and no authenticated session.
+if (!(config.enableSharing && shareInfo)) {
+  engine.init(adminStore)
+}
 
 const App = () => (
   <Provider store={adminStore}>

@@ -1,11 +1,24 @@
 import React from 'react'
 import { useT } from '../../i18n/useT'
 import { IconButton } from '../../design/IconButton'
-import { GridIcon, RowsIcon } from '../../design/icons'
+import { GridIcon, ListIcon, RowsIcon } from '../../design/icons'
 import styles from './LibraryChrome.module.css'
 
-export const ViewToggle = ({ mode, onChange }) => {
+/** Grid/table switch; `primary` names the first layout ('grid' or 'list'). */
+export const ViewToggle = ({ mode, onChange, primary = 'grid' }) => {
   const t = useT()
+  const first =
+    primary === 'list'
+      ? {
+          id: 'list',
+          icon: ListIcon,
+          label: t('ra.toggleFieldsMenu.list', 'List'),
+        }
+      : {
+          id: 'grid',
+          icon: GridIcon,
+          label: t('ra.toggleFieldsMenu.grid', 'Grid'),
+        }
   return (
     <div
       className={styles.viewToggle}
@@ -14,11 +27,11 @@ export const ViewToggle = ({ mode, onChange }) => {
     >
       <IconButton
         size="sm"
-        icon={GridIcon}
-        label={t('ra.toggleFieldsMenu.grid', 'Grid')}
-        pressed={mode === 'grid'}
-        active={mode === 'grid'}
-        onClick={() => onChange('grid')}
+        icon={first.icon}
+        label={first.label}
+        pressed={mode === first.id}
+        active={mode === first.id}
+        onClick={() => onChange(first.id)}
       />
       <IconButton
         size="sm"

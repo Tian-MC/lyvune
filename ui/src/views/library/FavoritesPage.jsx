@@ -10,6 +10,8 @@ import { HeartIcon, PlayIcon, ShuffleIcon } from '../../design/icons'
 import { playTracks, shuffleTracks } from '../../actions'
 import { AlbumCard, ArtistCard, CardGrid, CardSkeletons } from '../shared/Cards'
 import { TrackList } from '../shared/TrackList'
+import { SelectionBar } from '../shared/SelectionBar'
+import { useTrackSelection } from '../shared/useTrackSelection'
 import chrome from './LibraryChrome.module.css'
 import styles from './FavoritesPage.module.css'
 
@@ -29,6 +31,7 @@ const FavouriteSongs = () => {
     (record) => dispatch(playTracks(data, ids, record.id)),
     [dispatch, data, ids],
   )
+  const selection = useTrackSelection(ids)
   if (loaded && ids.length === 0) {
     return (
       <EmptyState
@@ -67,9 +70,11 @@ const FavouriteSongs = () => {
         data={data}
         columns={['cover', 'artist', 'album', 'love', 'duration', 'menu']}
         onPlay={onPlay}
+        selection={selection}
         virtualized={ids.length > 100}
         label={t('ui.favourites.songs', 'Favourite songs')}
       />
+      <SelectionBar selection={selection} data={data} />
     </>
   )
 }

@@ -34,6 +34,8 @@ import { Hero } from '../shared/Hero'
 import { TrackList } from '../shared/TrackList'
 import { AlbumCard } from '../shared/Cards'
 import { CollectionMenu } from '../shared/CollectionMenu'
+import { SelectionBar } from '../shared/SelectionBar'
+import { useTrackSelection } from '../shared/useTrackSelection'
 import { genreAlbumsLink } from '../library/genres'
 import styles from './AlbumPage.module.css'
 
@@ -223,6 +225,7 @@ const AlbumBody = ({ album }) => {
     () => ids.filter((id) => data[id] && !data[id].missing),
     [ids, data],
   )
+  const selection = useTrackSelection(ids)
   const onPlay = useCallback(
     (record) => dispatch(playTracks(data, playable, record.id)),
     [dispatch, data, playable],
@@ -383,6 +386,7 @@ const AlbumBody = ({ album }) => {
               'menu',
             ]}
             onPlay={onPlay}
+            selection={selection}
             groupBy={multiDisc ? (r) => r?.discNumber : undefined}
             renderGroup={(r) => (
               <DiscHeader album={album} record={r} discs={album.discs} />
@@ -394,6 +398,8 @@ const AlbumBody = ({ album }) => {
           <p className={styles.footer}>{footer.join(' · ')}</p>
         )}
       </section>
+
+      <SelectionBar selection={selection} data={data} />
 
       <About album={album} />
       <MoreByArtist album={album} />

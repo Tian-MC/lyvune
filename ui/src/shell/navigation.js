@@ -109,13 +109,13 @@ export const mobileNav = [
   },
   {
     id: 'library',
-    to: '/library',
+    to: '/browse',
     icon: LibraryIcon,
     labelKey: 'menu.library',
     label: 'Library',
     match: (p) =>
       [
-        '/library',
+        '/browse',
         '/album',
         '/artist',
         '/song',

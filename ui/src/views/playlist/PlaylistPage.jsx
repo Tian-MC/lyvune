@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import {
@@ -42,6 +42,8 @@ import { songQuery } from '../../playback/actions'
 import { Hero } from '../shared/Hero'
 import { TrackList } from '../shared/TrackList'
 import { CollectionMenu } from '../shared/CollectionMenu'
+import { SelectionBar } from '../shared/SelectionBar'
+import { useTrackSelection } from '../shared/useTrackSelection'
 import styles from './PlaylistPage.module.css'
 
 const exportM3U = (record) =>
@@ -83,6 +85,17 @@ const PlaylistBody = ({ playlist }) => {
     () => ids.filter((id) => data[id] && !data[id].missing),
     [ids, data],
   )
+  const selection = useTrackSelection(ids)
+
+  // Tracks changed elsewhere (another tab, another client): the playlist
+  // record is refreshed by SSE, so reload the entries when it changes.
+  const seenUpdate = useRef(playlist.updatedAt)
+  useEffect(() => {
+    if (playlist.updatedAt !== seenUpdate.current) {
+      seenUpdate.current = playlist.updatedAt
+      refresh()
+    }
+  }, [playlist.updatedAt, refresh])
   const onPlay = useCallback(
     (record) => dispatch(playTracks(data, playable, record.id)),
     [dispatch, data, playable],
@@ -103,10 +116,20 @@ const PlaylistBody = ({ playlist }) => {
     [dataProvider, ids, playlist.id, refresh, notify],
   )
 
+  const onReorder = useCallback(
+    (from, to) => {
+      if (to < 0 || to >= ids.length || from === to) return
+      move(from, to)
+    },
+    [ids.length, move],
+  )
+
   const remove = useCallback(
-    (entryId) =>
+    (entryIds) =>
       dataProvider
-        .deleteMany(`playlist/${playlist.id}/tracks`, { ids: [entryId] })
+        .deleteMany(`playlist/${playlist.id}/tracks`, {
+          ids: Array.isArray(entryIds) ? entryIds : [entryIds],
+        })
         .then(() => refresh())
         .catch(() => notify('ra.page.error', 'warning')),
     [dataProvider, playlist.id, refresh, notify],
@@ -287,11 +310,20 @@ const PlaylistBody = ({ playlist }) => {
             columns={['index', 'cover', 'album', 'love', 'duration', 'menu']}
             onPlay={onPlay}
             extraMenuItems={extraMenuItems}
+            selection={selection}
+            onReorder={editable ? onReorder : undefined}
             virtualized={ids.length > 100}
             label={playlist.name}
           />
         )}
       </section>
+
+      <SelectionBar
+        selection={selection}
+        data={data}
+        onRemove={editable ? remove : undefined}
+        removeLabel={t('ui.playlist.removeTracks', 'Remove from playlist')}
+      />
 
       {lightbox && (
         <Lightbox
