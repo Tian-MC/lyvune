@@ -36,4 +36,5 @@ var Set = wire.NewSet(
 	quickconnect.GetInstance,
 	metrics.GetInstance,
 	lyrics.NewLyrics,
+	lyrics.EngineOf,
 )
