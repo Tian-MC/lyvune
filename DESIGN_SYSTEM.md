@@ -187,7 +187,17 @@ player or layout stylesheets remain.
 
 ## 14. Known limitations
 
-* Selection checkboxes inside react-admin data tables (admin screens: shares,
-  libraries, players, users) have no accessible name.
-* Dev-only prop-type warnings come from upstream react-admin forms
-  (`PlaylistEdit`, `NullableBooleanInput` filters) and do not occur in production.
+Console warnings in development (none occur in production builds, and each also
+occurs on upstream `master`; reproduced there with the same backend):
+
+| Warning | Origin | Reproduce |
+| --- | --- | --- |
+| `Invalid prop 'label' supplied to NullableBooleanInput` | upstream list filters with a heart-icon label (`PlaylistFilter`, album and artist filters) | open Albums, Artists or Playlists |
+| `React does not recognize the hasList/hasEdit/hasShow/hasCreate prop` | upstream `PlaylistEdit` forwards react-admin's props to `SimpleForm` | open a playlist's edit form |
+| `out-of-range value 'it' for the select (name="language")` | upstream `SelectLanguage` renders before the translation list loads | choose a non-English language, reload, open Settings |
+| `SyntaxError: expected property name, got '{'` (×2 at load) | `ui/index.html` holds Go template placeholders (`{{ .AppConfig }}`) that only the Go server substitutes | start `vite` alone |
+| `Could not load user libraries …` | upstream `LibrarySelector` logs when its library request fails right after sign-in | sign in on a fresh browser profile |
+
+Other limits: the nine light legacy themes are not supported (Navidrome is used);
+languages other than English and Italian fall back to English for the new `ui.*`
+strings.

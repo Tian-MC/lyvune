@@ -210,22 +210,20 @@ backend scanning the read-only library.
 | 8 Polish & cleanup | done — legacy player, layout, show pages, theme stylesheets and three dependencies removed |
 
 Validation (this pass, run fresh): `npm run lint`, `npm run check-formatting`,
-`npm run type-check`, `npm test` (94 files, 913 tests), `vite build`, `make test-i18n`
+`npm run type-check`, `npm test` (98 files, 933 tests), `vite build`, `make test-i18n`
 (with `gojq` standing in for `jq`). Browser checks against a local backend that scans
 the read-only library: viewports 1920×1080, 1440×900, 1280×800, 768×1024, 390×844 and
 360×800 (320×800 for overflow), a touch-enabled mobile context, a non-admin user, EN and
 IT.
 
 ### Known limitations
-* Selection checkboxes in react-admin data tables (shares, libraries, players, users)
-  have no accessible name.
-* Dev-only prop-type warnings from upstream react-admin forms (`PlaylistEdit`, the
-  `NullableBooleanInput` star filters) and a transient MUI "out-of-range `it`" warning
-  while the language list loads. None occur in production builds.
+* Development-only console warnings that come from upstream code and also occur on
+  `master` are listed, with origin and reproduction steps, in `DESIGN_SYSTEM.md` §14.
 * The nine light legacy themes are not supported by the dark-only UI; Navidrome is used
   instead and the picker says so.
 * Languages other than English and Italian fall back to English for the new `ui.*`
   strings.
-* Not verified: Safari/Firefox/Windows, a physical touch device, a real screen reader,
+* react-admin applies edits and deletes after a ~5 s undo window, as upstream does.
+* Not verified: Safari, Windows, a physical touch device, a real screen reader,
   Lighthouse scores, and word-level lyrics on real data (the library has none; covered by
   labelled fixtures and unit tests).
