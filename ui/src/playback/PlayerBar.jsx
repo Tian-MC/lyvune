@@ -102,7 +102,7 @@ export const PlayerBar = memo(() => {
       aria-label={t('ui.player.label', 'Player')}
     >
       {/* Desktop / tablet */}
-      <div className={styles.desktop} onClick={open}>
+      <div className={styles.desktop}>
         <div className={styles.left}>
           <button
             type="button"

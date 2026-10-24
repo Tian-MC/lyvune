@@ -18,7 +18,6 @@
   backdrop-filter: saturate(150%) blur(24px);
   -webkit-backdrop-filter: saturate(150%) blur(24px);
   border-top: 1px solid var(--border-subtle);
-  cursor: pointer;
 }
 
 :global([data-theme='oled']) .desktop {
