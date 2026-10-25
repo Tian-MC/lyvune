@@ -246,9 +246,40 @@ const analyze = (tk, text, cache) => {
 
 const isKanaOnly = (t) => KATAKANA.test(t.s) || HIRAGANA.test(t.s)
 
+// A short run of kana the analyzer cut into pieces of one letter, one of which
+// is a content word, is a single word it could not read: いち+に+ち is いちにち
+const brokenRuns = (tokens) => {
+  const join = new Set()
+  let start = 0
+  const flush = (end) => {
+    const run = tokens.slice(start, end)
+    const letters = run.reduce((n, t) => n + [...t.s].length, 0)
+    const singles = run.filter((t) => [...t.s].length === 1)
+    if (
+      run.length >= 3 &&
+      // starting on a particle it is a phrase (の+よ+こ), not one word
+      CONTENT.has(run[0].pos) &&
+      letters <= 6 &&
+      singles.length >= 2 &&
+      singles.some((t) => CONTENT.has(t.pos))
+    )
+      for (let k = start + 1; k < end; k++) join.add(k)
+  }
+  tokens.forEach((t, i) => {
+    if (!isKanaOnly(t) || !HIRAGANA.test(t.s)) {
+      flush(i)
+      start = i + 1
+    }
+  })
+  flush(tokens.length)
+  return join
+}
+
 /** For each token: does it belong to the written word before it? */
-const grouping = (tokens) =>
-  tokens.map((t, i) => {
+const grouping = (tokens) => {
+  const broken = brokenRuns(tokens)
+  return tokens.map((t, i) => {
+    if (broken.has(i)) return true
     const p = tokens[i - 1]
     if (!p || SPACE.test(p.s) || SPACE.test(t.s)) return false
     if (t.joinPrev) return true
@@ -295,6 +326,7 @@ const grouping = (tokens) =>
       return true
     return false
   })
+}
 
 const convert = (words, style) => {
   const macron = style === 'macron'

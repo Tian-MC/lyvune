@@ -50,6 +50,15 @@ describe('word boundaries', () => {
     expect(ascii('今すぐ  君に')).toBe('ima sugu kimi ni')
   })
 
+  it('keeps a short kana word the analyzer cut into single letters in one piece', () => {
+    expect(ascii('いちにち')).toBe('ichinichi')
+  })
+
+  it('still separates the small words of a kana phrase', () => {
+    expect(ascii('そうだよね')).toBe('sou da yo ne')
+    expect(ascii('もうね')).toBe('mou ne')
+  })
+
   it('does not regress a line that was already right', () => {
     expect(ascii('今すぐ君に会いたい。')).toBe('ima sugu kimi ni aitai.')
     expect(ascii('ずっと君を探していた')).toBe('zutto kimi o sagashiteita')
