@@ -40,18 +40,21 @@ func TestLiveProviders(t *testing.T) {
 			cancel()
 			fmt.Fprintf(out, "%-8s %-9s err=%v candidates=%d\n", p.Info().ID, r.name, err, len(got))
 			for _, c := range got {
-				words := 0
+				words, lines := 0, 0
 				tracks := ""
 				for _, l := range c.Lyrics {
 					tracks += " " + l.Kind
 					if l.IsMainKind() {
 						for _, ln := range l.Line {
 							words += len(ln.Cue)
+							if ln.Start != nil {
+								lines++
+							}
 						}
 					}
 				}
-				fmt.Fprintf(out, "    %-6s %q / %q  dur=%.0f conf=%.2f verified=%v quality=%s wordcues=%d tracks=[%s]\n",
-					c.ID[:3], c.Meta.Title, c.Meta.Artist, c.Meta.DurationSec, c.Match.Confidence, c.Match.Verified(), c.Quality, words, tracks)
+				fmt.Fprintf(out, "    %-6s %q / %q  dur=%.0f conf=%.2f verified=%v quality=%s timedlines=%d wordcues=%d tracks=[%s]\n",
+					c.ID[:3], c.Meta.Title, c.Meta.Artist, c.Meta.DurationSec, c.Match.Confidence, c.Match.Verified(), c.Quality, lines, words, tracks)
 			}
 			time.Sleep(3 * time.Second)
 		}

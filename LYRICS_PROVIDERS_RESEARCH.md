@@ -68,7 +68,7 @@ Is the YRC genuine? In the sample, 7 of 55 multi-word lines had words of identic
 
 The private tokens used by Musixmatch's desktop and mobile apps give access to RichSync without a commercial plan. They are **not** used: they are credentials extracted from a proprietary app and the request signature is a protection.
 
-## Not done
+## Not done (Phase 10)
 
 - **QQ Music (QRC)** is not implemented.
 - **NetEase `klyric`** and `ytlrc` are not parsed.
@@ -89,3 +89,89 @@ From `go test -tags live -run TestLiveProviders ./core/lyrics` (opt-in; it calls
 | *Incultus*, Xanthochroid (no duration) | 1 verified, line-synced only | none |
 
 Not saved anywhere in the real library: all persistence checks used a temporary copy.
+
+
+# Phase 11: QQ Music, keyless sources and the status discrepancy
+
+## Why the interface said "KRC not supported" while the code supported it
+
+The texts quoted in the report ("KuGou has no public developer API for lyrics… which this project does not use", "The KRC word-timed format is not supported", the same for NetEase and YRC) are the descriptions of the placeholder providers that Phase 9 shipped, and they exist **only on `master`** (`core/lyrics/provider_unavailable.go`). Phase 10 replaced those placeholders with working adapters on `lyrics-providers`, which was never merged.
+
+The cause was a stale process, not a code defect: the development backend on port 4633 was a Phase 9 binary (started 02:32, built 12:37; it contained the placeholder text and no `song_search_v2`). The Vite server on 4533 proxies to it, so the interface faithfully displayed what that old backend said. The registry, the capability metadata and the frontend were correct for the new code; nothing was missing or disabled by a flag. Replacing the binary with the current build made the same interface report KuGou, NetEase and QQ as ready (`/api/lyrics/settings` on 4633 now lists them).
+
+The wording itself was also a weakness: a single "Ready · checked against the live service" line mixed several different facts. Providers now report implemented, set up, seen working, karaoke seen, checked in development and storage separately (see `LYRICS_ENGINE.md`).
+
+## What was read this phase
+
+| Source | Read at | Finding |
+| --- | --- | --- |
+| syncedlyrics `providers/musixmatch.py` | source | Calls `apic-desktop.musixmatch.com`, gets an anonymous `usertoken` from `token.get` using a hard-coded desktop-app `app_id`, caches it for 10 minutes. That is the anonymous token of Musixmatch's own desktop app. |
+| LiriQo README | README | QQ through `musicu.fcg` (`GetPlayLyricInfo`), KRC/QRC decrypted inside its own worker; Musixmatch only as an upstream behind YouTube Music. MIT. |
+| LDDC, Syncanto (this phase) | README only | Not re-read. Phase 10's notes stand. |
+| Better Lyrics docs and live API | docs + live requests | See below. |
+
+No source code of LDDC, Syncanto, Beautiful Lyrics Reborn or LiriQo was read or copied, so no GPL/AGPL code is in the repository.
+
+## Better Lyrics API (live, Oct 2026)
+
+| Endpoint | Keyless result |
+| --- | --- |
+| `/qq/getLyrics` | `200` QRC when the song is cached; `404` for a cached "nothing"; **`401 API key required` for an uncached song** |
+| `/kugou/getLyrics` | `200` line-timed LRC when cached; same `401` otherwise |
+| `/ttml/getLyrics` (syllable) | `401` for all four songs tried; no cached hit |
+
+So "keyless" means **cache-only**. In eight songs, QQ had QRC cached for one, KuGou LRC for one. A later request for another album spelling of *Judas* did return QRC, so the cache varies and cannot be relied on. The responses carry no match score on the provider endpoints. The KuGou endpoint returns only line-timed LRC, which is lower than the KRC the project already reads directly, so it was not added. TTML was not adopted: it gave nothing keyless and does not state where its data comes from.
+
+## QQ Music
+
+| | |
+| --- | --- |
+| Direct route | `c.y.qq.com`: `smartbox_new.fcg` (search), `fcg_play_single_song.fcg` (title, artist, album, length), `fcg_query_lyric_new.fcg` (line-timed LRC + translation). Needs a `Referer`, no account, cookie or signature. Unofficial. |
+| Word timing | **QRC**, from the Better Lyrics cache (keyless, cached songs) or from Better Lyrics with the user's own key. QQ's own QRC download is encrypted with a custom DES; it is **not decoded**. |
+| Genuine? | Checked on real documents: *Judas* 522 cues, 75 lines of 4+ words, 0 uniform, 268 distinct durations; *Blinding Lights* credit lines are evenly split but the sung lines vary (142–1083 ms); both kept as karaoke. |
+| Real-world defect found | The QRC envelope is **not well-formed XML** (raw `"` inside `LyricContent`), so an XML parser rejects it. The body is cut out as text instead. |
+| Storage | No terms found. Not saved unless `Lyrics.QQ.Store` is on. |
+| Confidence | Direct route: medium. Word timing: low to medium (depends on the cache). |
+
+## Musixmatch without a personal key
+
+Investigated; **no authorized keyless route was found, and none is implemented.** The keyless routes open-source projects use take the anonymous token of Musixmatch's desktop app (a hard-coded app id presented as that app), and some sign requests with HMAC. Those are credentials taken from a proprietary application and a request signature meant to restrict access. The official API with the user's own key stays as an optional mode, shown as such next to a "Without a key: not available" mode so it is not mistaken for a toggle that does nothing. Local `.lrc`, `.krc`, `.yrc` and `.qrc` import remains available.
+
+## Parser support (independent of the network)
+
+| Format | Parser | Source of real data |
+| --- | --- | --- |
+| LRC, enhanced LRC, plain | `model` package | LRCLIB, QQ direct, NetEase, KuGou fallback |
+| LRCLIB Lyricsfile | `model` package | LRCLIB (`hasWordSync`) |
+| KRC | `krc.go` (plain or `krc1` container) | KuGou, live |
+| YRC | `yrc.go` | NetEase, live (some songs) |
+| QRC | `qrc.go` (decrypted XML or bare body) | Better Lyrics cache, live |
+| RichSync | `richsync.go` | Musixmatch; **not seen live** |
+
+All keep real timestamps, never set a word end the source does not give, and drop word timing from documents whose words look divided by formula. Local `.krc`, `.yrc` and `.qrc` sidecars work offline when their suffix is in `LyricsPriority`.
+
+## Storage matrix
+
+| Provider | Retrieval | Permanent storage |
+| --- | --- | --- |
+| LRCLIB | Public API | Yes |
+| KuGou, NetEase, QQ | Open web endpoints, no terms found | Off by default; `Lyrics.<Provider>.Store` turns it on |
+| Musixmatch | Official API with the user's key | Off by default; `Lyrics.Musixmatch.Store` |
+| Apple Music | Not implemented | — |
+
+Retrieval and storage are separate decisions: a result can be shown and chosen for the session without being kept.
+
+## Live results, 25 Oct 2026
+
+`go test -tags live -run TestLiveProviders ./core/lyrics`. Counts are structural; no lyric text is reproduced.
+
+| Track | NetEase | KuGou | QQ |
+| --- | --- | --- | --- |
+| *Judas* (English) | 3 verified, YRC, 514 cues, translation | 1 verified, KRC, 518 cues | 1 verified, line-timed (82 lines); QRC 522 cues in the app run |
+| マトリョシカ (Japanese) | 3 verified, YRC 629–640 cues, translation + romanization | 2 verified, KRC 637–664 cues, translation + romanization | 2, **not** verified (0.84, script variants in the artist), line-timed |
+| 晴天 (Chinese) | none (covers only) | 1, 0.82 not verified, KRC 597 cues | 2: line-timed 0.82; QRC 597 cues 0.70, **not** verified |
+| Dynamite (Korean) | none | none | 1 verified, line-timed (83 lines) |
+| *Blinding Lights* | 3 verified, YRC | 1 verified, KRC | 2 verified: line-timed and QRC 316 cues |
+| Wrong length (30 s) | none | none | none |
+
+End to end in a browser on a temporary copy of the library: QQ's QRC for *Judas* was chosen in the manager, saved (`.lyrics.json`, provider `qq`, 82 lines, 522 cues), played with the words advancing, seeked by clicking a line, and read back with the network cut. Karaoke rendering of NetEase and KuGou was checked the same way in Phase 10.
