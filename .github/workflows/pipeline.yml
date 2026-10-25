@@ -9,12 +9,16 @@ on:
     branches:
       - master
 
+# Verification only. Nothing in this workflow publishes anything: no registry login, no image push, no release.
+# The token can read the repository and nothing else, except where a job below says otherwise for its own needs.
+# Publishing is in release.yml, which is switched off, and scripts/check_no_publishing.py (the last job here) fails
+# the build if a line that publishes shows up anywhere else.
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ startsWith(github.ref, 'refs/tags/v') && 'tag' || 'branch' }}-${{ github.ref }}
   cancel-in-progress: true
-
-env:
-  IS_RELEASE: ${{ startsWith(github.ref, 'refs/tags/') && 'true' || 'false' }}
 
 jobs:
   git-version:
@@ -373,27 +377,26 @@ jobs:
       - run: ./.github/workflows/validate-translations.sh -v
 
 
-  check-push-enabled:
-    name: Check Docker configuration
+  no-publishing:
+    name: Check that no workflow publishes
     runs-on: ubuntu-latest
-    outputs:
-      is_enabled: ${{ steps.check.outputs.is_enabled }}
     steps:
-      - name: Check if Docker push is configured
-        id: check
-        run: echo "is_enabled=${{ secrets.DOCKER_HUB_USERNAME != '' }}" >> $GITHUB_OUTPUT
+      - uses: actions/checkout@v7
+
+      # Fails if a line that logs in to a registry, pushes an image, creates a release or uses a secret shows up
+      # outside release.yml, or if release.yml has a job that is not switched off
+      - name: Check the workflows
+        run: python3 scripts/check_no_publishing.py
 
   build:
     name: Build
-    needs: [js, go, go-plugins, go-windows, go-lint, i18n-lint, git-version, check-push-enabled, validate-migrations]
+    needs: [js, go, go-plugins, go-windows, go-lint, i18n-lint, git-version, validate-migrations, no-publishing]
     strategy:
       matrix:
         platform: [ linux/amd64, linux/arm64, linux/arm/v5, linux/arm/v6, linux/arm/v7, linux/386, linux/riscv64, darwin/amd64, darwin/arm64, windows/amd64, windows/386 ]
     runs-on: ubuntu-latest
     env:
       IS_LINUX: ${{ startsWith(matrix.platform, 'linux/') && 'true' || 'false' }}
-      IS_ARMV5: ${{ matrix.platform == 'linux/arm/v5' && 'true' || 'false' }}
-      IS_DOCKER_PUSH_CONFIGURED: ${{ needs.check-push-enabled.outputs.is_enabled == 'true' }}
       DOCKER_BUILD_SUMMARY: false
       GIT_SHA: ${{ needs.git-version.outputs.git_sha }}
       GIT_TAG: ${{ needs.git-version.outputs.git_tag }}
@@ -406,14 +409,14 @@ jobs:
 
       - uses: actions/checkout@v7
 
-      - name: Prepare Docker Buildx
-        uses: ./.github/actions/prepare-docker
-        id: docker
+      # No registry login: this job only builds
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          hub_repository: ${{ vars.DOCKER_HUB_REPO }}
-          hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          # Runner IPs are shared, so anonymous base image pulls get rate-limited.
+          buildkitd-config-inline: |
+            [registry."docker.io"]
+              mirrors = ["mirror.gcr.io"]
 
       - name: Build Binaries
         uses: docker/build-push-action@v7
@@ -450,135 +453,6 @@ jobs:
           path: ./output
           retention-days: 7
 
-      - name: Build and push image by digest
-        id: push-image
-        if: env.IS_LINUX == 'true' && env.IS_DOCKER_PUSH_CONFIGURED == 'true' && env.IS_ARMV5 == 'false'
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          file: Dockerfile
-          platforms: ${{ matrix.platform }}
-          labels: ${{ steps.docker.outputs.labels }}
-          build-args: |
-            GIT_SHA=${{ env.GIT_SHA }}
-            GIT_TAG=${{ env.GIT_TAG }}
-          outputs: |
-            type=image,name=${{ steps.docker.outputs.hub_repository }},push-by-digest=true,name-canonical=true,push=${{ steps.docker.outputs.hub_enabled }}
-            type=image,name=ghcr.io/${{ github.repository }},push-by-digest=true,name-canonical=true,push=true
-
-      - name: Export digest
-        if: env.IS_LINUX == 'true' && env.IS_DOCKER_PUSH_CONFIGURED == 'true' && env.IS_ARMV5 == 'false'
-        run: |
-          mkdir -p /tmp/digests
-          digest="${{ steps.push-image.outputs.digest }}"
-          touch "/tmp/digests/${digest#sha256:}"          
-
-      - name: Upload digest
-        uses: actions/upload-artifact@v7
-        if: env.IS_LINUX == 'true' && env.IS_DOCKER_PUSH_CONFIGURED == 'true' && env.IS_ARMV5 == 'false'
-        with:
-          name: digests-${{ env.PLATFORM }}
-          path: /tmp/digests/*
-          if-no-files-found: error
-          retention-days: 1
-
-  push-manifest-ghcr:
-    name: Push to GHCR
-    permissions:
-      contents: read
-      packages: write
-    runs-on: ubuntu-latest
-    needs: [build, check-push-enabled]
-    if: needs.check-push-enabled.outputs.is_enabled == 'true'
-    env:
-      REGISTRY_IMAGE: ghcr.io/${{ github.repository }}
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Download digests
-        uses: actions/download-artifact@v8
-        with:
-          path: /tmp/digests
-          pattern: digests-*
-          merge-multiple: true
-
-      - name: Prepare Docker Buildx
-        uses: ./.github/actions/prepare-docker
-        id: docker
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create manifest list and push to ghcr.io
-        working-directory: /tmp/digests
-        run: |
-          docker buildx imagetools create $(jq -cr '.tags | map(select(startswith("ghcr.io"))) | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' *)          
-
-      - name: Inspect image in ghcr.io
-        run: |
-          docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ steps.docker.outputs.version }}
-
-  push-manifest-dockerhub:
-    name: Push to Docker Hub (${{ matrix.repository }})
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    needs: [build, check-push-enabled]
-    if: needs.check-push-enabled.outputs.is_enabled == 'true' && vars.DOCKER_HUB_REPO != ''
-    continue-on-error: true
-    strategy:
-      fail-fast: false
-      matrix:
-        # Always push to DOCKER_HUB_REPO. The upstream repository also pushes to the navidrome/navidrome org repository.
-        repository: ${{ fromJSON(github.repository == 'navidrome/navidrome' && format('["{0}","navidrome/navidrome"]', vars.DOCKER_HUB_REPO) || format('["{0}"]', vars.DOCKER_HUB_REPO)) }}
-    steps:
-      - uses: actions/checkout@v7
-
-      - name: Download digests
-        uses: actions/download-artifact@v8
-        with:
-          path: /tmp/digests
-          pattern: digests-*
-          merge-multiple: true
-
-      - name: Prepare Docker Buildx
-        uses: ./.github/actions/prepare-docker
-        id: docker
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          hub_repository: ${{ matrix.repository }}
-          hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-
-      - name: Create manifest list and push to Docker Hub
-        uses: nick-fields/retry@v4
-        with:
-          timeout_minutes: 5
-          max_attempts: 3
-          retry_wait_seconds: 30
-          command: |
-            cd /tmp/digests
-            docker buildx imagetools create $(jq -cr '.tags | map(select(startswith("ghcr.io") | not)) | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-              $(printf 'ghcr.io/${{ github.repository }}@sha256:%s ' *)
-
-      - name: Inspect image in Docker Hub
-        run: |
-          docker buildx imagetools inspect ${{ matrix.repository }}:${{ steps.docker.outputs.version }}
-
-  cleanup-digests:
-    name: Cleanup digest artifacts
-    runs-on: ubuntu-latest
-    needs: [push-manifest-ghcr, push-manifest-dockerhub]
-    if: always() && needs.push-manifest-ghcr.result == 'success'
-    steps:
-      - name: Delete unnecessary digest artifacts
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          for artifact in $(gh api repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts | jq -r '.artifacts[] | select(.name | startswith("digests-")) | .id'); do
-            gh api --method DELETE repos/${{ github.repository }}/actions/artifacts/$artifact
-          done
-
   msi:
     name: Build Windows installers
     needs: [build, git-version]
@@ -613,7 +487,7 @@ jobs:
           retention-days: 7
 
   release:
-    name: Package/Release
+    name: Package (snapshot, nothing is published)
     needs: [build, msi]
     runs-on: ubuntu-latest
     outputs:
@@ -632,17 +506,13 @@ jobs:
 
       - run: ls -lR ./binaries
 
-      - name: Set RELEASE_FLAGS for snapshot releases
-        if: env.IS_RELEASE == 'false'
-        run: echo 'RELEASE_FLAGS=--skip=publish --snapshot' >> $GITHUB_ENV
-
-      - name: Run GoReleaser
+      # Always a snapshot with publishing skipped, for a tag as for a branch, and without a token to publish
+      # with. release/goreleaser.yml also says `release: disable: true`
+      - name: Run GoReleaser (snapshot, no publishing)
         uses: goreleaser/goreleaser-action@v7
         with:
           version: '2.16.0'
-          args: "release --clean -f release/goreleaser.yml ${{ env.RELEASE_FLAGS }}"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          args: "release --clean --snapshot --skip=publish -f release/goreleaser.yml"
 
       - name: Remove build artifacts
         run: |

@@ -1,0 +1,6 @@
+# The publishing workflow is switched off with a literal `if: ${{ false }}` on purpose: it is the clearest way to say
+# "off", and scripts/check_no_publishing.py looks for exactly that. actionlint would rather the job were removed.
+paths:
+  .github/workflows/release.yml:
+    ignore:
+      - 'constant expression "false" in condition'

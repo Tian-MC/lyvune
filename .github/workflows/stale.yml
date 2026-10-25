@@ -37,7 +37,7 @@ jobs:
           days-before-pr-close: 30
           stale-issue-message: >
             This issue has been automatically marked as stale because it has not had
-            recent activity. The resources of the Navidrome team are limited, and so we are asking for your help.
+            recent activity. The resources of the Lyvune project are limited, and so we are asking for your help.
 
             If this is a **bug** and you can still reproduce this error on the <code>master</code> branch, please reply with all of the information you have about it in order to keep the issue open.
 
@@ -45,9 +45,9 @@ jobs:
 
             This issue will automatically be closed in the near future if no further activity occurs. Thank you for all your contributions.
           stale-pr-message: This PR has been automatically marked as stale because it has not had
-            recent activity. The resources of the Navidrome team are limited, and so we are asking for your help.
+            recent activity. The resources of the Lyvune project are limited, and so we are asking for your help.
 
-            Please check https://github.com/navidrome/navidrome/blob/master/CONTRIBUTING.md#pull-requests and verify that this code contribution fits with the description. If yes, tell it in a comment.
+            Please check https://github.com/Tian-MC/lyvune/blob/master/CONTRIBUTING.md#pull-requests and verify that this code contribution fits with the description. If yes, tell it in a comment.
 
             This PR will automatically be closed in the near future if no further activity occurs. Thank you for all your contributions.
           stale-issue-label: 'stale'

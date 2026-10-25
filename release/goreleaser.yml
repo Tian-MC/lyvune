@@ -1,4 +1,10 @@
-# GoReleaser config
+# GoReleaser config.
+#
+# This builds the .deb and .rpm packages and the archives that the pipeline checks as a snapshot, and it publishes
+# nothing: the pipeline runs it with --snapshot --skip=publish, and `release.disable` below makes it create no
+# release even if someone runs it without those flags. The package names, paths and users in here are still
+# Navidrome's (navidrome, /etc/navidrome, ...), so these packages are not published until they are Lyvune's:
+# docs/RELEASING.md.
 project_name: navidrome
 version: 2
 
@@ -41,11 +47,11 @@ nfpms:
     package_name: navidrome
     file_name_template: '{{ .PackageName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'
 
-    homepage: https://navidrome.org
+    homepage: https://github.com/Tian-MC/lyvune
     description: |-
-      🎧☁ Your Personal Streaming Service
+      Lyvune, a self-hosted music server and streamer with word-by-word karaoke lyrics
 
-    maintainer: Deluan Quintão <deluan at navidrome.org>
+    maintainer: Tian-MC
 
     license: GPL-3.0
     formats:
@@ -99,23 +105,12 @@ nfpms:
       preremove: "release/linux/preremove.sh"
 
 release:
+  # No release is created, whatever the flags: publishing is release.yml's job, and it is switched off
+  disable: true
   draft: true
   mode: append
   footer: |
-    **Full Changelog**: https://github.com/navidrome/navidrome/compare/{{ .PreviousTag }}...{{ .Tag }}
-
-    ## Helping out
-
-    This release is only possible thanks to the support of some **awesome people**!
-
-    Want to be one of them?
-    You can [sponsor](https://github.com/sponsors/deluan), pay me a [Ko-fi](https://ko-fi.com/deluan), or [contribute with code](https://www.navidrome.org/docs/developers/).
-
-    ## Where to go next?
-
-    * Read installation instructions on our [website](https://www.navidrome.org/docs/installation/).
-    * Host Navidrome on [PikaPods](https://www.pikapods.com/pods?run=navidrome) or [Zenith](https://zenith.hosting/host/navidrome?ref=navidrome) for a simple cloud solution.
-    * Reach out on [Discord](https://discord.gg/xh7j7yF), [Reddit](https://www.reddit.com/r/navidrome/) and [Twitter](https://twitter.com/navidrome)!
+    **Full Changelog**: https://github.com/Tian-MC/lyvune/compare/{{ .PreviousTag }}...{{ .Tag }}
 
   # Add the MSI installers to the release
   extra_files:

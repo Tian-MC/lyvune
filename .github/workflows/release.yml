@@ -1,0 +1,130 @@
+name: "Release (DISABLED)"
+
+# THIS WORKFLOW PUBLISHES, AND EVERY JOB IN IT IS SWITCHED OFF (`if: ${{ false }}`).
+#
+# It is the only place in the repository where anything may be pushed to a registry or released, and it does nothing
+# until the Docker image has been built and tested on a real Docker host (docs/RELEASING.md lists what has to be
+# true first). Until then:
+#   - the only trigger is a manual run, and a manual run starts jobs that are all skipped;
+#   - a version tag starts no workflow that publishes (the tag trigger is the commented block below);
+#   - scripts/check_no_publishing.py, which the pipeline runs, fails if another workflow gains a publishing step or if
+#     a job here loses its `if: ${{ false }}`.
+#
+# To switch it on, see "Enabling publication" in docs/RELEASING.md. That is a decision to make in a reviewed commit,
+# not a setting to flip.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "The version tag to publish, such as v0.1.0-alpha. The workflow never creates tags"
+        required: true
+        type: string
+  # push:
+  #   tags:
+  #     - "v*"
+
+permissions:
+  contents: read
+
+env:
+  IMAGE: ghcr.io/tian-mc/lyvune
+
+jobs:
+  publish-image:
+    name: Publish the Docker image (amd64, arm64) to ghcr.io/tian-mc/lyvune
+    # DISABLED. When enabled it should be:
+    #   github.repository == 'Tian-MC/lyvune' && startsWith(github.ref, 'refs/tags/v')
+    if: ${{ false }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: docker/setup-qemu-action@v4
+
+      - uses: docker/setup-buildx-action@v4
+
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Image name, tags and labels
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.IMAGE }}
+          # Only a plain version (v1.2.3) is also the stable tags; v0.1.0-alpha and the like get their own tag only
+          flavor: latest=false
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}},enable=${{ !contains(github.ref_name, '-') }}
+            type=raw,value=latest,enable=${{ !contains(github.ref_name, '-') }}
+          labels: |
+            org.opencontainers.image.title=Lyvune
+            org.opencontainers.image.description=A self-hosted music server and streamer, with word-by-word karaoke lyrics
+            org.opencontainers.image.licenses=GPL-3.0
+
+      - name: Build and push
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            GIT_SHA=${{ github.sha }}
+            GIT_TAG=${{ github.ref_name }}
+          cache-from: type=gha,scope=publish
+          cache-to: type=gha,mode=max,scope=publish
+          provenance: true
+          sbom: true
+
+  publish-binaries:
+    name: Create a draft GitHub release with the Linux binaries
+    needs: publish-image
+    # DISABLED, like the job above. Only Linux tarballs for now: the .deb, .rpm and Windows installers that came with
+    # Navidrome's packaging are not Lyvune's yet (release/goreleaser.yml, release/linux, release/wix), and are
+    # not published
+    if: ${{ false }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    env:
+      TAG: ${{ inputs.tag }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.tag }}
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Build the binaries
+        run: |
+          docker buildx build --target binary --platform linux/amd64,linux/arm64 \
+            --build-arg GIT_SHA="$GITHUB_SHA" --build-arg GIT_TAG="$TAG" --output type=local,dest=out .
+
+      - name: Package them as lyvune
+        run: |
+          mkdir -p dist
+          for arch in amd64 arm64; do
+            dir="lyvune_${TAG#v}_linux_${arch}"
+            mkdir -p "$dir"
+            # the build stages still call the binary navidrome
+            cp "out/linux_${arch}/navidrome" "$dir/lyvune"
+            cp LICENSE README.md "$dir/"
+            tar czf "dist/${dir}.tar.gz" "$dir"
+          done
+          (cd dist && sha256sum ./*.tar.gz > lyvune_checksums.txt)
+
+      - name: Create the draft release
+        run: |
+          prerelease=""
+          case "$TAG" in *-*) prerelease="--prerelease" ;; esac
+          gh release create "$TAG" --draft $prerelease --verify-tag --generate-notes \
+            --title "Lyvune $TAG" dist/*
