@@ -8,7 +8,9 @@ covers the questions that come next: permissions, a reverse proxy, backups, upda
 
 ## What you need
 
-- A recent Docker Engine (24 or newer) with the Compose plugin (`docker compose version` should work).
+- A recent Docker Engine (24 or newer) with the Compose plugin (`docker compose version` should work) **and the
+  Buildx plugin** (`docker buildx version`). The image is built with BuildKit, and without Buildx Docker uses its legacy
+  builder, which cannot read the Dockerfile. On Arch Linux: `sudo pacman -S docker-buildx docker-compose`.
 - A computer with 64-bit Intel/AMD (`amd64`) or ARM (`arm64`) processors.
 - A folder with your music.
 - Disk space for the image, and for the database and cache, which grow with your library.
@@ -257,6 +259,7 @@ that. A folder with `navidrome.db` that you keep using stays `navidrome.db`; not
 | `docker compose` says `Set LYVUNE_MUSIC_DIR in .env ...` | the music folder is not set | edit `.env` |
 | The container restarts, log says `Database could not be opened` | Lyvune cannot write to `/data` | [Permissions](#permissions) |
 | `docker compose ps` says `unhealthy` | the process runs but the server does not answer | `docker compose logs lyvune`; `docker compose exec lyvune lyvune healthcheck` prints the reason |
+| `failed to parse platform : "" is an invalid OS component` while building | the legacy builder is being used: the Buildx plugin is missing | install it (see Requirements), then build again |
 | `port is already allocated` | something uses 4533 | set `LYVUNE_PORT` |
 | The library is empty | the folder is empty or not readable by the user | `docker compose exec lyvune ls /music`; check the path in `.env` and the permissions |
 | Lyrics are not saved, the lyrics manager says the folder cannot be written to | the music folder is read-only | [Your music and lyrics](#your-music-and-lyrics) |
@@ -295,6 +298,7 @@ scripts/docker-smoke-test.sh                          # builds it and tests it e
 python3 scripts/smoke_test.py check http://localhost:4533   # the same checks, against a server that is running
 ```
 
-`scripts/docker-smoke-test.sh` starts containers on free ports with temporary folders and a generated music library,
+`scripts/docker-smoke-test.sh` checks first that Docker, Compose and Buildx are there and says what is missing. Run it as a
+normal user who may use Docker; under `sudo` it still runs the containers as you, not as root. It starts containers on free ports with temporary folders and a generated music library,
 and removes everything it made. It checks a new installation, a restart, a clean stop, a read-only library, a
 migration from a copied `navidrome.db`, and an unwritable data folder.

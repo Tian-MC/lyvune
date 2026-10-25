@@ -31,12 +31,34 @@ done
 
 command -v docker > /dev/null || { echo "docker is required" >&2; exit 2; }
 command -v python3 > /dev/null || { echo "python3 is required" >&2; exit 2; }
+docker info > /dev/null 2>&1 || {
+  echo "cannot talk to the Docker daemon: is it running, and is your user allowed to use it (the docker group)?" >&2
+  exit 2
+}
+docker compose version > /dev/null 2>&1 || {
+  cat >&2 <<'EOF'
+The Compose plugin is not installed (`docker compose version` fails).
+  Arch Linux:     sudo pacman -S docker-compose
+  Debian/Ubuntu:  sudo apt install docker-compose-plugin   (from Docker's own apt repository)
+  Anything else:  https://docs.docker.com/compose/install/
+EOF
+  exit 2
+}
 
 WORK="$(mktemp -d -t "$PREFIX-XXXXXX")"
 BUILT_IMAGE=""
 PLATFORM_ARGS=()
 [ -n "$PLATFORM" ] && PLATFORM_ARGS=(--platform "$PLATFORM")
-USER_ARGS=(--user "$(id -u):$(id -g)")
+# Under sudo the test must still run the containers as the person who typed it, not as root: the point is to check an
+# unprivileged user. The temporary folders are given to that user too, as the containers have to write to them
+RUN_UID="${SUDO_UID:-$(id -u)}"
+RUN_GID="${SUDO_GID:-$(id -g)}"
+USER_ARGS=(--user "$RUN_UID:$RUN_GID")
+if [ "$RUN_UID" = 0 ]; then
+  echo "warning: this runs as root, so the checks of an unprivileged user mean nothing. Run it as a normal user" >&2
+  echo "         who may use Docker (the docker group) instead of as root." >&2
+fi
+own() { if [ "$(id -u)" = 0 ]; then chown -R "$RUN_UID:$RUN_GID" "$@"; fi; }
 FAILED=0
 
 # shellcheck disable=SC2329 # called by the trap
@@ -51,6 +73,7 @@ cleanup() {
   rm -rf "$WORK"
 }
 trap cleanup EXIT
+own "$WORK"
 
 step() { printf '\n== %s\n' "$*"; }
 ok() { printf 'PASS  %s\n' "$*"; }
@@ -85,6 +108,18 @@ start() {
 
 smoke() { python3 scripts/smoke_test.py check "http://127.0.0.1:$1" "${@:2}"; }
 
+if [ "$BUILD" = 1 ] && ! docker buildx version > /dev/null 2>&1; then
+  cat >&2 <<'EOF'
+The Lyvune image is built with BuildKit, which needs Docker's buildx component, and it is not installed. Without it
+Docker falls back to its legacy builder, which cannot read the Dockerfile ("failed to parse platform").
+  Arch Linux:     sudo pacman -S docker-buildx
+  Debian/Ubuntu:  sudo apt install docker-buildx-plugin   (from Docker's own apt repository)
+  Anything else:  https://docs.docker.com/build/install-buildx/
+To test an image that was built somewhere else:  scripts/docker-smoke-test.sh --image IMAGE
+EOF
+  exit 2
+fi
+
 if [ "$BUILD" = 1 ]; then
   IMAGE="lyvune:$PREFIX"
   BUILT_IMAGE="$IMAGE"
@@ -110,7 +145,9 @@ expect "time zones are there" docker run --rm "${PLATFORM_ARGS[@]}" --entrypoint
 
 step "New installation, writable library"
 mkdir -p "$WORK/a/data" "$WORK/a/music"
+own "$WORK/a"
 python3 scripts/smoke_test.py library "$WORK/a/music"
+own "$WORK/a"
 PORT_A="$(free_port)"
 if start a "$WORK/a/data" "$WORK/a/music" rw "$PORT_A"; then
   ok "the container is healthy (Docker's HEALTHCHECK)"
@@ -139,7 +176,9 @@ expect "it said goodbye" bash -c "docker logs $PREFIX-a 2>&1 | grep -q 'Lyvune s
 
 step "Read-only library"
 mkdir -p "$WORK/b/data" "$WORK/b/music"
+own "$WORK/b"
 python3 scripts/smoke_test.py library "$WORK/b/music"
+own "$WORK/b"
 PORT_B="$(free_port)"
 if start b "$WORK/b/data" "$WORK/b/music" ro "$PORT_B"; then
   smoke "$PORT_B" --sidecars ro --music-dir "$WORK/b/music" || FAILED=1
@@ -149,9 +188,11 @@ fi
 
 step "Migration from Navidrome (an existing navidrome.db and navidrome.toml, no lyvune.toml)"
 mkdir -p "$WORK/c/data" "$WORK/c/music"
+own "$WORK/c"
 cp -r "$WORK/a/music/." "$WORK/c/music/"
 cp "$WORK/a/data/lyvune.db" "$WORK/c/data/navidrome.db"
 printf 'UIWelcomeMessage = "Welcome back from navidrome.toml"\n' > "$WORK/c/data/navidrome.toml"
+own "$WORK/c"
 PORT_C="$(free_port)"
 if start c "$WORK/c/data" "$WORK/c/music" rw "$PORT_C"; then
   out="$(smoke "$PORT_C" --sidecars rw --music-dir "$WORK/c/music" || true)"
@@ -164,6 +205,7 @@ fi
 
 step "A data folder the user cannot write to"
 mkdir -p "$WORK/d/data" "$WORK/d/music"
+own "$WORK/d"
 chmod 555 "$WORK/d/data"
 docker run -d --name "$PREFIX-d" "${PLATFORM_ARGS[@]}" "${USER_ARGS[@]}" -v "$WORK/d/data:/data" -v "$WORK/d/music:/music:ro" "$IMAGE" > /dev/null
 sleep 6
