@@ -23,6 +23,8 @@ configuration and data keep working. The fork is based on upstream `master` at c
   choice you control in Settings (LRCLIB on by default, the others off; no provider's terms on keeping lyrics could be
   verified, so this is your decision and not a permission), and results that are not saved are only shown while
   playing. It never modifies audio files. Automatic retrieval is on by default; see [LYRICS_ENGINE.md](LYRICS_ENGINE.md).
+- Lyrics in Japanese, Chinese, Korean, Greek, Cyrillic or Arabic script can be romanized in the player with one
+  button (made in the browser, only when switched on; approximate); see [LYRICS_ENGINE.md](LYRICS_ENGINE.md).
 - The new interface text is translated to English and Italian. Other languages use English for it.
 
 Design decisions, architecture and the status of the work are in [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) and

@@ -180,6 +180,21 @@ Three facts are kept apart and never merged:
 
 **A saved file that holds only credits.** An earlier build saved a lone credit line for a song a service had no lyrics for. Such a file is ignored, listed in the lyrics manager, and removed only when the administrator confirms.
 
+### Romanization made in the player
+
+Lyrics that arrive without a romanization (from a provider or a sidecar) can be romanized **in the browser**, on request: the *Romanization* button in the lyrics view appears when the song is mostly written in a supported script, and the choice is remembered in the browser. A romanization supplied with the lyrics always wins and the button then shows it as before. Nothing is sent anywhere, saved to the sidecar, or computed until the button is on.
+
+| Script | Library | Notes |
+| --- | --- | --- |
+| Japanese | `kuromoji` (dictionary) with `wanakana` | Hepburn without macrons; kanji need the dictionary, kana alone do not. Particles are read as spoken (は *wa*, へ *e*, を *o*). |
+| Chinese | `pinyin-pro` | Pinyin with tone marks. Han characters alone are read as Chinese unless the song has kana or is tagged Japanese. |
+| Korean | `hangul-romanization` | Revised Romanization. |
+| Greek | `greek-transliteration` | ELOT 743-style. |
+| Russian, Ukrainian | `cyrillic-to-translit-js` | Ukrainian is chosen by its own letters (і ї є ґ) or the language tag; other Cyrillic languages are read as Russian. |
+| Arabic | `arabic-transliterate` | Lyrics carry no short vowels, so this is a consonant skeleton (*mrḥba bk*), not a pronunciation. |
+
+Each library is loaded the first time a song needs it. The Japanese dictionary (about 17 MB, copied from the `kuromoji` package at build time and fetched from `kuromoji-dict/`) is only requested for a line with kanji; it is not precached by the service worker and adds about 17 MB to the server binary. Romanization lines have line timing only, never word timing, and are approximate: names, readings of kanji that depend on context, and Arabic vowels can be wrong.
+
 ### What the provider list shows
 
 *Implemented*, *set up*, *seen working*, *karaoke seen*, *checked in development* and *can be saved* are separate facts, and none is inferred from another:
