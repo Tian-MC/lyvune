@@ -182,18 +182,40 @@ Three facts are kept apart and never merged:
 
 ### Romanization made in the player
 
-Lyrics that arrive without a romanization (from a provider or a sidecar) can be romanized **in the browser**, on request: the *Romanization* button in the lyrics view appears when the song is mostly written in a supported script, and the choice is remembered in the browser. A romanization supplied with the lyrics always wins and the button then shows it as before. Nothing is sent anywhere, saved to the sidecar, or computed until the button is on.
+Lyrics that arrive without a romanization (from a provider or a sidecar) can be romanized **in the browser**, on request: the *Romanization* button in the lyrics view appears when the song is mostly written in a supported script, and the choice is remembered in the browser. Nothing is sent anywhere, saved to the sidecar, or computed until the button is on, and the original lines, their timing and the words of the karaoke are never touched: the romanization is a separate line shown above the text.
+
+**Provider and generated.** A romanization supplied with the lyrics always wins and is shown as it is. Only the lines the provider left empty, or echoed unchanged, are filled in, so a provider that skipped a line does not leave a hole and never has a line replaced. Provider lines are matched to the lyrics by timestamp (or by position when the line counts are equal); a provider that does not line up gives nothing rather than a shifted romanization.
 
 | Script | Library | Notes |
 | --- | --- | --- |
-| Japanese | `kuromoji` (dictionary) with `wanakana` | Hepburn without macrons; kanji need the dictionary, kana alone do not. Particles are read as spoken (は *wa*, へ *e*, を *o*). |
-| Chinese | `pinyin-pro` | Pinyin with tone marks. Han characters alone are read as Chinese unless the song has kana or is tagged Japanese. |
-| Korean | `hangul-romanization` | Revised Romanization. |
-| Greek | `greek-transliteration` | ELOT 743-style. |
-| Russian, Ukrainian | `cyrillic-to-translit-js` | Ukrainian is chosen by its own letters (і ї є ґ) or the language tag; other Cyrillic languages are read as Russian. |
-| Arabic | `arabic-transliterate` | Lyrics carry no short vowels, so this is a consonant skeleton (*mrḥba bk*), not a pronunciation. |
+| Japanese | `kuromoji` (mecab-ipadic) for the analysis, own kana converter | See below |
+| Chinese | `pinyin-pro` | Pinyin with tone marks |
+| Korean | `hangul-romanization` | Revised Romanization |
+| Greek | `greek-transliteration` | ELOT 743-style |
+| Russian, Ukrainian | `cyrillic-to-translit-js` | Ukrainian is chosen by its own letters (і ї є ґ) or the language tag; other Cyrillic languages are read as Russian |
+| Arabic | `arabic-transliterate` | Lyrics carry no short vowels, so this is a consonant skeleton (*mrḥba bk*), not a pronunciation |
 
-Each library is loaded the first time a song needs it. The Japanese dictionary (about 17 MB, copied from the `kuromoji` package at build time and fetched from `kuromoji-dict/`) is only requested for a line with kanji; it is not precached by the service worker and adds about 17 MB to the server binary. Romanization lines have line timing only, never word timing, and are approximate: names, readings of kanji that depend on context, and Arabic vowels can be wrong.
+Each library is loaded the first time a song needs it. A line with several scripts goes through each romanizer in turn and keeps its Latin words.
+
+**Japanese** is done in stages (`ui/src/lyrics/romanize/japanese.js`, `kana.js`), because a morphological analyzer gives readings, not romaji, and its token boundaries are not word boundaries:
+
+1. *Analyze* every line, kana-only ones too (the first version sent those straight to a kana table, which is why they came out as one long word).
+2. *Repair* what the analyzer gets wrong: 々 takes the reading of the kanji before it with rendaku where the sounds allow it (人々 *hitobito*, 色々 *iroiro*), and is left as written when there is no kanji to repeat; a run of unknown katakana is cut into the dictionary words it is made of (`ホップステップジャンプ`) or into its repeats (`ギブミーギブミー`); a kanji the dictionary only has as a suffix is read as the word it is after kana (手 *te*, not *shu*) unless the suffix reading differs by rendaku alone (顔 *gao*).
+3. *Group* tokens into written words: particles stand alone, inflections and auxiliaries attach to their verb or adjective, the copula (です, だ) stands alone, pieces of a katakana word are joined (`ピン`+`キー`), a lone kana is joined to the kana word it belongs to (`なか`+`み`), and a sentence-final particle followed by kana of the same phrase is the start of a word (`よこ顔`). The spaces of the source are kept.
+4. *Convert* to Hepburn: は/へ/を as particles are *wa/e/o*, a sokuon crosses the boundary of two tokens (`とっ`+`て` is *totte*), small kana (`ティ` *ti*, `ウィ` *wi*, `チィ` *chii*, `ピャ` *pya*), `ッチ` is *cch*, `ン` before a vowel is *n'*.
+5. *Assemble* with the punctuation against the word before it, quotation marks against what they quote, and Latin text and numbers as they were.
+
+Long vowels have two styles, chosen with the select beside the button and remembered for every song: doubled letters (`toukyou`, `haado`, the default, easy to type) or macrons (`tōkyō`, `hādo`). In the macron style a katakana ー is always a macron, おう/おお/ああ/うう/ええ inside a word are macrons, and the final う of a verb is not (`omou`, but `ikō`). Switching style does not analyze anything again.
+
+**Han characters** are ambiguous: kanji with no kana in the song and no language tag could be Chinese or Japanese. They are read as Chinese unless the song has kana or is tagged Japanese, so Chinese lyrics are never read with Japanese readings, and when the choice is really open the player offers *Han characters: automatic / Chinese / Japanese*, remembered per song.
+
+**Resources.** The analyzer's dictionary (about 17 MB, mecab-ipadic through `kuromoji`) is copied from the npm package at build time into `kuromoji-dict/`, fetched the first time a Japanese line is romanized, and never at startup. It is not precached by the service worker and adds about 17 MB to the server binary. The build also copies the mecab-ipadic `NOTICE.md` and the Apache licence of kuromoji next to it, as their licences require. If the dictionary cannot be loaded, kana lines are still read by the converter, lines with kanji are left out rather than guessed, the player says romanization could not be loaded when nothing at all worked, and a failed load is not retried for 30 seconds. Results are cached by line, engine and style (4,000 lines).
+
+**Accuracy and limits.** Romanization is approximate. Measured on a sample of 1,000 lines, the analysis and conversion take under 0.1 ms a line, so no Web Worker was needed; loading the dictionary takes about 0.7 s the first time. Known limits: context-dependent kanji readings the dictionary chooses wrongly, proper names and invented words (read by their kana when the dictionary does not know them), compounds that the dictionary stores as one word (`もう一度` is *mouichido*), and rendaku in compounds the dictionary does not have. Chinese is written syllable by syllable without word boundaries, and Arabic is not vocalized. Spellings of invented names are conventions, not a single correct answer.
+
+**Alternatives considered.** `kuroshiro` (with `kuroshiro-analyzer-kuromoji`) was used first and dropped: its analyzer uses Node's `path` and does not run in the browser, and it only wraps the same dictionary. `wanakana` was dropped for the converter because it cannot write `ティ`, `ウィ`, `チィ` or `ヴ` correctly and cannot express long vowels as macrons. A UniDic- or NEologd-based analyzer would improve names and compounds but is several times larger than mecab-ipadic and has no maintained browser build; it is not worth the weight without measurements that show it, so kuromoji stays and the repairs above are done around it.
+
+**Manual corrections (not built yet).** Corrections for names or unusual readings would be a per-track overlay kept in the browser (`lyrics.romanization.fix.<trackId>`: a list of `{ from, to }` replacements applied to the romaji of the line that contains `from`, never to the lyrics, with a reset to the generated text and a distinct style for corrected lines). They are not implemented because the editor needs its own interface; the architecture keeps the original text, the timing and the provider romanization untouched.
 
 ### What the provider list shows
 
