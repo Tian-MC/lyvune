@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import { readFileSync, readdirSync } from 'node:fs'
+import { join } from 'node:path'
 
 const frontendPort = parseInt(process.env.PORT) || 4533
 const backendPort = frontendPort + 100
@@ -9,6 +11,7 @@ const backendPort = frontendPort + 100
 export default defineConfig({
   plugins: [
     react(),
+    kuromojiDictionary(),
     VitePWA({
       manifest: manifest(),
       strategies: 'injectManifest',
@@ -18,7 +21,7 @@ export default defineConfig({
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3 MiB
         // index.html is rendered per-user by the server, so a precached copy
         // would pin one user's config (and auth payload) across logins
-        globIgnores: ['index.html'],
+        globIgnores: ['index.html', 'kuromoji-dict/**'],
       },
       devOptions: {
         enabled: true,
@@ -80,5 +83,38 @@ function manifest() {
         type: 'image/png',
       },
     ],
+  }
+}
+
+// The Japanese romanizer reads kuromoji's dictionary over HTTP. It is copied
+// from the npm package instead of being kept in the repository, and fetched
+// only when a song with kanji is romanized.
+function kuromojiDictionary() {
+  const dir = join('node_modules', 'kuromoji', 'dict')
+  const prefix = '/kuromoji-dict/'
+  return {
+    name: 'kuromoji-dictionary',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const url = (req.url || '').split('?')[0]
+        if (!url.startsWith(prefix) || url.includes('..')) return next()
+        try {
+          res.setHeader('Content-Type', 'application/octet-stream')
+          res.end(readFileSync(join(dir, url.slice(prefix.length))))
+        } catch {
+          next()
+        }
+      })
+    },
+    generateBundle() {
+      for (const name of readdirSync(dir)) {
+        if (!name.endsWith('.dat.gz')) continue
+        this.emitFile({
+          type: 'asset',
+          fileName: `kuromoji-dict/${name}`,
+          source: readFileSync(join(dir, name)),
+        })
+      }
+    },
   }
 }

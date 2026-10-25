@@ -16,9 +16,27 @@ import { prefersReducedMotion, segmentProgress } from './karaoke'
 import { useActiveLine } from './useActiveLine'
 import { LyricsSourceBar } from './LyricsSourceBar'
 import { useLyrics } from './useLyrics'
+import { useRomanization } from './useRomanization'
 import styles from './LyricsView.module.css'
 
 const MANUAL_SCROLL_GRACE_MS = 4000
+const ROMANIZATION_KEY = 'lyrics.romanization'
+
+// The listener's choice is remembered in this browser; storage may be blocked
+const readRomanization = () => {
+  try {
+    return localStorage.getItem(ROMANIZATION_KEY) === 'on'
+  } catch {
+    return false
+  }
+}
+const writeRomanization = (on) => {
+  try {
+    localStorage.setItem(ROMANIZATION_KEY, on ? 'on' : 'off')
+  } catch {
+    // not remembered
+  }
+}
 
 /**
  * Word-level karaoke for the active line only. Progress is written to CSS
@@ -244,9 +262,11 @@ const PlainLyrics = ({ lyrics, showTranslation, showPronunciation }) => {
 /** Lyrics for the given track: synced, unsynced, or a quiet fallback. */
 export const LyricsView = ({ trackId, title, isRadio, className }) => {
   const t = useT()
-  const { status, lyrics, searching } = useLyrics(trackId, !isRadio)
+  const { status, lyrics: found, searching } = useLyrics(trackId, !isRadio)
   const [showTranslation, setShowTranslation] = useState(true)
-  const [showPronunciation, setShowPronunciation] = useState(false)
+  const [showPronunciation, setShowPronunciation] = useState(readRomanization)
+  const roman = useRomanization(found, showPronunciation)
+  const lyrics = roman.lyrics
 
   let body
   if (isRadio || !trackId) {
@@ -302,7 +322,9 @@ export const LyricsView = ({ trackId, title, isRadio, className }) => {
     )
   }
 
-  const toggles = lyrics && (lyrics.hasTranslation || lyrics.hasPronunciation)
+  const toggles =
+    lyrics &&
+    (lyrics.hasTranslation || lyrics.hasPronunciation || roman.available)
   return (
     <div className={clsx(styles.root, className)}>
       {toggles && (
@@ -318,16 +340,38 @@ export const LyricsView = ({ trackId, title, isRadio, className }) => {
               {t('ui.lyrics.translation', 'Translation')}
             </Button>
           )}
-          {lyrics.hasPronunciation && (
+          {(lyrics.hasPronunciation || roman.available) && (
             <Button
               size="sm"
               variant="chip"
               icon={QuoteIcon}
               aria-pressed={showPronunciation}
-              onClick={() => setShowPronunciation((v) => !v)}
+              aria-busy={roman.status === 'loading'}
+              title={
+                roman.available
+                  ? t(
+                      'ui.lyrics.romanizationAuto',
+                      'Generated on this device. It is approximate, and Arabic is written without short vowels.',
+                    )
+                  : undefined
+              }
+              onClick={() =>
+                setShowPronunciation((v) => {
+                  writeRomanization(!v)
+                  return !v
+                })
+              }
             >
               {t('ui.lyrics.pronunciation', 'Romanization')}
             </Button>
+          )}
+          {showPronunciation && roman.status === 'error' && (
+            <span role="alert" className={styles.toggleError}>
+              {t(
+                'ui.lyrics.romanizationFailed',
+                'Romanization could not be loaded.',
+              )}
+            </span>
           )}
         </div>
       )}

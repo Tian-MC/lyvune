@@ -180,3 +180,9 @@
     transition: none;
   }
 }
+
+.toggleError {
+  align-self: center;
+  font-size: var(--text-sm, 0.8125rem);
+  color: var(--color-danger, currentColor);
+}

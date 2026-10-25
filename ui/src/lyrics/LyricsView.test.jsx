@@ -139,7 +139,7 @@ describe('<LyricsView /> (fixtures)', () => {
       hasWords: false,
       hasTranslation: false,
       hasPronunciation: false,
-      lines: [line('テスト')],
+      lines: [line('test')],
     })
     expect(screen.queryByText('Translation')).toBeNull()
     expect(screen.queryByText('Romanization')).toBeNull()
@@ -167,5 +167,34 @@ describe('<LyricsView /> (fixtures)', () => {
 
     fireEvent.click(screen.getByText('Translation'))
     expect(screen.queryByText('FIXTURE TRANSLATION')).toBeNull()
+  })
+
+  it('offers a romanization made here when the source has none', async () => {
+    localStorage.clear()
+    show({
+      synced: false,
+      hasWords: false,
+      lang: '',
+      hasTranslation: false,
+      hasPronunciation: false,
+      lines: [line('안녕하세요'), line('사랑해요')],
+    })
+    const toggle = screen.getByText('Romanization')
+    expect(screen.queryByText('annyeonghaseyo')).toBeNull()
+    fireEvent.click(toggle)
+    expect(await screen.findByText('annyeonghaseyo')).toBeTruthy()
+    expect(localStorage.getItem('lyrics.romanization')).toBe('on')
+  })
+
+  it('has no romanization button for lyrics in the Latin alphabet', () => {
+    show({
+      synced: false,
+      hasWords: false,
+      lang: '',
+      hasTranslation: false,
+      hasPronunciation: false,
+      lines: [line('first line'), line('second line')],
+    })
+    expect(screen.queryByText('Romanization')).toBeNull()
   })
 })

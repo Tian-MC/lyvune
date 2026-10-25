@@ -1029,6 +1029,8 @@
         "plain": "Plain",
         "synced": "Synced"
       },
+      "romanizationAuto": "Generated on this device. It is approximate, and Arabic is written without short vowels.",
+      "romanizationFailed": "Romanization could not be loaded.",
       "searching": "Looking for lyrics…",
       "settings": {
         "autoPersist": "Save found lyrics automatically",
