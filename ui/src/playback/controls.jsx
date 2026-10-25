@@ -1,4 +1,4 @@
-import React, { memo } from 'react'
+import React, { memo, useEffect, useRef } from 'react'
 import clsx from 'clsx'
 import { useDispatch } from 'react-redux'
 import { useT } from '../i18n/useT'
@@ -172,15 +172,39 @@ export const ProgressLine = memo(() => {
 
 ProgressLine.displayName = 'ProgressLine'
 
+const WHEEL_VOLUME_STEP = 0.05
+
 export const VolumeControl = memo(({ className }) => {
   const t = useT()
   const { volume } = usePlayerSettings()
   const muted = useMedia((m) => !!m.muted)
+  const rootRef = useRef(null)
+  const current = useRef({ volume, muted })
+  current.current = { volume, muted }
+
+  // Scrolling over the control changes the volume. The listener is not passive,
+  // or the page would scroll along with it
+  useEffect(() => {
+    const el = rootRef.current
+    if (!el) return undefined
+    const onWheel = (e) => {
+      if (!e.deltaY) return
+      e.preventDefault()
+      const { volume: v, muted: m } = current.current
+      if (m && e.deltaY < 0) engine.toggleMute()
+      const base = m ? 0 : v
+      const next =
+        base + (e.deltaY < 0 ? WHEEL_VOLUME_STEP : -WHEEL_VOLUME_STEP)
+      engine.setVolume(Math.round(next * 100) / 100)
+    }
+    el.addEventListener('wheel', onWheel, { passive: false })
+    return () => el.removeEventListener('wheel', onWheel)
+  }, [])
   if (!engine.canControlVolume) return null
   const Icon =
     muted || volume === 0 ? MuteIcon : volume < 0.5 ? VolumeLowIcon : VolumeIcon
   return (
-    <div className={clsx(styles.volume, className)}>
+    <div ref={rootRef} className={clsx(styles.volume, className)}>
       <IconButton
         size="sm"
         icon={Icon}
