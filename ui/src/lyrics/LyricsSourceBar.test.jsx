@@ -51,6 +51,34 @@ describe('<LyricsSourceBar />', () => {
     expect(screen.getByText('Synced')).toBeInTheDocument()
   })
 
+  it('says when the lyrics are only held in memory', async () => {
+    api.status.mockResolvedValue(
+      status({
+        current: {
+          id: 'display',
+          source: 'remote',
+          provider: 'netease',
+          quality: 'karaoke',
+          origin: 'auto',
+        },
+      }),
+    )
+    render(<LyricsSourceBar trackId="t-shown" title="Song" />)
+    expect(
+      await screen.findByText('Shown from NetEase Cloud Music · not saved'),
+    ).toBeInTheDocument()
+    expect(screen.getByText('Karaoke')).toBeInTheDocument()
+    expect(
+      screen.getByText(/gone after a restart, not available offline/),
+    ).toBeInTheDocument()
+  })
+
+  it('does not say that about lyrics that are saved', async () => {
+    render(<LyricsSourceBar trackId="t-saved" title="Song" />)
+    await screen.findByText(/Downloaded from LRCLIB/)
+    expect(screen.queryByText(/gone after a restart/)).toBeNull()
+  })
+
   it('shows the lock, the offset and the provider attribution', async () => {
     api.status.mockResolvedValue(
       status({

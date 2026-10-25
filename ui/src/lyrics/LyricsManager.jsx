@@ -31,7 +31,7 @@ const errorText = (t, e) => {
     case 'not-storable':
       return t(
         'ui.lyrics.error.notStorable',
-        'Saving is off for this provider. An administrator can allow it in Settings, under Lyrics and Providers.',
+        'These lyrics may neither be kept nor shown by this server. They can only be previewed.',
       )
     case 'no-candidate':
       return t(
@@ -178,7 +178,12 @@ export const LyricsManager = ({ trackId, title, onClose }) => {
         changed(res)
         setNotice({
           kind: 'ok',
-          text: t('ui.lyrics.manager.applied', 'Lyrics updated.'),
+          text: res?.notSaved
+            ? t(
+                'ui.lyrics.manager.appliedShown',
+                'Shown, not saved. It is held in memory only: gone after a restart and not available offline.',
+              )
+            : t('ui.lyrics.manager.applied', 'Lyrics updated.'),
           undo: res?.undo,
         })
       } catch (e) {

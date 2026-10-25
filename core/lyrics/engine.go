@@ -306,8 +306,9 @@ func needsConfirmation(cur current) bool {
 	case SourceUser.String(), SourceSidecar.String(), SourceEmbedded.String():
 		return true
 	case SourceRemote.String():
-		// Lyrics found automatically may be replaced freely; ones the administrator chose may not
-		return cur.info.Origin == originChosen
+		// Lyrics shown after an automatic retrieval may be replaced freely. A plugin's
+		// lyrics and ones the administrator chose to show may not
+		return cur.info.Origin != originAuto
 	}
 	return false
 }
@@ -680,8 +681,9 @@ func (l *lyricsService) upgrade(ctx context.Context, mf *model.MediaFile, s Sett
 			return ResolveResult{Result: ResolveHave}, nil
 		}
 	case SourceRemote.String():
-		// Lyrics the administrator chose to show are never replaced automatically
-		if cur.info.Origin == originChosen {
+		// Only lyrics shown after an automatic retrieval are upgraded; a plugin's
+		// lyrics and ones the administrator chose to show are never replaced automatically
+		if cur.info.Origin != originAuto {
 			return ResolveResult{Result: ResolveHave}, nil
 		}
 	default:

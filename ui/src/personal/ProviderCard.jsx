@@ -48,7 +48,7 @@ const Tag = ({ on, children, warn }) => (
  * implemented, set up, seen working and seen returning karaoke are separate
  * facts, and none is inferred from another.
  */
-export const ProviderCard = ({ p, onToggle, onStore }) => {
+export const ProviderCard = ({ p, onToggle }) => {
   const t = useT()
   const [availKey, availDefault, tone] = AVAILABILITY[p.availability] ?? [
     'ui.lyrics.provider.unknown',
@@ -85,39 +85,6 @@ export const ProviderCard = ({ p, onToggle, onStore }) => {
 
       {p.reason && <p className={styles.hint}>{p.reason}</p>}
 
-      {p.storeOptIn && (
-        <div className={styles.store}>
-          <FormControlLabel
-            labelPlacement="start"
-            control={
-              <Switch
-                color="primary"
-                size="small"
-                checked={!!p.storeAllowed}
-                onChange={(e) => onStore(p.id, e.target.checked)}
-                inputProps={{
-                  'aria-label': t(
-                    'ui.lyrics.provider.saveSwitch',
-                    'Save lyrics from %{name} next to my audio',
-                    { name: p.name },
-                  ),
-                }}
-              />
-            }
-            label={t(
-              'ui.lyrics.provider.saveSwitchLabel',
-              'Save its lyrics next to my audio',
-            )}
-          />
-          <p className={styles.hint}>
-            {t(
-              'ui.lyrics.provider.saveHint',
-              'Its terms grant no permission to keep the lyrics, so this is your decision. Off by default; without it you can still preview and choose a version for now.',
-            )}
-          </p>
-        </div>
-      )}
-
       <p className={styles.tags}>
         <Tag on={p.implemented}>
           {p.implemented
@@ -149,11 +116,25 @@ export const ProviderCard = ({ p, onToggle, onStore }) => {
             )}
           </Tag>
         )}
-        <Tag on={p.storable} warn={!p.storable && p.implemented}>
-          {p.storable
-            ? t('ui.lyrics.provider.canStore', 'Lyrics can be saved')
-            : t('ui.lyrics.provider.notStoredShort', 'Preview only')}
-        </Tag>
+        {p.storeEligible ? (
+          <>
+            <Tag on>{t('ui.lyrics.provider.tagCanSave', 'Can be saved')}</Tag>
+            <Tag on={p.storeVerified} warn={!p.storeVerified}>
+              {p.storeVerified
+                ? t('ui.lyrics.provider.tagVerified', 'Permission verified')
+                : t(
+                    'ui.lyrics.provider.tagNotVerified',
+                    'Permission not verified',
+                  )}
+            </Tag>
+          </>
+        ) : p.display === 'session' ? (
+          <Tag warn>{t('ui.lyrics.provider.tagShown', 'Shown, not saved')}</Tag>
+        ) : (
+          <Tag warn={p.implemented}>
+            {t('ui.lyrics.provider.tagPreview', 'Preview only')}
+          </Tag>
+        )}
       </p>
 
       <p className={styles.hint}>
@@ -168,6 +149,64 @@ export const ProviderCard = ({ p, onToggle, onStore }) => {
           .filter(Boolean)
           .join(' · ')}
       </p>
+
+      <p className={styles.hint}>
+        {p.wordSync
+          ? p.karaokeVerified
+            ? t('ui.lyrics.provider.karaokeYes', 'Real karaoke: seen working')
+            : t(
+                'ui.lyrics.provider.karaokeCan',
+                'Real karaoke when the song has it (not seen yet)',
+              )
+          : t('ui.lyrics.provider.karaokeNo', 'No word-level karaoke')}
+      </p>
+
+      {p.implemented && (
+        <p className={styles.hint}>
+          {p.storeEligible
+            ? t(
+                'ui.lyrics.provider.storageEligible',
+                'Results can be saved next to the audio.',
+              )
+            : p.display === 'session'
+              ? t(
+                  'ui.lyrics.provider.storageShown',
+                  'Results are shown while playing and never saved.',
+                )
+              : t(
+                  'ui.lyrics.provider.storagePreview',
+                  'Results can only be previewed in the lyrics manager.',
+                )}{' '}
+          {p.storeEligible
+            ? t(
+                'ui.lyrics.provider.offlineYes',
+                'Available offline once saved.',
+              )
+            : t('ui.lyrics.provider.offlineNo', 'Not available offline.')}
+        </p>
+      )}
+
+      {p.implemented && p.storeBasis && (
+        <p className={styles.hint}>
+          {p.storeVerified
+            ? t(
+                'ui.lyrics.provider.permVerified',
+                'Storage permission verified: %{basis} (%{reference})',
+                { basis: p.storeBasis, reference: p.storeReference },
+              )
+            : p.storeEligible
+              ? t(
+                  'ui.lyrics.provider.permNotVerified',
+                  'Storage permission not verified: %{basis}',
+                  { basis: p.storeBasis },
+                )
+              : t(
+                  'ui.lyrics.provider.permNone',
+                  'No storage permission: %{basis}',
+                  { basis: p.storeBasis },
+                )}
+        </p>
+      )}
 
       {p.formats?.length > 0 && (
         <p className={styles.hint}>

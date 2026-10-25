@@ -35,6 +35,14 @@ describe('lyrics source wording', () => {
     [{ source: 'user', provider: 'embedded' }, 'Chosen from embedded'],
     [{ source: 'user' }, 'Chosen by you'],
     [{ source: 'remote', provider: 'myplugin' }, 'Plugin: myplugin'],
+    [
+      { id: 'plugin:myplugin', source: 'remote', provider: 'myplugin' },
+      'Plugin: myplugin',
+    ],
+    [
+      { id: 'display', source: 'remote', provider: 'kugou' },
+      'Shown from KuGou Music · not saved',
+    ],
     [{ source: 'unknown' }, ''],
   ])('describes %j', (info, expected) => {
     expect(sourceLabel(t, info)).toBe(expected)

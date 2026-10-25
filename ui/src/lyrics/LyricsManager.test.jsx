@@ -263,7 +263,7 @@ describe('<LyricsManager />', () => {
       expect(api.apply).not.toHaveBeenCalled()
     })
 
-    it('flags an uncertain match and a candidate that cannot be saved', async () => {
+    it('flags an uncertain match, and says what each candidate may do', async () => {
       api.search.mockResolvedValue({
         candidates: [
           candidate({
@@ -271,9 +271,17 @@ describe('<LyricsManager />', () => {
             provider: 'musixmatch',
             verified: false,
             storable: false,
+            displayOnly: false,
             match: { confidence: 0.7 },
             attribution: 'Lyrics powered by Musixmatch',
           }),
+          candidate({
+            id: 'kugou:y',
+            provider: 'kugou',
+            storable: false,
+            displayOnly: true,
+          }),
+          candidate({ id: 'lrclib:z', provider: 'lrclib', storable: true }),
         ],
         providers: [],
       })
@@ -284,13 +292,53 @@ describe('<LyricsManager />', () => {
       expect(
         await screen.findByText('Uncertain match · 70%'),
       ).toBeInTheDocument()
-      expect(screen.getByText('Cannot be saved')).toBeInTheDocument()
       expect(
         screen.getByText('Lyrics powered by Musixmatch'),
       ).toBeInTheDocument()
+      // preview only: cannot be chosen at all
+      expect(screen.getByText('Preview only')).toBeInTheDocument()
+      // may be shown while playing, never kept
+      expect(screen.getByText('Shown only, not saved')).toBeInTheDocument()
       expect(
-        screen.getByRole('button', { name: 'Use this version' }),
-      ).toBeDisabled()
+        screen.getByRole('button', { name: 'Show this version (not saved)' }),
+      ).toBeEnabled()
+      // may be kept
+      expect(screen.getByText('Can be saved')).toBeInTheDocument()
+      const use = screen.getAllByRole('button', { name: 'Use this version' })
+      expect(use.some((b) => b.disabled)).toBe(true)
+      expect(use.some((b) => !b.disabled)).toBe(true)
+    })
+
+    it('says plainly that a chosen result is shown, not saved', async () => {
+      api.search.mockResolvedValue({
+        candidates: [
+          candidate({
+            id: 'kugou:y',
+            provider: 'kugou',
+            storable: false,
+            displayOnly: true,
+          }),
+        ],
+        providers: [],
+      })
+      api.apply.mockResolvedValue({
+        action: 'shown-not-saved',
+        notSaved: true,
+        status: status(),
+      })
+      await open(id())
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Search for better lyrics' }),
+      )
+      fireEvent.click(
+        await screen.findByRole('button', {
+          name: 'Show this version (not saved)',
+        }),
+      )
+      expect(
+        await screen.findByText(/Shown, not saved\. It is held in memory only/),
+      ).toBeInTheDocument()
+      expect(screen.queryByText('Lyrics updated.')).toBeNull()
     })
 
     it('says when a provider is not set up, slow or down, and when nothing matched', async () => {
@@ -399,7 +447,7 @@ describe('<LyricsManager />', () => {
     })
 
     it.each([
-      ['not-storable', 'Saving is off for this provider'],
+      ['not-storable', 'neither be kept nor shown'],
       ['no-candidate', 'no longer available'],
       ['read-only', 'cannot be written to'],
       ['not-managed', 'did not write'],
@@ -446,6 +494,83 @@ describe('<LyricsManager />', () => {
       expect(
         screen.getAllByRole('button', { name: 'Use this version' }),
       ).toHaveLength(1)
+    })
+  })
+
+  describe('a saved file that is not used', () => {
+    const ignored = [
+      {
+        file: '01 - Song.lyrics.json',
+        provider: 'netease',
+        reason: 'credits-only',
+      },
+    ]
+
+    it('is explained, and removed only after an explicit confirmation', async () => {
+      api.status.mockResolvedValue(
+        status({ current: null, local: [], ignored }),
+      )
+      api.remove.mockImplementation(async () => {
+        // after the removal the server no longer reports the file
+        api.status.mockResolvedValue(
+          status({ current: null, local: [], ignored: [] }),
+        )
+        return {
+          action: 'deleted',
+          status: status({ current: null, local: [], ignored: [] }),
+        }
+      })
+      await open(id())
+      expect(screen.getByText('A saved file is not used')).toBeInTheDocument()
+      expect(
+        screen.getByText(/01 - Song\.lyrics\.json only holds credits/),
+      ).toBeInTheDocument()
+      expect(api.remove).not.toHaveBeenCalled()
+
+      fireEvent.click(screen.getByRole('button', { name: 'Remove file…' }))
+      expect(api.remove).not.toHaveBeenCalled()
+      fireEvent.click(screen.getByRole('button', { name: 'Keep it' }))
+      expect(api.remove).not.toHaveBeenCalled()
+      expect(
+        screen.getByRole('button', { name: 'Remove file…' }),
+      ).toBeInTheDocument()
+
+      fireEvent.click(screen.getByRole('button', { name: 'Remove file…' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Remove it' }))
+      await waitFor(() => expect(api.remove).toHaveBeenCalledTimes(1))
+      await waitFor(() =>
+        expect(screen.queryByText('A saved file is not used')).toBeNull(),
+      )
+    })
+
+    it('does not appear when there is nothing ignored', async () => {
+      await open(id())
+      expect(screen.queryByText('A saved file is not used')).toBeNull()
+    })
+  })
+
+  describe('lyrics shown from memory', () => {
+    const shown = {
+      id: 'display',
+      source: 'remote',
+      provider: 'kugou',
+      quality: 'karaoke',
+      origin: 'chosen',
+      lines: 3,
+    }
+
+    it('says they are not saved, and offers no deleting of a file that does not exist', async () => {
+      api.status.mockResolvedValue(status({ current: shown, local: [] }))
+      await open(id())
+      expect(
+        screen.getByText('Shown from KuGou Music · not saved'),
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText(/gone after a restart, and not available offline/),
+      ).toBeInTheDocument()
+      expect(
+        screen.queryByRole('button', { name: 'Delete saved lyrics' }),
+      ).toBeNull()
     })
   })
 

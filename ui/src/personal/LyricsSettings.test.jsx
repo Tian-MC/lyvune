@@ -50,6 +50,12 @@ const providers = [
     liveVerified: true,
     karaokeVerified: true,
     storable: true,
+    storeEligible: true,
+    storeVerified: false,
+    storeBasis:
+      'A free community service; its terms were not found, so this is an assumption.',
+    display: 'session',
+    offline: 'when-saved',
     wordSync: true,
     note: 'Free community service.',
   },
@@ -73,6 +79,10 @@ const providers = [
       },
     ],
     storable: false,
+    storeEligible: false,
+    storeBasis: 'Keeping lyrics depends on your agreement with Musixmatch.',
+    display: 'preview',
+    offline: 'no',
     reason: 'Set Lyrics.Musixmatch.ApiKey in the configuration',
     note: 'Results are not saved.',
   },
@@ -90,8 +100,10 @@ const providers = [
     karaokeVerified: false,
     wordSync: true,
     storable: false,
-    storeOptIn: true,
-    storeAllowed: false,
+    storeEligible: false,
+    storeBasis: 'Unofficial endpoints; no terms allow keeping its lyrics.',
+    display: 'session',
+    offline: 'no',
     formats: ['krc', 'lrc'],
     lastError: 'KuGou answered 503',
     lastFailure: '2026-10-25T12:00:00Z',
@@ -191,13 +203,13 @@ describe('<LyricsSettings />', () => {
       expect(lrclib.getByText('Implemented')).toBeInTheDocument()
       expect(lrclib.getByText('Seen working')).toBeInTheDocument()
       expect(lrclib.getByText('Karaoke seen')).toBeInTheDocument()
-      expect(lrclib.getByText('Lyrics can be saved')).toBeInTheDocument()
+      expect(lrclib.getByText('Can be saved')).toBeInTheDocument()
 
       // KuGou has the adapter and word timing, but no karaoke was seen yet
       const kugou = card('kugou')
       expect(kugou.getByText('Implemented')).toBeInTheDocument()
       expect(kugou.getByText('Karaoke not seen yet')).toBeInTheDocument()
-      expect(kugou.getByText('Preview only')).toBeInTheDocument()
+      expect(kugou.getByText('Shown, not saved')).toBeInTheDocument()
       expect(kugou.getByText(/Reads: krc, lrc/)).toBeInTheDocument()
     })
 
@@ -261,48 +273,76 @@ describe('<LyricsSettings />', () => {
       )
     })
 
-    it('lets the administrator allow saving for a provider that grants no permission itself', async () => {
+    it('says, for each provider, what its results may do: saved, shown or only previewed', async () => {
       await load()
+      const lrclib = card('lrclib')
+      expect(lrclib.getByText('Can be saved')).toBeInTheDocument()
+      expect(lrclib.getByText('Permission not verified')).toBeInTheDocument()
+      expect(
+        lrclib.getByText(
+          /Storage permission not verified: A free community service/,
+        ),
+      ).toBeInTheDocument()
+      expect(
+        lrclib.getByText(/Available offline once saved/),
+      ).toBeInTheDocument()
+      expect(lrclib.getByText('Real karaoke: seen working')).toBeInTheDocument()
+
       const kugou = card('kugou')
-      expect(kugou.getByText('Preview only')).toBeInTheDocument()
-      fireEvent.click(
-        kugou.getByRole('checkbox', {
-          name: 'Save lyrics from KuGou Music next to my audio',
-        }),
-      )
-      await waitFor(() =>
-        expect(api.saveSettings).toHaveBeenCalledWith({
-          ...settings,
-          store: ['kugou'],
-        }),
-      )
+      expect(kugou.getByText('Shown, not saved')).toBeInTheDocument()
+      expect(
+        kugou.getByText(/shown while playing and never saved/),
+      ).toBeInTheDocument()
+      expect(kugou.getByText(/Not available offline/)).toBeInTheDocument()
+      expect(
+        kugou.getByText(/No storage permission: Unofficial endpoints/),
+      ).toBeInTheDocument()
+      expect(
+        kugou.getByText('Real karaoke when the song has it (not seen yet)'),
+      ).toBeInTheDocument()
+
+      const mm = card('musixmatch')
+      expect(mm.getByText('Preview only')).toBeInTheDocument()
+      expect(mm.getByText(/only be previewed/)).toBeInTheDocument()
+      expect(mm.getByText('No word-level karaoke')).toBeInTheDocument()
     })
 
-    it('takes the permission back, and offers none for a provider that may already save', async () => {
+    it('shows a verified permission with the document it rests on', async () => {
       api.settings.mockResolvedValue({
-        settings: { ...settings, store: ['kugou'] },
+        settings,
         providers: providers.map((p) =>
-          p.id === 'kugou' ? { ...p, storeAllowed: true, storable: true } : p,
+          p.id === 'kugou'
+            ? {
+                ...p,
+                storable: true,
+                storeEligible: true,
+                storeVerified: true,
+                storeBasis: 'Licence agreement of 2026-11-02',
+                storeReference: 'contract no. 4711',
+              }
+            : p,
         ),
       })
       await load()
-      expect(card('kugou').getByText('Lyrics can be saved')).toBeInTheDocument()
-      fireEvent.click(
-        card('kugou').getByRole('checkbox', {
-          name: 'Save lyrics from KuGou Music next to my audio',
-        }),
-      )
-      await waitFor(() =>
-        expect(api.saveSettings).toHaveBeenCalledWith({
-          ...settings,
-          store: [],
-        }),
-      )
+      const kugou = card('kugou')
+      expect(kugou.getByText('Permission verified')).toBeInTheDocument()
       expect(
-        within(screen.getByTestId('provider-lrclib')).queryByRole('checkbox', {
-          name: /Save lyrics from/,
-        }),
-      ).toBeNull()
+        kugou.getByText(
+          'Storage permission verified: Licence agreement of 2026-11-02 (contract no. 4711)',
+        ),
+      ).toBeInTheDocument()
+      expect(
+        kugou.getByText(/Available offline once saved/),
+      ).toBeInTheDocument()
+    })
+
+    it('offers no switch that could grant a right to save', async () => {
+      await load()
+      for (const id of ['lrclib', 'kugou', 'musixmatch', 'apple'])
+        expect(
+          card(id).queryByRole('checkbox', { name: /Save lyrics from/ }),
+        ).toBeNull()
+      expect(screen.queryByText(/Save its lyrics next to my audio/)).toBeNull()
     })
 
     it('switches a ready provider off and on', async () => {
@@ -350,6 +390,106 @@ describe('<LyricsSettings />', () => {
         qq.getByText('Works without a key; a key adds more', { exact: false }),
       ).toBeInTheDocument()
       expect(qq.getByText('Preview only')).toBeInTheDocument()
+    })
+  })
+
+  describe('notices about earlier settings', () => {
+    it('explains the withdrawn saving switch, keeps its value, and clears it only on request', async () => {
+      api.settings.mockResolvedValue({
+        settings: { ...settings, store: ['kugou', 'netease'] },
+        providers,
+      })
+      await load()
+      expect(
+        screen.getByText('Saving by switch has been withdrawn'),
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText(
+          /saving turned on for KuGou Music, NetEase Cloud Music/,
+        ),
+      ).toBeInTheDocument()
+      expect(api.saveSettings).not.toHaveBeenCalled()
+      fireEvent.click(screen.getByRole('button', { name: 'Understood' }))
+      await waitFor(() =>
+        expect(api.saveSettings).toHaveBeenCalledWith({
+          ...settings,
+          store: [],
+        }),
+      )
+    })
+
+    it('does not show it when nothing was ever allowed', async () => {
+      await load()
+      expect(
+        screen.queryByText('Saving by switch has been withdrawn'),
+      ).toBeNull()
+    })
+
+    it('lists settings that differ from the recommended ones, and changes none without a choice', async () => {
+      const mine = { ...settings, preferLocal: false, autoReplaceManual: true }
+      api.settings.mockResolvedValue({ settings: mine, providers })
+      await load()
+      expect(
+        screen.getByText('Your settings differ from the recommended ones'),
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText(
+          'Prefer local files is off · Also upgrade lyrics I added myself is on',
+        ),
+      ).toBeInTheDocument()
+      expect(api.saveSettings).not.toHaveBeenCalled()
+    })
+
+    it('applies the recommended settings only when asked', async () => {
+      const mine = { ...settings, preferLocal: false, autoReplaceManual: true }
+      api.settings.mockResolvedValue({ settings: mine, providers })
+      await load()
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Use the recommended settings' }),
+      )
+      await waitFor(() =>
+        expect(api.saveSettings).toHaveBeenCalledWith({
+          ...mine,
+          preferLocal: true,
+          autoReplaceManual: false,
+          ack: ['recommended'],
+        }),
+      )
+    })
+
+    it("keeps the administrator's settings when they say so, and stops asking", async () => {
+      const mine = { ...settings, preferLocal: false, autoReplaceManual: true }
+      api.settings.mockResolvedValue({ settings: mine, providers })
+      await load()
+      fireEvent.click(screen.getByRole('button', { name: 'Keep my settings' }))
+      await waitFor(() =>
+        expect(api.saveSettings).toHaveBeenCalledWith({
+          ...mine,
+          ack: ['recommended'],
+        }),
+      )
+      api.settings.mockResolvedValue({
+        settings: { ...mine, ack: ['recommended'] },
+        providers,
+      })
+    })
+
+    it('stays quiet once dismissed, and when the settings are the recommended ones', async () => {
+      api.settings.mockResolvedValue({
+        settings: { ...settings, preferLocal: false, ack: ['recommended'] },
+        providers,
+      })
+      await load()
+      expect(
+        screen.queryByText('Your settings differ from the recommended ones'),
+      ).toBeNull()
+    })
+
+    it('shows nothing for the recommended settings', async () => {
+      await load()
+      expect(
+        screen.queryByText('Your settings differ from the recommended ones'),
+      ).toBeNull()
     })
   })
 

@@ -4,6 +4,7 @@ import { useT } from '../i18n/useT'
 import { Button } from '../design/Button'
 import { ProviderCard } from './ProviderCard'
 import { errorCode, lyricsApi } from '../lyrics/manageApi'
+import { providerName } from '../lyrics/lyricsSource'
 import styles from './LyricsSettings.module.css'
 
 const POLL_MS = 1500
@@ -58,7 +59,7 @@ const Progress = ({ job, onCancel }) => {
       <p className={styles.hint}>
         {t(
           'ui.lyrics.bulk.summary',
-          '%{done} of %{total} tracks (%{pct}%) · %{found} found · %{upgraded} upgraded · %{missing} not found · %{failed} failed',
+          '%{done} of %{total} tracks (%{pct}%) · %{found} found · %{upgraded} upgraded · %{missing} not found · %{unsaved} found but not saveable · %{failed} failed',
           {
             done: job.done,
             total: job.total,
@@ -66,6 +67,7 @@ const Progress = ({ job, onCancel }) => {
             found: job.found,
             upgraded: job.upgraded,
             missing: job.missing,
+            unsaved: job.unsaved ?? 0,
             failed: job.failed,
           },
         )}
@@ -208,13 +210,20 @@ export const LyricsSettings = () => {
         : settings.providers.filter((p) => p !== id),
     })
 
-  const toggleStore = (id, on) =>
-    save({
-      ...settings,
-      store: on
-        ? [...(settings.store ?? []), id]
-        : (settings.store ?? []).filter((p) => p !== id),
-    })
+  // What the retired "allow saving" switch used to cover, and settings that differ
+  // from the recommended ones. Neither is changed behind the administrator's back.
+  const legacyStore = (settings.store ?? []).map(providerName)
+  const differences = [
+    !settings.preferLocal &&
+      t('ui.lyrics.settings.diffPreferLocal', 'Prefer local files is off'),
+    settings.autoReplaceManual &&
+      t(
+        'ui.lyrics.settings.diffReplaceManual',
+        'Also upgrade lyrics I added myself is on',
+      ),
+  ].filter(Boolean)
+  const showRecommended =
+    differences.length > 0 && !(settings.ack ?? []).includes('recommended')
 
   return (
     <div className={styles.root}>
@@ -222,6 +231,77 @@ export const LyricsSettings = () => {
         <p role="alert" className={styles.error}>
           {errorText}
         </p>
+      )}
+
+      {legacyStore.length > 0 && (
+        <div className={styles.notice} role="note">
+          <strong>
+            {t(
+              'ui.lyrics.settings.legacyStoreTitle',
+              'Saving by switch has been withdrawn',
+            )}
+          </strong>
+          <p className={styles.hint}>
+            {t(
+              'ui.lyrics.settings.legacyStoreBody',
+              'This server had saving turned on for %{providers} with a switch that no longer exists: turning it on never gave a right to keep those lyrics. Their results are now shown while playing but not saved. Lyrics you already saved stay as they are. A provider can be allowed to save only with a written authorization (see LYRICS_ENGINE.md).',
+              { providers: legacyStore.join(', ') },
+            )}
+          </p>
+          <div className={styles.actions}>
+            <Button size="sm" onClick={() => save({ ...settings, store: [] })}>
+              {t('ui.lyrics.settings.legacyStoreOk', 'Understood')}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {showRecommended && (
+        <div className={styles.notice} role="note">
+          <strong>
+            {t(
+              'ui.lyrics.settings.recommendedTitle',
+              'Your settings differ from the recommended ones',
+            )}
+          </strong>
+          <p className={styles.hint}>{differences.join(' · ')}</p>
+          <p className={styles.hint}>
+            {t(
+              'ui.lyrics.settings.recommendedBody',
+              'Recommended: local lyrics first, and never replace lyrics you added yourself automatically. Nothing changes unless you choose.',
+            )}
+          </p>
+          <div className={styles.actions}>
+            <Button
+              size="sm"
+              variant="primary"
+              onClick={() =>
+                save({
+                  ...settings,
+                  preferLocal: true,
+                  autoReplaceManual: false,
+                  ack: [...(settings.ack ?? []), 'recommended'],
+                })
+              }
+            >
+              {t(
+                'ui.lyrics.settings.recommendedUse',
+                'Use the recommended settings',
+              )}
+            </Button>
+            <Button
+              size="sm"
+              onClick={() =>
+                save({
+                  ...settings,
+                  ack: [...(settings.ack ?? []), 'recommended'],
+                })
+              }
+            >
+              {t('ui.lyrics.settings.recommendedKeep', 'Keep my settings')}
+            </Button>
+          </div>
+        </div>
       )}
 
       <p className={styles.hint}>
@@ -270,12 +350,7 @@ export const LyricsSettings = () => {
       </div>
       <ul className={styles.providers}>
         {providers.map((p) => (
-          <ProviderCard
-            key={p.id}
-            p={p}
-            onToggle={toggleProvider}
-            onStore={toggleStore}
-          />
+          <ProviderCard key={p.id} p={p} onToggle={toggleProvider} />
         ))}
       </ul>
 

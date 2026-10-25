@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import clsx from 'clsx'
 import { useT } from '../i18n/useT'
 import { Button } from '../design/Button'
@@ -59,6 +59,8 @@ export const ManagerCurrent = ({
   const fileInput = useRef(null)
   const cur = data?.current
   const canDelete = cur && (cur.source === 'managed' || cur.source === 'user')
+  const ignored = data?.ignored?.[0]
+  const [confirmRemove, setConfirmRemove] = useState(false)
 
   return (
     <div className={styles.panel}>
@@ -66,6 +68,68 @@ export const ManagerCurrent = ({
         <p role="note" className={styles.warning}>
           {data.writeError}
         </p>
+      )}
+
+      {ignored && (
+        <section
+          className={styles.block}
+          aria-labelledby="lm-ignored"
+          role="note"
+        >
+          <h3 id="lm-ignored" className={styles.blockTitle}>
+            {t('ui.lyrics.manager.ignoredTitle', 'A saved file is not used')}
+          </h3>
+          <p className={styles.hint}>
+            {t(
+              'ui.lyrics.manager.ignoredBody',
+              '%{file} only holds credits, not lyrics, so it is ignored. Nothing is removed unless you do it here.',
+              { file: ignored.file },
+            )}
+          </p>
+          {confirmRemove ? (
+            <div className={styles.confirm}>
+              <p>
+                {t(
+                  'ui.lyrics.manager.ignoredConfirm',
+                  'Remove %{file}? Your audio is not touched, and the file stays in the history.',
+                  { file: ignored.file },
+                )}
+              </p>
+              <div className={styles.row}>
+                <Button
+                  size="sm"
+                  variant="primary"
+                  disabled={busy}
+                  onClick={() => {
+                    setConfirmRemove(false)
+                    onDelete()
+                  }}
+                >
+                  {t('ui.lyrics.manager.ignoredRemoveYes', 'Remove it')}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setConfirmRemove(false)}
+                >
+                  {t('ui.lyrics.manager.ignoredKeep', 'Keep it')}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className={styles.row}>
+              <Button
+                size="sm"
+                variant="ghost"
+                icon={TrashIcon}
+                disabled={busy}
+                onClick={() => setConfirmRemove(true)}
+              >
+                {t('ui.lyrics.manager.ignoredRemove', 'Remove file…')}
+              </Button>
+            </div>
+          )}
+        </section>
       )}
 
       <section className={styles.block} aria-labelledby="lm-current">
@@ -86,12 +150,21 @@ export const ManagerCurrent = ({
             {cur.attribution && (
               <p className={styles.hint}>{cur.attribution}</p>
             )}
-            {cur.retrievedAt && (
-              <p className={styles.hint}>
-                {t('ui.lyrics.manager.savedOn', 'Saved %{date}', {
-                  date: when(cur.retrievedAt),
-                })}
+            {cur.id === 'display' ? (
+              <p className={styles.hint} role="note">
+                {t(
+                  'ui.lyrics.manager.currentShown',
+                  'Not saved: this server may show these lyrics but may not keep them. They are held in memory, gone after a restart, and not available offline.',
+                )}
               </p>
+            ) : (
+              cur.retrievedAt && (
+                <p className={styles.hint}>
+                  {t('ui.lyrics.manager.savedOn', 'Saved %{date}', {
+                    date: when(cur.retrievedAt),
+                  })}
+                </p>
+              )
             )}
           </>
         ) : (

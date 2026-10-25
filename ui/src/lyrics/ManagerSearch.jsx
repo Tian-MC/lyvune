@@ -125,15 +125,29 @@ const Candidate = ({ c, busy, onUse }) => {
               {t('ui.lyrics.manager.instrumental', 'Marked instrumental')}
             </span>
           )}
-          {!c.storable && (
+          {c.storable ? (
+            <span className={styles.tag}>
+              {t('ui.lyrics.manager.canSave', 'Can be saved')}
+            </span>
+          ) : c.displayOnly ? (
             <span
               className={clsx(styles.tag, styles.tagWarn)}
               title={t(
-                'ui.lyrics.manager.notStorableHint',
-                'Saving is off for this provider. An administrator can allow it in Settings, under Lyrics and Providers.',
+                'ui.lyrics.manager.shownTagHint',
+                'May be shown while playing but not kept. Gone after a restart; not available offline.',
               )}
             >
-              {t('ui.lyrics.manager.notStorable', 'Cannot be saved')}
+              {t('ui.lyrics.manager.shownTag', 'Shown only, not saved')}
+            </span>
+          ) : (
+            <span
+              className={clsx(styles.tag, styles.tagWarn)}
+              title={t(
+                'ui.lyrics.manager.previewTagHint',
+                'These lyrics can be read here, but are neither shown while playing nor kept.',
+              )}
+            >
+              {t('ui.lyrics.manager.previewTag', 'Preview only')}
             </span>
           )}
         </p>
@@ -154,10 +168,12 @@ const Candidate = ({ c, busy, onUse }) => {
         <Button
           size="sm"
           variant="primary"
-          disabled={busy || !c.storable || !c.lines}
+          disabled={busy || (!c.storable && !c.displayOnly) || !c.lines}
           onClick={() => onUse(c)}
         >
-          {t('ui.lyrics.manager.use', 'Use this version')}
+          {c.storable || !c.displayOnly
+            ? t('ui.lyrics.manager.use', 'Use this version')
+            : t('ui.lyrics.manager.useShown', 'Show this version (not saved)')}
         </Button>
       </div>
       {open && <Preview lines={c.preview} truncated={c.truncated} />}

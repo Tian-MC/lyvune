@@ -48,6 +48,15 @@ export const sourceLabel = (t, info) => {
           ? t('ui.lyrics.source.imported', 'Imported file')
           : t('ui.lyrics.source.user', 'Chosen by you')
     case 'remote':
+      // Results shown from memory are 'display'; a plugin's lyrics have 'plugin:' ids
+      if (info.id === 'display')
+        return t(
+          'ui.lyrics.source.shown',
+          'Shown from %{provider} · not saved',
+          {
+            provider: providerName(info.provider),
+          },
+        )
       return t('ui.lyrics.source.plugin', 'Plugin: %{name}', {
         name: info.provider || '',
       })

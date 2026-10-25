@@ -53,6 +53,14 @@ export const LyricsSourceBar = ({ trackId, title, searching }) => {
             {cur.attribution && (
               <span className={styles.attribution}>{cur.attribution}</span>
             )}
+            {cur.id === 'display' && (
+              <span className={styles.attribution}>
+                {t(
+                  'ui.lyrics.source.shownHint',
+                  'Held in memory: gone after a restart, not available offline.',
+                )}
+              </span>
+            )}
           </>
         ) : null}
       </p>
