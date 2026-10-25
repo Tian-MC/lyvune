@@ -19,10 +19,10 @@ configuration and data keep working. The fork is based on upstream `master` at c
   Navidrome.
 - A lyrics engine looks for missing lyrics online (LRCLIB, KuGou, NetEase, QQ Music and, with your own key,
   Musixmatch), prefers the files you already have, and lets you override, lock and undo. Word-by-word karaoke is
-  shown when a source really has it. Only LRCLIB's results are saved next to the audio (`.lyrics.json`, with its
-  permission noted as unverified); the other providers' results are shown while playing from memory and never kept,
-  because nothing grants the right to keep them. It never modifies audio files. Automatic retrieval is on by
-  default and, for LRCLIB, writes to the library; see [LYRICS_ENGINE.md](LYRICS_ENGINE.md).
+  shown when a source really has it. Found lyrics are saved next to the audio (`.lyrics.json`, offline, with word timing) according to a per-provider
+  choice you control in Settings (LRCLIB on by default, the others off; no provider's terms on keeping lyrics could be
+  verified, so this is your decision and not a permission), and results that are not saved are only shown while
+  playing. It never modifies audio files. Automatic retrieval is on by default; see [LYRICS_ENGINE.md](LYRICS_ENGINE.md).
 - The new interface text is translated to English and Italian. Other languages use English for it.
 
 Design decisions, architecture and the status of the work are in [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) and

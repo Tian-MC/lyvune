@@ -136,37 +136,49 @@ A clean "nothing found" is remembered for a week. An outage, a timeout or a rate
 
 ## Storage policy
 
-What can be done with a provider's lyrics is four separate things, and each needs its own permission:
+Retrieval, display, import and storage are four separate things:
 
 | | Meaning | Decided by |
 | --- | --- | --- |
-| **Retrieval** | Asking the provider for lyrics | How the service is reached (keyless, key, unofficial) |
-| **Display** | Showing the lyrics while a track plays, without keeping them | The provider's rights entry: `session` (from memory) or `preview` (manager only) |
-| **Import** | Lyrics you own, from your own `.lrc`, `.krc`, `.yrc`, `.qrc`, `.lyrics.json` | You: always allowed |
-| **Storage** | Keeping the provider's lyrics permanently next to the audio | A **right to keep them**, never a switch (`rights.go`) |
+| **Retrieval** | Asking the provider for lyrics | How the service is reached (keyless, key, unofficial) and the enabled providers |
+| **Display** | Showing the lyrics while a track plays, without keeping them | The provider's entry in the rights table: `session` (from memory) or `preview` (manager only) |
+| **Import** | Lyrics you own: your `.lrc`, `.krc`, `.yrc`, `.qrc`, `.lyrics.json` | You: always allowed |
+| **Storage** | Keeping the lyrics next to the audio so they work offline | Your **preference**, per provider, unless a recorded rule restricts it |
 
-A working endpoint is not permission to keep what it returns, and neither is the administrator's say-so: there is no setting, option or button that turns saving on. The old `store` setting and the `Lyrics.<provider>.Store` options were withdrawn for that reason.
+Three facts are kept apart and never merged:
 
-**Exactly what happens now**
+- **Rights status** of a provider: `granted` (a recorded authorization), `unclear` (the default for every built-in provider: no terms permitting or forbidding storage could be verified) or `restricted` (only through a recorded record). The interface says "Rights unclear"; it never says that saving is permitted.
+- **Preference**: the administrator's choice whether to save a provider's lyrics locally. It is a decision, not a permission from the provider. Defaults: LRCLIB on, the others off.
+- **Outcome**: what happened to the last save (verified, or why it failed), shown on each provider card.
 
-- **LRCLIB** is the only provider whose results are saved (`.lyrics.json`, offline, with history). Its permission is an **assumption about the service's purpose**: its terms of use could not be found. The interface says "Permission not verified".
-- **KuGou, NetEase, QQ**: the result is *shown* while the track plays, held **in memory only** (never written to the library or the database), gone after a restart or twelve hours, and **not available offline**. It is labelled "Shown from X · not saved".
-- **Musixmatch**: previewed in the manager, never shown while playing, never kept.
-- **Automatic retrieval** saves the best result that may be kept and shows a better one that may not (karaoke from KuGou over synced lyrics from LRCLIB, say). A **bulk job** never fills memory: it saves what may be saved and counts the rest as "found but not saveable".
-- **Choosing a version by hand** saves it when it may be kept, otherwise it shows it ("Show this version (not saved)"), with the usual confirmation before replacing lyrics you supplied, and respecting locks.
-- **Local files first**: your sidecars (`.lrc`, `.krc`, `.yrc`, `.qrc`), embedded lyrics and `.lyrics.json` keep priority, and a result found automatically never replaces them unless you turned that on yourself.
+**Configuration** (Settings, administrators)
 
-**When a right is established later.** A storage authorization is a record in `lyrics-storage-rights.json` in the data folder. It has to name the document it rests on, so it is a statement and not a switch:
+- *Save found lyrics automatically* (`autoPersist`, default on): off keeps every automatic result display-only.
+- A save switch per provider (`storePref`). The old `store` list is still honoured as a preference that is on; an explicit choice beats it, and nothing is rewritten unless you change a switch.
+- Enabled providers, minimum match confidence, automatic quality upgrades and manual-source protection are the existing settings.
+- A provider that is `restricted` cannot be saved whatever the switch says: it is shown, with the reason.
+
+**What happens**
+
+- Automatic retrieval picks the best candidate by match confidence first, then genuine karaoke > synced > plain. If its provider is saved, it is written as `<audio>.lyrics.json` with word timing, translation, romanization, provenance and history, and the result is **read back and compared** before it is reported as saved. If it is not saved, it is shown from memory ("Shown from X · not saved").
+- A saved sidecar is loaded without any network or provider call, so karaoke survives restarts, the browser being closed, a provider outage and no connection.
+- Automatic quality upgrades (for example LRCLIB synced to KuGou KRC karaoke) keep the previous version in history, never downgrade, respect locks and check at most once every seven days.
+- Source priority: locked or chosen local > your sidecars > existing local > embedded > managed saved > remote. Your own `.lrc/.krc/.yrc/.qrc` are never overwritten; a credits-only managed sidecar is ignored and never overwritten automatically.
+- **Manual**: in the lyrics manager each result offers *Save lyrics locally* and, when allowed, *Show only*. Saving validates the result, checks locks and existing files, asks before replacing lyrics you supplied, writes atomically and confirms only after reading the file back. A restricted result offers *Show this version (not saved)*. The manager distinguishes shown temporarily, saved locally, storage restricted and save failed.
+- A **bulk job** never fills memory: it saves what the preferences allow and counts the rest as not saved. It runs four workers; each provider keeps its own pacing.
+
+**Recording a right or a restriction.** `lyrics-storage-rights.json` in the data folder documents what is known about a provider's terms. A record must name its basis and reference (500 bytes at most); the file is limited to 64 KB, is re-read every few seconds, and a broken file changes nothing:
 
 ```json
-{"authorizations":[{"provider":"kugou","basis":"Licence agreement of 2026-11-02","reference":"contract no. 4711"}]}
+{"authorizations":[
+  {"provider":"kugou","basis":"Licence agreement of 2026-11-02","reference":"contract no. 4711"},
+  {"provider":"netease","status":"restricted","basis":"Terms of service, section 4","reference":"https://example.invalid/terms"}
+]}
 ```
 
-The file is read without a restart. A record without a basis and a reference, for an unknown provider, over 500 characters or in a file that is not valid, grants nothing. With a record, that provider's results are saved like LRCLIB's and the interface shows "Permission verified" with the basis and the reference. The file cannot prove that the document exists; it writes the claim down where it can be checked.
+`granted` is the default status. An arbitrary declaration is not proof: the file writes the claim down where it can be checked, and the interface shows the basis. Restricted records are honoured without being circumvented.
 
-**Settings you had.** An installation that had `store` set keeps the value (it has no effect) and the settings explain it once, with an "Understood" that clears it. Settings that differ from the recommended ones (local lyrics first, no automatic replacement of your own lyrics) are listed with "Use the recommended settings" and "Keep my settings"; nothing changes unless you choose.
-
-**A saved file that holds only credits.** An earlier build saved a lone credit line (`作曲 : …`) for a song a service had no lyrics for. Such a file Navidrome wrote itself is ignored (not shown), listed in the lyrics manager, and removed only when the administrator confirms; no automatic retrieval overwrites it.
+**A saved file that holds only credits.** An earlier build saved a lone credit line for a song a service had no lyrics for. Such a file is ignored, listed in the lyrics manager, and removed only when the administrator confirms.
 
 ### What the provider list shows
 
@@ -186,7 +198,7 @@ LRCLIB was checked against the real service: the response has `id`, `trackName`,
 
 **Word timing is only what the source gives.** KRC and YRC are parsed by `krc.go` and `yrc.go`, RichSync by `richsync.go`; none of them depends on a network adapter, and none estimates a time. A word has an end only when the file says so. A document whose word times look divided by formula (most lines with words of equal length in time, or proportional to their letters) is reduced to line timing, so it can never rank as karaoke. A romanization keeps word timing only when it has exactly one piece per original word; a translation never has word timing.
 
-**KuGou and NetEase are unofficial.** Neither has a public lyrics API. The adapters use the open web endpoints their own web clients use, with no account, cookie, token or request signing, and not the signed `weapi`/`eapi` calls. Their terms were not found, so nothing grants permission to keep their lyrics: their results are shown while playing from memory and **never kept** (see *Storage policy*). KuGou's song search answers "0 results" without any error when it is asked too quickly, so the adapter spaces its requests by a second and asks once more before believing an empty list.
+**KuGou and NetEase are unofficial.** Neither has a public lyrics API. The adapters use the open web endpoints their own web clients use, with no account, cookie, token or request signing, and not the signed `weapi`/`eapi` calls. Their terms were not found, so the rights status is *unclear*: the administrator decides whether to keep their lyrics (see *Storage policy*), and that decision is not a permission from the provider. KuGou's song search answers "0 results" without any error when it is asked too quickly, so the adapter spaces its requests by a second and asks once more before believing an empty list.
 
 **Musixmatch** uses only the official API with your own key; the private token of its apps is not used. Which calls a key may make depends on its plan: a call the plan refuses is skipped. Word timing is not advertised for it until it has been seen working.
 
@@ -262,7 +274,7 @@ A candidate is always referred to by an ID the server issued, so a client cannot
 | `Lyrics.Musixmatch.ApiKey` | empty | Config file or `ND_LYRICS_MUSIXMATCH_APIKEY`; masked in the configuration view |
 | `Lyrics.QQ.BetterLyricsApiKey` | empty | Optional: your own Better Lyrics key, so uncached songs are fetched too; masked in the configuration view |
 | `Lyrics.HistoryKeep` | `10` | Versions kept per track |
-| `lyrics-storage-rights.json` | absent | Written storage authorizations (see *Storage policy*); not a setting |
+| `lyrics-storage-rights.json` | absent | Recorded rights or restrictions per provider (see *Storage policy*); not a setting |
 | Prefer local files | on | stored in the database |
 | Find missing lyrics automatically | **on** | stored in the database |
 | Upgrade downloaded lyrics automatically | on | |
@@ -302,9 +314,9 @@ Automated: Go unit, provider, parser, fuzz, engine and API tests (`core/lyrics`,
 - A library folder reached through a symbolic link that leaves the library is not written to.
 - Bulk jobs run in memory: a restart stops one, and running it again skips finished tracks. A job of mostly KuGou lookups is limited by KuGou's one-request-a-second pacing, so four workers do not make that provider four times faster.
 - Musixmatch is not verified against the live service (no API key was available); Apple Music is off.
-- KuGou, NetEase and QQ use undocumented endpoints that can change or block a region at any time; their lyrics are shown from memory and never kept, and are therefore not available offline.
-- LRCLIB's permission to keep lyrics is an assumption, not a verified permission.
-- Lyrics held in memory are lost when the server restarts; after a restart the track is looked up again when an administrator plays it.
+- KuGou, NetEase and QQ use undocumented endpoints that can change or block a region at any time; saving their lyrics rests on the administrator's preference, not on a verified right; while that preference is off their lyrics are shown from memory only and are not available offline.
+- No provider's terms on keeping lyrics could be verified: every built-in provider is *unclear*, and LRCLIB is saved by default only as a default preference.
+- Lyrics shown but not saved are held in memory and are lost when the server restarts; after a restart the track is looked up again when an administrator plays it.
 - NetEase word timing exists only for songs where the endpoint returns `yrc`; the others are line-synced. NetEase's `klyric` is ignored.
 - A matching song can be missing from a service (a cover or live version is not accepted instead), and Simplified/Traditional Chinese artist names are not converted, so such a match is offered as "uncertain" and never chosen automatically.
 - QQ's own QRC is encrypted and is not decoded; word timing from QQ depends on the Better Lyrics cache. Better Lyrics' TTML (syllable) provider was not adopted: without a key it served none of the songs tried, and it does not say where its data comes from.
