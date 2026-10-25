@@ -1,7 +1,7 @@
 import React from 'react'
 import styles from './Logo.module.css'
 
-/** The Navidrome vinyl mark (vector rendition of the official logo). */
+/** The Lyvune vinyl mark (vector rendition of the official logo). */
 export const LogoMark = ({ size = 28 }) => (
   <svg
     width={size}
@@ -26,7 +26,7 @@ export const LogoMark = ({ size = 28 }) => (
 export const Logo = ({ compact }) => (
   <span className={styles.root}>
     <LogoMark />
-    {!compact && <span className={styles.word}>Navidrome</span>}
+    {!compact && <span className={styles.word}>Lyvune</span>}
   </span>
 )
 

@@ -411,7 +411,7 @@
   },
   "ra": {
     "auth": {
-      "welcome1": "Hvala, da ste naložili Navidrome!",
+      "welcome1": "Hvala, da ste naložili Lyvune!",
       "welcome2": "Za začetek, ustvarite upraviteljski račun",
       "confirmPassword": "Potrdi Geslo",
       "buttonCreateAdmin": "Ustvari upravitelja",
@@ -422,7 +422,7 @@
       "sign_in": "Vpis",
       "sign_in_error": "Avtentikacija neuspešna, poskusite ponovno",
       "logout": "Izpis",
-      "insightsCollectionNote": "Navidrome zbira anonimne podatke o uporabi \nz namenom izboljšanja projekta. \nKliknite [tukaj], če želite izvedeti več ali se odjaviti"
+      "insightsCollectionNote": "Lyvune zbira anonimne podatke o uporabi \nz namenom izboljšanja projekta. \nKliknite [tukaj], če želite izvedeti več ali se odjaviti"
     },
     "validation": {
       "invalidChars": "Uporabi samo alfanumerične znake",
@@ -557,13 +557,13 @@
   "message": {
     "note": "OPOMBA",
     "transcodingDisabled": "Sprememba konfiguracije transkodiranja skozi spletni vmesnik je onemogočeno zaradi varnostnih razlogov. Če želite spremeniti (urediti ali izbrisati) možnosti transkodiranja, ponovno zaženite strežnik z %{config} nastavitvami.",
-    "transcodingEnabled": "Navidrome trenutno uporablja nastavitve %{config}, kar pomeni da je možno pognati sistemske ukaze v nastavitvah transkodiranja preko spletnega vmesnika.\nZaradi varnostnih razlogov je možnost priporočeno onemogočiti , razen v primeru spreminjanja nastavitev.",
+    "transcodingEnabled": "Lyvune trenutno uporablja nastavitve %{config}, kar pomeni da je možno pognati sistemske ukaze v nastavitvah transkodiranja preko spletnega vmesnika.\nZaradi varnostnih razlogov je možnost priporočeno onemogočiti , razen v primeru spreminjanja nastavitev.",
     "songsAddedToPlaylist": "Dodaj pesem na seznam predvajanj |||| Dodaj %{smart_count} pesmi na seznam predvajanj",
     "noPlaylistsAvailable": "Ni seznamov",
     "delete_user_title": "Odstrani uporabnika '%{name}'",
     "delete_user_content": "Ste prepričani o izbrisu uporabnika, vključno z njegovimi podatki (tudi seznami predvajanj in nastavitvami)?",
     "notifications_blocked": "V vašem brskljalniku Imate blokirana možnost obvestil za to spletno stran",
-    "notifications_not_available": "Vaš brskljalnik ne omogoča obvestil na namizju ali pa do Navidrome ne dostopate po varni povezavi (https)",
+    "notifications_not_available": "Vaš brskljalnik ne omogoča obvestil na namizju ali pa do Lyvune ne dostopate po varni povezavi (https)",
     "lastfmLinkSuccess": "Last.fm uspešno povezan in 'scrobbling' omogočen",
     "lastfmLinkFailure": "Last.fm ni uspešno povezan",
     "lastfmUnlinkSuccess": "Last.fm povezava prekinjena in 'scrobbling' onemogočen",

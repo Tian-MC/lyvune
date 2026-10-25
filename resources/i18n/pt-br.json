@@ -458,7 +458,7 @@
   },
   "ra": {
     "auth": {
-      "welcome1": "Obrigado por instalar Navidrome!",
+      "welcome1": "Obrigado por instalar Lyvune!",
       "welcome2": "Para iniciar, crie um usuário admin",
       "confirmPassword": "Confirme a senha",
       "buttonCreateAdmin": "Criar Admin",
@@ -469,7 +469,7 @@
       "sign_in": "Entrar",
       "sign_in_error": "Erro na autenticação, tente novamente.",
       "logout": "Sair",
-      "insightsCollectionNote": "Navidrome coleta dados de uso anônimos para\najudar a melhorar o projeto. Clique [aqui] para\nsaber mais e para desativar se desejar"
+      "insightsCollectionNote": "Lyvune coleta dados de uso anônimos para\najudar a melhorar o projeto. Clique [aqui] para\nsaber mais e para desativar se desejar"
     },
     "validation": {
       "invalidChars": "Somente use letras e numeros",
@@ -604,7 +604,7 @@
   "message": {
     "note": "ATENÇÃO",
     "transcodingDisabled": "Por questão de segurança, esta tela de configuração está desabilitada. Se você quiser alterar estas configurações, reinicie o servidor com a opção %{config}",
-    "transcodingEnabled": "Navidrome está sendo executado com a opção %{config}. Isto permite que potencialmente se execute comandos do sistema pela interface Web. É recomendado que vc mantenha esta opção desabilitada, e só a habilite quando precisar configurar opções de Conversão",
+    "transcodingEnabled": "Lyvune está sendo executado com a opção %{config}. Isto permite que potencialmente se execute comandos do sistema pela interface Web. É recomendado que vc mantenha esta opção desabilitada, e só a habilite quando precisar configurar opções de Conversão",
     "songsAddedToPlaylist": "Música adicionada à playlist |||| %{smart_count} músicas adicionadas à playlist",
     "noPlaylistsAvailable": "Nenhuma playlist",
     "delete_user_title": "Excluir usuário '%{name}'",

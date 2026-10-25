@@ -7,7 +7,7 @@ import { contrast, luminance, mix, withAlpha } from './color'
 // legacy theme can only be honoured through its palette:
 // - "successor": Dark and Extra Dark became the two official variants
 // - "tinted": dark themes keep their accent colour and surfaces
-// - "unsupported": light themes; Navidrome is used and the UI says so
+// - "unsupported": light themes; Lyvune is used and the UI says so
 // The legacy definitions themselves are untouched (src/themes/).
 
 const BRAND = '#0084ff'

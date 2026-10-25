@@ -42,7 +42,7 @@ const Personal = () => {
               title={t('ui.settings.appearance', 'Appearance')}
               description={t(
                 'ui.settings.appearanceHint',
-                'How Navidrome looks and which page it opens with.',
+                'How Lyvune looks and which page it opens with.',
               )}
             >
               <SelectTheme {...input} />

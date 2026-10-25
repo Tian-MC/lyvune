@@ -424,7 +424,7 @@
   },
   "ra": {
     "auth": {
-      "welcome1": "Tack för att du installerade Navidrome!",
+      "welcome1": "Tack för att du installerade Lyvune!",
       "welcome2": "Börja med att skapa ett administratörskonto",
       "confirmPassword": "Bekräfta lösenord",
       "buttonCreateAdmin": "Skapa administratörskonto",
@@ -435,7 +435,7 @@
       "sign_in": "Logga in",
       "sign_in_error": "Inloggningen misslyckades. Försök igen",
       "logout": "Logga ut",
-      "insightsCollectionNote": "Navidrome samlar in anonyma användningsdata för\natt förbättra projektet. Klicka [här] för att läsa mer\noch välja bort insamlingen"
+      "insightsCollectionNote": "Lyvune samlar in anonyma användningsdata för\natt förbättra projektet. Klicka [här] för att läsa mer\noch välja bort insamlingen"
     },
     "validation": {
       "invalidChars": "Använd enbart bokstäver och siffror",
@@ -570,13 +570,13 @@
   "message": {
     "note": "OBSERVERA",
     "transcodingDisabled": "Av säkerhetsskäl går det inte att ändra omkodningsinställningarna i webbgränssnittet. Starta om servern med konfigurationsalternativet %{config} för att redigera eller lägga till omkodningsinställningar.",
-    "transcodingEnabled": "Navidrome körs med %{config}. Det gör det möjligt att köra systemkommandon via omkodningsinställningarna i webbgränssnittet. Av säkerhetsskäl rekommenderar vi att alternativet är inaktiverat och bara aktiveras när omkodningen ska konfigureras.",
+    "transcodingEnabled": "Lyvune körs med %{config}. Det gör det möjligt att köra systemkommandon via omkodningsinställningarna i webbgränssnittet. Av säkerhetsskäl rekommenderar vi att alternativet är inaktiverat och bara aktiveras när omkodningen ska konfigureras.",
     "songsAddedToPlaylist": "1 låt har lagts till i spellistan |||| %{smart_count} låtar har lagts till i spellistan",
     "noPlaylistsAvailable": "Inga tillgängliga",
     "delete_user_title": "Ta bort användaren '%{name}'",
     "delete_user_content": "Är du säker på att du vill ta bort den här användaren och alla användarens data, inklusive spellistor och inställningar?",
     "notifications_blocked": "Du har blockerat aviseringar från den här webbplatsen i webbläsarens inställningar",
-    "notifications_not_available": "Webbläsaren stöder inte skrivbordsaviseringar, eller så ansluter du inte till Navidrome via HTTPS",
+    "notifications_not_available": "Webbläsaren stöder inte skrivbordsaviseringar, eller så ansluter du inte till Lyvune via HTTPS",
     "lastfmLinkSuccess": "Last.fm har kopplats och scrobbling har aktiverats",
     "lastfmLinkFailure": "Det gick inte att koppla Last.fm",
     "lastfmUnlinkSuccess": "Kopplingen till Last.fm har tagits bort och scrobbling har inaktiverats",
@@ -726,7 +726,7 @@
     "selectiveScan": "Selektiv"
   },
   "help": {
-    "title": "Kortkommandon i Navidrome",
+    "title": "Kortkommandon i Lyvune",
     "hotkeys": {
       "show_help": "Visa denna hjälp",
       "toggle_menu": "Visa eller dölj sidomenyn",

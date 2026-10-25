@@ -461,7 +461,7 @@ export const createNavidromeTheme = ({
       RaSidebar: { drawerPaper: { backgroundColor: 'transparent' } },
       RaNotification: {},
 
-      // legacy Navidrome component overrides
+      // legacy Lyvune component overrides
       NDLogin: {
         main: { backgroundColor: bgApp },
         systemNameLink: { color: t.blue },
@@ -480,8 +480,8 @@ export const createNavidromeTheme = ({
   }
 }
 
-export const NavidromeTheme = createNavidromeTheme({ name: 'Navidrome' })
+export const NavidromeTheme = createNavidromeTheme({ name: 'Lyvune' })
 export const NavidromeOledTheme = createNavidromeTheme({
-  name: 'Navidrome Black (OLED)',
+  name: 'Lyvune Black (OLED)',
   oled: true,
 })

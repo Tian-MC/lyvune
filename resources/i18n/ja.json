@@ -421,7 +421,7 @@
   },
   "ra": {
     "auth": {
-      "welcome1": "Navidrome をインストールしていただき、ありがとうございます！",
+      "welcome1": "Lyvune をインストールしていただき、ありがとうございます！",
       "welcome2": "まずは、管理者ユーザーを作成してください",
       "confirmPassword": "パスワードの確認",
       "buttonCreateAdmin": "管理者を作成",
@@ -432,7 +432,7 @@
       "sign_in": "ログイン",
       "sign_in_error": "認証に失敗しました。もう一度お試しください",
       "logout": "ログアウト",
-      "insightsCollectionNote": "Navidrome では、プロジェクトの改善に役立てるため、匿名化された利用データを収集しています。詳細の確認やオプトアウト（収集の停止）を行うには、[こちら]をクリックしてください"
+      "insightsCollectionNote": "Lyvune では、プロジェクトの改善に役立てるため、匿名化された利用データを収集しています。詳細の確認やオプトアウト（収集の停止）を行うには、[こちら]をクリックしてください"
     },
     "validation": {
       "invalidChars": "英数字のみを使用してください",
@@ -574,7 +574,7 @@
     "metadataRefreshStarted": "メタデータの更新が開始されました",
     "note": "注記",
     "transcodingDisabled": "セキュリティ上の理由により、ウェブインターフェース経由でのトランスコード設定の変更は無効になっています。トランスコードのオプションを変更（編集または追加）する場合は、%{config} 設定オプションを指定してサーバーを再起動してください。",
-    "transcodingEnabled": "Navidrome は現在 %{config} で動作しており、ウェブインターフェースのトランスコード設定からシステムコマンドを実行できる状態になっています。セキュリティ上の理由から、この機能を無効にしておき、トランスコードのオプションを設定する際のみ有効にすることをお勧めします。",
+    "transcodingEnabled": "Lyvune は現在 %{config} で動作しており、ウェブインターフェースのトランスコード設定からシステムコマンドを実行できる状態になっています。セキュリティ上の理由から、この機能を無効にしておき、トランスコードのオプションを設定する際のみ有効にすることをお勧めします。",
     "songsAddedToPlaylist": "1 曲をプレイリストに追加しました |||| %{smart_count} 曲をプレイリストに追加しました",
     "noSimilarSongsFound": "類似の曲は見つかりませんでした",
     "startingInstantMix": "インスタントミックスを読み込み中...",
@@ -587,7 +587,7 @@
     "remove_all_missing_title": "すべての欠落ファイルを削除",
     "remove_all_missing_content": "すべての欠落ファイルをデータベースから削除してもよろしいですか？これにより、再生回数や評価を含む、これらのファイルに関するすべての情報が完全に削除されます。",
     "notifications_blocked": "お使いのブラウザーの設定で、このサイトからの通知をブロックしています",
-    "notifications_not_available": "このブラウザーはデスクトップ通知に対応していないか、または Navidrome に HTTPS 経由でアクセスしていない可能性があります",
+    "notifications_not_available": "このブラウザーはデスクトップ通知に対応していないか、または Lyvune に HTTPS 経由でアクセスしていない可能性があります",
     "lastfmLinkSuccess": "Last.fm との連携に成功し、Scrobbling 機能が有効になりました",
     "lastfmLinkFailure": "Last.fm との連携に失敗しました",
     "lastfmUnlinkSuccess": "Last.fm との連携が解除され、Scrobbling 機能が無効になりました",
@@ -717,7 +717,7 @@
     "minutesAgo": "%{smart_count} 分前"
   },
   "help": {
-    "title": "Navidrome ホットキー",
+    "title": "Lyvune ホットキー",
     "hotkeys": {
       "show_help": "ヘルプを表示",
       "toggle_menu": "サイドバーの表示 / 非表示",

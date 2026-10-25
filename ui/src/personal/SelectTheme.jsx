@@ -47,7 +47,7 @@ export const SelectTheme = (props) => {
         stored?.support === 'unsupported'
           ? t(
               'ui.settings.legacyNotice',
-              'Your saved theme is not supported by the new interface, so Navidrome is shown instead. Choose a theme to replace it.',
+              'Your saved theme is not supported by the new interface, so Lyvune is shown instead. Choose a theme to replace it.',
             )
           : undefined
       }

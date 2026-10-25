@@ -132,7 +132,7 @@ const FormLogin = ({ loading, handleSubmit, validate }) => {
                   rel="noopener noreferrer"
                   className={classes.systemNameLink}
                 >
-                  Navidrome
+                  Lyvune
                 </a>
               </div>
               {config.welcomeMessage && (

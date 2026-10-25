@@ -422,7 +422,7 @@
   },
   "ra": {
     "auth": {
-      "welcome1": "Bedankt voor het installeren van Navidrome!",
+      "welcome1": "Bedankt voor het installeren van Lyvune!",
       "welcome2": "Maak om te beginnen een beheerdersaccount",
       "confirmPassword": "Bevestig wachtwoord",
       "buttonCreateAdmin": "Beheerder aanmaken",
@@ -433,7 +433,7 @@
       "sign_in": "Inloggen",
       "sign_in_error": "Authenticatie mislukt, probeer opnieuw a.u.b.",
       "logout": "Uitloggen",
-      "insightsCollectionNote": "Navidrome verzamelt anonieme gebruiksdata om het project te verbeteren. Klik [hier] voor meer info en de mogelijkheid om te weigeren"
+      "insightsCollectionNote": "Lyvune verzamelt anonieme gebruiksdata om het project te verbeteren. Klik [hier] voor meer info en de mogelijkheid om te weigeren"
     },
     "validation": {
       "invalidChars": "Gebruik alleen letters en cijfers",
@@ -568,7 +568,7 @@
   "message": {
     "note": "Notitie",
     "transcodingDisabled": "Het wijzigen van de transcoderconfiguratie via de web interface is om veiligheidsredenen uitgeschakeld. Als je transcoderopties wilt wijzigen (bewerken of toevoegen), start de server opnieuw op met de %{config} configuratie-optie.",
-    "transcodingEnabled": "Navidrome werkt momenteel met %{config}, waardoor het mogelijk is om systeemopdrachten uit te voeren vanuit de transcoderinstellingen via de web interface. We raden aan dit om veiligheidsredenen uit te schakelen en alleen in te schakelen bij het configureren van transcoderopties.",
+    "transcodingEnabled": "Lyvune werkt momenteel met %{config}, waardoor het mogelijk is om systeemopdrachten uit te voeren vanuit de transcoderinstellingen via de web interface. We raden aan dit om veiligheidsredenen uit te schakelen en alleen in te schakelen bij het configureren van transcoderopties.",
     "songsAddedToPlaylist": "1 nummer toegevoegd aan afspeellijst |||| %{smart_count} nummers toegevoegd aan afspeellijst",
     "noPlaylistsAvailable": "Geen beschikbaar",
     "delete_user_title": "Verwijder gebruiker '%{name}'",
@@ -724,7 +724,7 @@
     "selectiveScan": "Selectief"
   },
   "help": {
-    "title": "Navidrome sneltoetsen",
+    "title": "Lyvune sneltoetsen",
     "hotkeys": {
       "show_help": "Help weergeven",
       "toggle_menu": "Menu zijbalk Aan/Uit\n",

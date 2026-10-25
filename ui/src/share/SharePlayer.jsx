@@ -164,7 +164,7 @@ const SharePlayerView = ({ info }) => {
   useEffect(() => () => clearTimeout(timer.current), [])
 
   useEffect(() => {
-    document.title = track ? `${track.title} - ${track.artist}` : 'Navidrome'
+    document.title = track ? `${track.title} - ${track.artist}` : 'Lyvune'
   }, [track])
 
   // Space toggles playback unless a control has focus
@@ -207,7 +207,7 @@ const SharePlayerView = ({ info }) => {
 
       <header className={styles.brand}>
         <LogoMark size={26} />
-        <span>Navidrome</span>
+        <span>Lyvune</span>
       </header>
 
       <main className={styles.main}>

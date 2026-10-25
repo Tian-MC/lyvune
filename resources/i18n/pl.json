@@ -422,7 +422,7 @@
   },
   "ra": {
     "auth": {
-      "welcome1": "Dziękujemy za zainstalowanie Navidrome!",
+      "welcome1": "Dziękujemy za zainstalowanie Lyvune!",
       "welcome2": "Stwórz konto administratora, aby rozpocząć",
       "confirmPassword": "Potwierdź Hasło",
       "buttonCreateAdmin": "Stwórz Administratora",
@@ -433,7 +433,7 @@
       "sign_in": "Zaloguj się",
       "sign_in_error": "Uwierzytelnianie nie powiodło się, spróbuj ponownie",
       "logout": "Wyloguj",
-      "insightsCollectionNote": "Navidrome zbiera anonimowe dane dotyczące użytkowania, aby\npomóc ulepszyć projekt. Kliknij [tutaj], jeśli chcesz dowiedzieć się więcej lub zrezygnować"
+      "insightsCollectionNote": "Lyvune zbiera anonimowe dane dotyczące użytkowania, aby\npomóc ulepszyć projekt. Kliknij [tutaj], jeśli chcesz dowiedzieć się więcej lub zrezygnować"
     },
     "validation": {
       "invalidChars": "Proszę, używaj wyłącznie liter i cyfr",
@@ -568,7 +568,7 @@
   "message": {
     "note": "UWAGA",
     "transcodingDisabled": "Zmiana ustawień transkodowania przez interfejs sieciowy jest zablokowana z powodów bezpieczeństwa. Jeśli chcesz zmienić (edytować lub dodawać) opcje transkodowania, uruchom ponownie serwer z %{config} opcją konfiguracji.",
-    "transcodingEnabled": "Navidrome aktualnie działa z %{config}, co umożliwia korzystanie z komend systemowych ustawień transkodowania poprzez interfejs sieciowy. Rekomendujemy wyłączenie tego ustawienia w celu zwiększenia bezpieczeństwa i aktywowanie go wyłącznie podczas konfiguracji transkodowania.",
+    "transcodingEnabled": "Lyvune aktualnie działa z %{config}, co umożliwia korzystanie z komend systemowych ustawień transkodowania poprzez interfejs sieciowy. Rekomendujemy wyłączenie tego ustawienia w celu zwiększenia bezpieczeństwa i aktywowanie go wyłącznie podczas konfiguracji transkodowania.",
     "songsAddedToPlaylist": "Dodano 1 utwór do playlisty |||| Dodano %{smart_count} utworów do playlisty",
     "noPlaylistsAvailable": "Niedostępne",
     "delete_user_title": "Usuń użytkownika '%{name}'",
@@ -713,7 +713,7 @@
     "selectiveScan": "Selektywne"
   },
   "help": {
-    "title": "Skróty Klawiszowe Navidrome",
+    "title": "Skróty Klawiszowe Lyvune",
     "hotkeys": {
       "show_help": "Wyświetl Pomoc",
       "toggle_menu": "Pokaż Pasek Boczny",

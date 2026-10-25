@@ -70,13 +70,10 @@ const useStyles = makeStyles((theme) => ({
 }))
 
 const links = {
-  homepage: 'navidrome.org',
-  reddit: 'reddit.com/r/Navidrome',
-  twitter: 'twitter.com/navidrome',
-  discord: 'discord.gg/xh7j7yF',
-  source: 'github.com/navidrome/navidrome',
-  bugReports: 'github.com/navidrome/navidrome/issues/new/choose',
-  featureRequests: 'github.com/navidrome/navidrome/discussions/new',
+  homepage: 'github.com/Tian-MC/lyvune',
+  source: 'github.com/Tian-MC/lyvune',
+  bugReports: 'github.com/Tian-MC/lyvune/issues/new/choose',
+  featureRequests: 'github.com/Tian-MC/lyvune/discussions/new',
 }
 
 const LinkToVersion = ({ version }) => {
@@ -248,7 +245,7 @@ const ConfigTabContent = ({ configData }) => {
 
   const handleDownloadToml = () => {
     const tomlContent = configToToml(configData, translate)
-    const tomlFile = new File([tomlContent], 'navidrome.toml', {
+    const tomlFile = new File([tomlContent], 'lyvune.toml', {
       type: 'text/plain',
     })
 
@@ -472,7 +469,7 @@ const AboutDialog = ({ open, onClose }) => {
       className={classes.expandableDialog}
     >
       <DialogTitle id="about-dialog-title" onClose={onClose}>
-        Navidrome Music Server
+        Lyvune Music Server
       </DialogTitle>
       <DialogContent dividers>
         <TabContent

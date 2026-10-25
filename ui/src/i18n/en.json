@@ -462,7 +462,7 @@
   },
   "ra": {
     "auth": {
-      "welcome1": "Thanks for installing Navidrome!",
+      "welcome1": "Thanks for installing Lyvune!",
       "welcome2": "To start, create an admin user",
       "confirmPassword": "Confirm Password",
       "buttonCreateAdmin": "Create Admin",
@@ -473,7 +473,7 @@
       "sign_in": "Sign in",
       "sign_in_error": "Authentication failed, please retry",
       "logout": "Logout",
-      "insightsCollectionNote": "Navidrome collects anonymous usage data to\nhelp improve the project. Click [here] to learn\nmore and to opt-out if you want"
+      "insightsCollectionNote": "Lyvune collects anonymous usage data to\nhelp improve the project. Click [here] to learn\nmore and to opt-out if you want"
     },
     "validation": {
       "invalidChars": "Please only use letters and numbers",
@@ -615,7 +615,7 @@
     "metadataRefreshStarted": "Refreshing metadata in the background",
     "note": "NOTE",
     "transcodingDisabled": "Changing the transcoding configuration through the web interface is disabled for security reasons. If you would like to change (edit or add) transcoding options, restart the server with the %{config} configuration option.",
-    "transcodingEnabled": "Navidrome is currently running with %{config}, making it possible to run system commands from the transcoding settings using the web interface. We recommend to disable it for security reasons and only enable it when configuring Transcoding options.",
+    "transcodingEnabled": "Lyvune is currently running with %{config}, making it possible to run system commands from the transcoding settings using the web interface. We recommend to disable it for security reasons and only enable it when configuring Transcoding options.",
     "songsAddedToPlaylist": "Added 1 song to playlist |||| Added %{smart_count} songs to playlist",
     "noSimilarSongsFound": "No similar songs found",
     "startingInstantMix": "Loading Instant Mix...",
@@ -628,7 +628,7 @@
     "remove_all_missing_title": "Remove all missing files",
     "remove_all_missing_content": "Are you sure you want to remove all missing files from the database? This will permanently remove any references to them, including their play counts and ratings.",
     "notifications_blocked": "You have blocked Notifications for this site in your browser's settings",
-    "notifications_not_available": "This browser does not support desktop notifications or you are not accessing Navidrome over https",
+    "notifications_not_available": "This browser does not support desktop notifications or you are not accessing Lyvune over https",
     "quickConnectApproved": "%{app} on %{device} is now signed in",
     "quickConnectInvalidCode": "Invalid or expired code",
     "quickConnectError": "Could not approve the code",
@@ -774,7 +774,7 @@
     "minutesAgo": "%{smart_count} minute ago |||| %{smart_count} minutes ago"
   },
   "help": {
-    "title": "Navidrome Hotkeys",
+    "title": "Lyvune Hotkeys",
     "hotkeys": {
       "show_help": "Show This Help",
       "toggle_menu": "Toggle Menu Side Bar",
@@ -878,7 +878,7 @@
         "noCandidate": "That result is no longer available. Search again.",
         "notFound": "There is nothing to restore or delete.",
         "notLocal": "Lyrics can only be saved for libraries on a local disk.",
-        "notManaged": "A file with that name exists that Navidrome did not write, so it was left alone.",
+        "notManaged": "A file with that name exists that Lyvune did not write, so it was left alone.",
         "notStorable": "These lyrics may neither be kept nor shown by this server. They can only be previewed.",
         "readOnly": "The library folder cannot be written to.",
         "saveUnverified": "The lyrics were written but could not be read back as saved, so they are not reported as saved.",
@@ -1131,7 +1131,7 @@
     },
     "settings": {
       "appearance": "Appearance",
-      "appearanceHint": "How Navidrome looks and which page it opens with.",
+      "appearanceHint": "How Lyvune looks and which page it opens with.",
       "notifications": "Notifications",
       "playback": "Playback",
       "playbackHint": "Volume normalisation using the ReplayGain tags of your files.",
@@ -1139,7 +1139,7 @@
       "scrobblingHint": "Share what you listen to with external services.",
       "legacyTinted": "legacy, colours only",
       "legacyUnsupported": "light, not supported",
-      "legacyNotice": "Your saved theme is not supported by the new interface, so Navidrome is shown instead. Choose a theme to replace it."
+      "legacyNotice": "Your saved theme is not supported by the new interface, so Lyvune is shown instead. Choose a theme to replace it."
     },
     "track": {
       "missing": "Missing file"

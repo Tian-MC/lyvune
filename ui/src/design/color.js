@@ -1,6 +1,6 @@
 // Colour helpers for artwork-derived ambience. The server computes a
 // `dominantColor` for every artwork; these helpers tame it so it can light a
-// background without ever competing with Navidrome Blue or hurting contrast.
+// background without ever competing with Lyvune Blue or hurting contrast.
 
 const clamp = (v, min, max) => Math.min(max, Math.max(min, v))
 

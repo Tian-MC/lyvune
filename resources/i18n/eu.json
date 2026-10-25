@@ -415,7 +415,7 @@
   },
   "ra": {
     "auth": {
-      "welcome1": "Eskerrik asko Navidrome instalatzeagatik!",
+      "welcome1": "Eskerrik asko Lyvune instalatzeagatik!",
       "welcome2": "Lehenik eta behin, sortu administratzaile kontua",
       "confirmPassword": "Baieztatu pasahitza",
       "buttonCreateAdmin": "Sortu administratzailea",
@@ -567,7 +567,7 @@
     "coverRemoveError": "Errorea diskoaren azala kentzean",
     "note": "OHARRA",
     "transcodingDisabled": "Segurtasun arrazoiak direla-eta, transkodeketaren ezarpenak web-interfazearen bidez aldatzea ezgaituta dago. Transkodeketa-aukerak aldatu (editatu edo gehitu) nahi badituzu, berrabiarazi zerbitzaria konfigurazio-aukeraren %{config}-arekin.",
-    "transcodingEnabled": "Navidrome %{config}-ekin martxan dago eta, beraz, web-interfazeko transkodeketa-ataletik sistema-komandoak exekuta daitezke. Segurtasun arrazoiak tarteko, ezgaitzea gomendatzen dugu, eta transkodeketa-aukerak konfiguratzen ari zarenean bakarrik gaitzea.",
+    "transcodingEnabled": "Lyvune %{config}-ekin martxan dago eta, beraz, web-interfazeko transkodeketa-ataletik sistema-komandoak exekuta daitezke. Segurtasun arrazoiak tarteko, ezgaitzea gomendatzen dugu, eta transkodeketa-aukerak konfiguratzen ari zarenean bakarrik gaitzea.",
     "songsAddedToPlaylist": "Abesti bat zerrendara gehitu da |||| %{smart_count} abesti zerrendara gehitu dira",
     "noSimilarSongsFound": "Ez da antzeko abestirik aurkitu",
     "startingInstantMix": "Berehalako nahastea kargatzen…",
@@ -580,7 +580,7 @@
     "remove_all_missing_title": "Kendu faltan dauden fitxategi guztiak",
     "remove_all_missing_content": "Ziur aurkitu ez diren fitxategi guztiak datu-basetik kendu nahi dituzula? Betiko kenduko dira haiei buruzko erreferentziak, erreprodukzio-zenbaketak eta sailkapenak barne.",
     "notifications_blocked": "Nabigatzaileak jakinarazpenak blokeatzen ditu",
-    "notifications_not_available": "Nabigatzaile hau ez da jakinarazpenekin bateragarria edo Navidrome ez da HTTPS erabiltzen ari",
+    "notifications_not_available": "Nabigatzaile hau ez da jakinarazpenekin bateragarria edo Lyvune ez da HTTPS erabiltzen ari",
     "lastfmLinkSuccess": "Last.fm konektatuta dago eta erabiltzailearen ohiturak hirugarrenen zerbitzuekin partekatzea gaituta dago",
     "lastfmLinkFailure": "Ezin izan da Last.fm-rekin konektatu",
     "lastfmUnlinkSuccess": "Last.fm deskonektatu da eta erabiltzailearen ohiturak hirugarrenen zerbitzuekin partekatzea ezgaitu da",

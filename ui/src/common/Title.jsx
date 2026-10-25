@@ -5,5 +5,5 @@ import { useTranslate } from 'react-admin'
 export const Title = ({ subTitle, args }) => {
   const translate = useTranslate()
   const text = translate(subTitle, { ...args, _: subTitle })
-  return <span>{text || 'Navidrome'}</span>
+  return <span>{text || 'Lyvune'}</span>
 }

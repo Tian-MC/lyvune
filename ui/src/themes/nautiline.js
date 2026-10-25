@@ -1,5 +1,5 @@
 /**
- * Nautiline Theme for Navidrome
+ * Nautiline Theme for Lyvune
  * Light theme inspired by the Nautiline iOS app
  */
 

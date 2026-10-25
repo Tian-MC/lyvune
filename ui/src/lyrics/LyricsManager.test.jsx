@@ -778,7 +778,7 @@ describe('<LyricsManager />', () => {
       expect(screen.getByText('Nothing to restore yet.')).toBeInTheDocument()
     })
 
-    it('deletes saved lyrics, only offered for lyrics Navidrome stored', async () => {
+    it('deletes saved lyrics, only offered for lyrics Lyvune stored', async () => {
       api.status.mockResolvedValue(
         status({ current: managed, local: [managed] }),
       )

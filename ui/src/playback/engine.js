@@ -146,8 +146,8 @@ const applyGain = () => {
 
 const setDocumentTitle = (item) => {
   document.title = item
-    ? `${item.song?.title || item.name} - ${item.song?.artist || item.singer || ''} - Navidrome`
-    : 'Navidrome'
+    ? `${item.song?.title || item.name} - ${item.song?.artist || item.singer || ''} - Lyvune`
+    : 'Lyvune'
 }
 
 const unload = () => {

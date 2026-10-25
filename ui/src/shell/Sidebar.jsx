@@ -50,7 +50,7 @@ export const Sidebar = memo(() => {
       aria-label={t('ui.nav.main', 'Main navigation')}
     >
       <div className={styles.brand}>
-        <Link to="/" className={styles.logoLink} aria-label="Navidrome">
+        <Link to="/" className={styles.logoLink} aria-label="Lyvune">
           <Logo compact={collapsed} />
         </Link>
         <IconButton

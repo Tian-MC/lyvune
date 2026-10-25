@@ -73,7 +73,7 @@ const errorText = (t, e) => {
     case 'not-managed':
       return t(
         'ui.lyrics.error.notManaged',
-        'A file with that name exists that Navidrome did not write, so it was left alone.',
+        'A file with that name exists that Lyvune did not write, so it was left alone.',
       )
     default:
       return e?.status === 403

@@ -12,11 +12,11 @@ const wrapperFor = (theme) => {
 }
 
 describe('useCurrentTheme', () => {
-  it('returns the Navidrome theme by default', () => {
+  it('returns the Lyvune theme by default', () => {
     const { result } = renderHook(() => useCurrentTheme(), {
       wrapper: wrapperFor('NavidromeTheme'),
     })
-    expect(result.current.themeName).toBe('Navidrome')
+    expect(result.current.themeName).toBe('Lyvune')
     expect(result.current.palette.primary.main).toBe('#0084ff')
     expect(document.documentElement.dataset.theme).toBe('default')
   })
@@ -32,11 +32,11 @@ describe('useCurrentTheme', () => {
     )
   })
 
-  it('falls back to Navidrome for light legacy themes and says so', () => {
+  it('falls back to Lyvune for light legacy themes and says so', () => {
     const { result } = renderHook(() => useCurrentTheme(), {
       wrapper: wrapperFor('LightTheme'),
     })
-    expect(result.current.themeName).toBe('Navidrome')
+    expect(result.current.themeName).toBe('Lyvune')
     expect(result.current.legacy.support).toBe('unsupported')
     expect(document.documentElement.style.getPropertyValue('--nd-blue')).toBe(
       '',
@@ -47,7 +47,7 @@ describe('useCurrentTheme', () => {
     const dark = renderHook(() => useCurrentTheme(), {
       wrapper: wrapperFor('DarkTheme'),
     })
-    expect(dark.result.current.themeName).toBe('Navidrome')
+    expect(dark.result.current.themeName).toBe('Lyvune')
     const extra = renderHook(() => useCurrentTheme(), {
       wrapper: wrapperFor('ExtraDarkTheme'),
     })

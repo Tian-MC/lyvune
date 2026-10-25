@@ -1,10 +1,10 @@
 /*
- * Navidrome design tokens — the single source of truth for the visual language.
+ * Lyvune design tokens — the single source of truth for the visual language.
  * design/muiTheme.js mirrors these values for Material-UI based screens; keep the
  * two in sync (see DESIGN_SYSTEM.md).
  */
 :root {
-  /* Brand — Navidrome Blue, extracted from the official logo (#0084FF) */
+  /* Brand — Lyvune Blue, extracted from the official logo (#0084FF) */
   --nd-blue: #0084ff;
   --nd-blue-hover: #2a97ff;
   --nd-blue-solid: #0073de; /* filled controls with text: 4.6:1 against white */

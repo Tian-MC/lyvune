@@ -613,7 +613,7 @@
     "minutesAgo": "%{smart_count} 분 전"
   },
   "help": {
-    "title": "Navidrome 단축키",
+    "title": "Lyvune 단축키",
     "hotkeys": {
       "show_help": "이 도움말 표시",
       "toggle_menu": "메뉴 사이드바 전환",
