@@ -77,6 +77,13 @@ options are the same as Navidrome's: see the [Navidrome documentation](https://w
 `navidrome`, because clients recognise it, and the features it has, by that name. Sidecar files keep the format name
 `navidrome-lyrics`, so lyrics saved earlier still load.
 
+## Privacy
+
+Lyvune does not send usage statistics anywhere: the anonymous insights collector Navidrome has is **off by default**
+(`EnableInsightsCollector`, `ND_ENABLEINSIGHTSCOLLECTOR`). Looking up lyrics asks the providers you enabled for the
+tracks you play, and the login page may fetch a background image from navidrome.org (set `UILoginBackgroundURL` to
+change it).
+
 ## Tests
 
 ```sh

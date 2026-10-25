@@ -1068,7 +1068,7 @@ func setViperDefaults() {
 	viper.SetDefault("defaultshareexpiration", consts.DefaultShareExpiration)
 	viper.SetDefault("defaultdownloadableshare", false)
 	viper.SetDefault("gatrackingid", "")
-	viper.SetDefault("enableinsightscollector", true)
+	viper.SetDefault("enableinsightscollector", false)
 	viper.SetDefault("enablescheduleddbanalyze", true)
 	viper.SetDefault("enablelogredacting", true)
 	viper.SetDefault("authrequestlimit", 5)

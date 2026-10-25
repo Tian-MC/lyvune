@@ -11,6 +11,14 @@ import (
 	"github.com/spf13/viper"
 )
 
+var _ = Describe("telemetry", func() {
+	It("is off unless someone turns it on", func() {
+		viper.Reset()
+		conf.SetViperDefaults()
+		Expect(viper.GetBool("enableinsightscollector")).To(BeFalse())
+	})
+})
+
 // The project was called Navidrome before it was Lyvune: what an existing
 // installation has on disk has to keep working.
 var _ = Describe("names from before the rename", func() {
