@@ -134,6 +134,10 @@ A clean "nothing found" is remembered for a week. An outage, a timeout or a rate
 | **Musixmatch** | Official API, **your own key** (no authorized keyless route exists) | `matcher.track.get`, `track.richsync.get`, `track.subtitle.get`, `track.lyrics.get` | Only if you allow it (Settings, or `Lyrics.Musixmatch.Store`) |
 | **Apple Music** | None | Not implemented: the timed-lyrics endpoint is private | — |
 
+### Saving is the administrator's decision, not a grant of rights
+
+KuGou, NetEase, QQ and Musixmatch publish no terms that allow their lyrics to be kept. By default none of them is saved, searched or even turned on. The per-provider switch below only lets an administrator take that decision for their own server; it does **not** mean the providers or the rights holders allow it, and this project makes no such claim. Where rights cannot be established, leave the switch off: results can still be previewed and chosen for the moment, but are not kept. Only LRCLIB, which invites clients to store its lyrics, saves by default.
+
 ### Allowing a provider to save
 
 A provider whose terms grant no permission to keep its lyrics (KuGou, NetEase, QQ, Musixmatch) shows its results as *Preview only* and a chosen version is refused with "Saving is off for this provider". Administrators can allow saving **per provider** in *Settings → Lyrics → Providers* ("Save its lyrics next to my audio"). It is stored in the database (`store` in the settings), is off by default, and can be taken back; lyrics already saved stay. The `Lyrics.<Provider>.Store` options in the configuration file do the same for the whole server.
@@ -165,6 +169,19 @@ Your own `.krc`, `.yrc` and `.qrc` files next to the audio are read as local sid
 **QQ Music.** The direct route (`c.y.qq.com`, with a `Referer`) gives search, title/artist/album/length and line-timed lyrics. Word timing comes from Better Lyrics (`/qq/getLyrics`): without a key it answers **from its cache only**, and an uncached song is refused with `401`, which is treated as ordinary, not as an error. In the tests, one song in eight had QRC cached without a key, and the same song could be cached under one album spelling and not another, so word timing from QQ is real but not dependable. The endpoint reports no match score and no length, so the QRC is matched from its own `[ti:]`, `[ar:]`, `[al:]` tags and rejected if it runs more than 5 s past the track; a QRC that stays under 0.85 only for lack of a length is verified when its line starts agree with those of the verified QQ lyrics (a different version drifts). The QRC envelope is cut out as text because real documents carry raw quotes and are not well-formed XML.
 
 LRCLIB's terms of use could not be read from here either; it is a free community service whose own client downloads and stores lyrics.
+
+### Parser limits and hostile input
+
+The word-timed parsers (KRC, YRC, QRC, RichSync) read documents that come from the network or from a user's disk, so they are bounded:
+
+- a document over 8 MB, or with more than 50,000 lines, is refused (`ErrLyricsTooLarge`); responses are also cut at 4 MB and sidecars at 16 MB;
+- times are limited to 100 hours, so large values cannot wrap around into negative ones; an `[offset:]` beyond one hour either way is ignored, and an offset can never move a time below zero;
+- the QRC token scan looks at most 48 bytes ahead, so a line of unmatched brackets costs linear time (it was quadratic: about 80 s for 4 MB);
+- the QRC envelope is **not parsed as XML** (real documents contain raw quotes and are ill-formed, and an XML decoder would bring DTDs and entities). The first `Lyric_1` block is cut out as text and only HTML/XML character references are decoded, so nothing external is ever resolved (an `<!ENTITY ... SYSTEM "file:///...">` is just text);
+- invalid UTF-8 is replaced with U+FFFD before parsing, so line text and cue byte offsets agree;
+- an unreadable word keeps its line, without a time for that word. Nothing is estimated.
+
+Fuzz targets (`go test -fuzz`) exist for QRC, KRC, YRC, RichSync and the KRC container; the inputs that once failed are kept as regression seeds in `core/lyrics/testdata/fuzz`.
 
 ### Bulk jobs
 
@@ -248,6 +265,10 @@ Run: `go test ./core/lyrics/ ./server/nativeapi/` and `cd ui && npm test`.
 - **Not covered by automated tests**: live providers other than LRCLIB, and word timing from a live LRCLIB result.
 
 Beyond the unit tests, the feature was run end to end against the real LRCLIB with a copy of three library tracks: automatic retrieval for a Japanese title, local-over-remote precedence with a hand-written `.lrc`, confirmed replacement, lock, offset, undo, a full scan, a restart with the network cut, and a check that the audio and the original `.lrc` were byte-identical afterwards.
+
+## Test coverage of this feature
+
+Automated: Go unit, provider, parser, fuzz, engine and API tests (`core/lyrics`, `server/nativeapi`, race detector), and the frontend suite. By hand against real services and real audio on a temporary copy of the library: Chromium and **Firefox 158** (via WebDriver BiDi; QRC karaoke, word highlighting compared with the QRC data frame by frame, seeking, pause and resume, track changes, provider search and filter, translation, history restore), Chromium at 390×844, 360×800 and 320×700, a provider that never answers while music plays, and a regular user who can read lyrics but cannot fetch any. Not covered: Safari, a real touch device, Windows, screen readers.
 
 ## Known limitations
 

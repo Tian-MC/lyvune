@@ -175,3 +175,34 @@ Retrieval and storage are separate decisions: a result can be shown and chosen f
 | Wrong length (30 s) | none | none | none |
 
 End to end in a browser on a temporary copy of the library: QQ's QRC for *Judas* was chosen in the manager, saved (`.lyrics.json`, provider `qq`, 82 lines, 522 cues), played with the words advancing, seeked by clicking a line, and read back with the network cut. Karaoke rendering of NetEase and KuGou was checked the same way in Phase 10.
+
+
+# Phase 11 final validation
+
+## Status of each provider, checked against the code (25 Oct 2026)
+
+| Provider | Official? | Key | Formats read | Word timing | Storage by default |
+| --- | --- | --- | --- | --- | --- |
+| LRCLIB | Public API | none | Lyricsfile, LRC, plain | Yes, when `hasWordSync` (seen live) | Yes (its own policy) |
+| KuGou | **Unofficial** web endpoints | none | KRC, LRC, translation, romanization | Yes, KRC (seen live, many songs) | **No** |
+| NetEase | **Unofficial** web endpoints | none | YRC, LRC, translation, romanization | Yes for some songs (seen live) | **No** |
+| QQ Music | **Unofficial** web endpoints + Better Lyrics community cache | none (optional Better Lyrics key) | QRC, LRC, translation | Only when the cache holds the song (seen live: 1 song in 8 without a key; *Judas* under one album spelling) | **No** |
+| Musixmatch | Official API | **your own key** | RichSync, LRC, plain | **Not verified** (no key) | **No** |
+| Apple Music | none | n/a | none | n/a | n/a |
+
+A working endpoint is not an authorized one, and neither is permission to keep the lyrics. KuGou, NetEase and QQ answer without credentials today; their terms were not found, and they can change or block a region at any time.
+
+## Findings of the final validation
+
+- **QRC parser.** Reviewed and fuzzed. Reproduced and fixed: a quadratic scan, negative times from integer wrap-around (also through `[offset:]`), merging of several `Lyric_N` blocks, invalid UTF-8 reaching line text, no limits on size or line count. Fuzzing (40–60 s per parser after the fixes) found no further failure.
+- **Earlier build wrote junk.** A previous build saved NetEase's answer for a song without lyrics (a lone `[00:00.00-1] 作曲 : name`) as plain lyrics. Such results are no longer offered or saved, and a managed sidecar like that is ignored (the file is not touched).
+- **Mobile.** At 320 px the Repeat button stuck out 4 px of its column and two Now Playing links were 20 px high; both fixed. No page overflow at any of the three widths.
+- **Playback.** One playback element for the session (the engine builds two at start-up and never again); a provider that never answers does not move the audio clock.
+
+## Remaining limitations
+
+- QQ's own encrypted QRC is not decoded; word timing from QQ depends on a community cache.
+- Musixmatch has never been exercised against the live service.
+- The Simplified/Traditional Chinese mismatch is not handled.
+- "Seen working" and "karaoke seen" are in memory and start empty after a restart.
+- Browser coverage: Chromium, Firefox 158, emulated mobile viewports. No Safari, real device or assistive technology.
