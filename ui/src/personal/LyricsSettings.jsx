@@ -197,10 +197,18 @@ export const LyricsSettings = () => {
         </p>
       )}
 
+      <p className={styles.hint}>
+        {t(
+          'ui.lyrics.settings.storage',
+          'Downloaded lyrics are saved next to each audio file as .lyrics.json. Replaced versions are kept in the server data folder so they can be restored. Audio files are never modified.',
+        )}
+      </p>
+
       <div className={styles.switches}>
         {SWITCHES.map(([key, label, labelDefault, hint, hintDefault]) => (
           <div key={key} className={styles.switch}>
             <FormControlLabel
+              labelPlacement="start"
               control={
                 <Switch
                   color="primary"
@@ -224,6 +232,7 @@ export const LyricsSettings = () => {
         {providers.map((p) => (
           <li key={p.id} className={styles.provider}>
             <FormControlLabel
+              labelPlacement="start"
               control={
                 <Switch
                   color="primary"
@@ -282,6 +291,7 @@ export const LyricsSettings = () => {
       </div>
       <div className={styles.danger}>
         <FormControlLabel
+          labelPlacement="start"
           control={
             <Switch
               checked={replaceManual}

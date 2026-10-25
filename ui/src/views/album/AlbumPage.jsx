@@ -32,6 +32,7 @@ import { Hero } from '../shared/Hero'
 import { TrackList } from '../shared/TrackList'
 import { AlbumCard } from '../shared/Cards'
 import { CollectionMenu } from '../shared/CollectionMenu'
+import { useAlbumLyricsItem } from '../../lyrics/useAlbumLyricsItem'
 import { TrackColumnsMenu } from '../shared/TrackColumnsMenu'
 import { useTrackColumns } from '../shared/useTrackColumns'
 import { SelectionBar } from '../shared/SelectionBar'
@@ -233,6 +234,8 @@ const AlbumBody = ({ album }) => {
     formatDuration2(album.duration),
   ]
 
+  const lyricsItem = useAlbumLyricsItem(album.id)
+
   const footer = [
     tag(album, 'recordlabel'),
     tag(album, 'catalognumber') &&
@@ -290,6 +293,7 @@ const AlbumBody = ({ album }) => {
               record={album}
               query={songQuery.album(album.id)}
               size="lg"
+              extraItems={[lyricsItem]}
             />
           </>
         }

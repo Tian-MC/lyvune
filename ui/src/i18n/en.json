@@ -853,6 +853,8 @@
     "lyrics": {
       "backToCurrent": "Back to current line",
       "bulk": {
+        "album": "Find lyrics for this album",
+        "albumStarted": "Looking for lyrics for %{count} tracks in the background.",
         "busy": "Another bulk job is already running.",
         "cancelled": "Cancelled. Run it again to continue: tracks that are done are skipped.",
         "done": "Finished.",
@@ -913,7 +915,7 @@
         "noLyrics": "There are no lyrics for this track yet.",
         "noOffset": "In time",
         "noResults": "No matching lyrics were found.",
-        "noneBefore": "No saved lyrics",
+        "noneBefore": "Before any lyrics were saved",
         "notStorable": "Cannot be saved",
         "notStorableHint": "This provider does not allow its lyrics to be saved.",
         "offset": "Timing offset",
@@ -976,10 +978,12 @@
         "preferLocalHint": "Lyrics next to your audio or inside it win over downloaded ones. Turn off to let the best quality win.",
         "providers": "Providers",
         "saveFailed": "The settings could not be saved.",
+        "storage": "Downloaded lyrics are saved next to each audio file as .lyrics.json. Replaced versions are kept in the server data folder so they can be restored. Audio files are never modified.",
         "title": "Lyrics"
       },
       "source": {
         "embedded": "Embedded in the audio file",
+        "embeddedShort": "Embedded lyrics",
         "imported": "Imported file",
         "managed": "Downloaded from %{provider}",
         "plugin": "Plugin: %{name}",

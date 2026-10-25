@@ -790,6 +790,8 @@
         "lyrics": {
             "backToCurrent": "Torna alla riga corrente",
             "bulk": {
+                "album": "Cerca i testi per questo album",
+                "albumStarted": "Ricerca dei testi per %{count} brani in background.",
                 "busy": "Un altro lavoro in blocco è già in corso.",
                 "cancelled": "Annullato. Riavvialo per continuare: i brani già completati vengono saltati.",
                 "done": "Completato.",
@@ -850,7 +852,7 @@
                 "noLyrics": "Questo brano non ha ancora testi.",
                 "noOffset": "A tempo",
                 "noResults": "Non sono stati trovati testi corrispondenti.",
-                "noneBefore": "Nessun testo salvato",
+                "noneBefore": "Prima che fossero salvati dei testi",
                 "notStorable": "Non si può salvare",
                 "notStorableHint": "Questo provider non permette di salvare i suoi testi.",
                 "offset": "Sfasamento temporale",
@@ -913,10 +915,12 @@
                 "preferLocalHint": "I testi accanto all’audio o al suo interno hanno la precedenza su quelli scaricati. Disattiva per far vincere la qualità migliore.",
                 "providers": "Provider",
                 "saveFailed": "Non è stato possibile salvare le impostazioni.",
+                "storage": "I testi scaricati vengono salvati accanto a ogni file audio come .lyrics.json. Le versioni sostituite restano nella cartella dati del server, così si possono ripristinare. I file audio non vengono mai modificati.",
                 "title": "Testi"
             },
             "source": {
                 "embedded": "Incorporati nel file audio",
+                "embeddedShort": "Testi incorporati",
                 "imported": "File importato",
                 "managed": "Scaricati da %{provider}",
                 "plugin": "Plugin: %{name}",

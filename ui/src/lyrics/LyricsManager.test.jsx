@@ -471,10 +471,46 @@ describe('<LyricsManager />', () => {
       await open(id())
       const restores = screen.getAllByRole('button', { name: 'Restore' })
       expect(restores).toHaveLength(2)
-      expect(screen.getByText('No saved lyrics')).toBeInTheDocument()
+      expect(
+        screen.getByText('Before any lyrics were saved'),
+      ).toBeInTheDocument()
       fireEvent.click(restores[0])
       await waitFor(() => expect(api.restore).toHaveBeenCalledWith(id(), 'h2'))
       expect(await screen.findByText('Restored.')).toBeInTheDocument()
+    })
+
+    it('names a history entry after where its lyrics came from', async () => {
+      api.status.mockResolvedValue(
+        status({
+          history: [
+            {
+              id: 'a',
+              at: '2026-10-24T12:00:00Z',
+              existed: true,
+              provider: 'import',
+              quality: 'synced',
+            },
+            {
+              id: 'b',
+              at: '2026-10-23T12:00:00Z',
+              existed: true,
+              provider: 'embedded',
+              quality: 'plain',
+            },
+            {
+              id: 'c',
+              at: '2026-10-22T12:00:00Z',
+              existed: true,
+              provider: 'lrclib',
+              quality: 'karaoke',
+            },
+          ],
+        }),
+      )
+      await open(id())
+      expect(screen.getByText(/Imported file · Synced/)).toBeInTheDocument()
+      expect(screen.getByText(/Embedded lyrics · Plain/)).toBeInTheDocument()
+      expect(screen.getByText(/LRCLIB · Karaoke/)).toBeInTheDocument()
     })
 
     it('says there is nothing to restore yet', async () => {

@@ -34,6 +34,15 @@ const when = (iso, locale) => {
   }
 }
 
+// A history entry is named after where its lyrics came from
+const versionName = (t, v) => {
+  if (v.provider === 'import')
+    return t('ui.lyrics.source.imported', 'Imported file')
+  if (v.provider === 'embedded')
+    return t('ui.lyrics.source.embeddedShort', 'Embedded lyrics')
+  return providerName(v.provider) || t('ui.lyrics.manager.version', 'Version')
+}
+
 /** The "Current lyrics" tab: where they come from, and what can be done. */
 export const ManagerCurrent = ({
   data,
@@ -250,8 +259,11 @@ export const ManagerCurrent = ({
               <li key={v.id} className={styles.listItem}>
                 <span>
                   {v.existed
-                    ? `${providerName(v.provider) || t('ui.lyrics.manager.version', 'Version')} · ${qualityLabel(t, v.quality)}`
-                    : t('ui.lyrics.manager.noneBefore', 'No saved lyrics')}
+                    ? `${versionName(t, v)} · ${qualityLabel(t, v.quality)}`
+                    : t(
+                        'ui.lyrics.manager.noneBefore',
+                        'Before any lyrics were saved',
+                      )}
                   <span className={styles.hint}> · {when(v.at)}</span>
                 </span>
                 <Button

@@ -30,7 +30,7 @@
 }
 
 .hint {
-  margin: 0 0 0 var(--space-12);
+  margin: 0;
   color: var(--text-3);
   font-size: var(--text-small);
 }
@@ -51,10 +51,6 @@
   border-radius: var(--radius-md);
 }
 
-.danger .hint {
-  margin-left: 0;
-}
-
 .job {
   display: flex;
   flex-direction: column;
@@ -64,10 +60,6 @@
 .job progress {
   width: 100%;
   accent-color: var(--nd-blue);
-}
-
-.job .hint {
-  margin-left: 0;
 }
 
 .error {
