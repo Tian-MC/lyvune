@@ -16,6 +16,9 @@ type Engine interface {
 	SaveSettings(ctx context.Context, s Settings) (Settings, error)
 	// Providers lists every provider with its status; it never returns credentials.
 	Providers(ctx context.Context) []ProviderStatus
+	// CheckProviders asks each enabled provider for a well-known recording and
+	// returns the refreshed statuses. Only run on request.
+	CheckProviders(ctx context.Context) []ProviderStatus
 
 	Status(ctx context.Context, mf *model.MediaFile) (SongStatus, error)
 	Search(ctx context.Context, mf *model.MediaFile, opts SearchOptions) (SearchResult, error)
@@ -53,6 +56,19 @@ var (
 type ProviderStatus struct {
 	ProviderInfo
 	Enabled bool `json:"enabled"`
+	// Availability is the state of the service right now (the Availability*
+	// constants); Verified in ProviderInfo is what development checked.
+	Availability string `json:"availability"`
+	// LiveVerified is true once a request to the service has succeeded since the
+	// server started.
+	LiveVerified bool `json:"liveVerified"`
+	// KaraokeVerified is true once a verified match with real word timing has
+	// come back since the server started.
+	KaraokeVerified  bool       `json:"karaokeVerified"`
+	LastSuccess      *time.Time `json:"lastSuccess,omitempty"`
+	LastFailure      *time.Time `json:"lastFailure,omitempty"`
+	LastError        string     `json:"lastError,omitempty"`
+	RateLimitedUntil *time.Time `json:"rateLimitedUntil,omitempty"`
 }
 
 // SourceInfo describes one set of lyrics a track has, for display.

@@ -20,6 +20,10 @@ func FastForTest(p OnlineProvider) {
 		v.http.pacer.interval = 0
 		v.http.backoff = time.Millisecond
 		v.http.timeout = 300 * time.Millisecond
+	case *qq:
+		v.direct.pacer.interval, v.bl.pacer.interval = 0, 0
+		v.direct.backoff, v.bl.backoff = time.Millisecond, time.Millisecond
+		v.direct.timeout, v.bl.timeout = 300*time.Millisecond, 300*time.Millisecond
 	case *kugou:
 		v.emptyRetry = time.Millisecond
 		v.http.pacer.interval = 0

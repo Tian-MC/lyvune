@@ -32,6 +32,7 @@ var sensitiveFieldsFullMask = []string{
 	"PasswordEncryptionKey",
 	"Prometheus.Password",
 	"Lyrics.Musixmatch.ApiKey",
+	"Lyrics.QQ.BetterLyricsApiKey",
 }
 
 type configResponse struct {

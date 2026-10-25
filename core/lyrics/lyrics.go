@@ -46,6 +46,7 @@ type lyricsService struct {
 	store     *Store
 	providers *Providers
 	searches  *searchCache
+	health    *healthTracker
 	flight    singleflight.Group
 	now       func() time.Time
 
@@ -82,6 +83,7 @@ func NewService(o Options) Lyrics {
 			NewMusixmatch("", conf.Server.Lyrics.Musixmatch.ApiKey, conf.Server.Lyrics.Musixmatch.Store),
 			NewKuGou("", "", conf.Server.Lyrics.KuGou.Store),
 			NewNetEase("", conf.Server.Lyrics.NetEase.Store),
+			NewQQ("", "", conf.Server.Lyrics.QQ.BetterLyricsApiKey, conf.Server.Lyrics.QQ.Store),
 			NewAppleMusic(),
 		)
 	}
@@ -94,7 +96,7 @@ func NewService(o Options) Lyrics {
 	return &lyricsService{
 		ds: o.DataStore, pluginLoader: o.PluginLoader,
 		props: propertyStore{ds: o.DataStore}, store: o.Store, providers: o.Providers,
-		searches: newSearchCache(), now: o.Now, bulkJobs: map[string]*bulkJob{},
+		searches: newSearchCache(), health: newHealthTracker(), now: o.Now, bulkJobs: map[string]*bulkJob{},
 	}
 }
 

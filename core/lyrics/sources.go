@@ -108,7 +108,7 @@ func (l *lyricsService) fromPlugin(ctx context.Context, mf *model.MediaFile, plu
 const maxSidecarBytes = 16 << 20
 
 // parseWordTimedSidecar reads the word-timed formats Navidrome's own parsers do
-// not know: KuGou KRC (plain or as distributed) and NetEase YRC. handled is
+// not know: KuGou KRC (plain or as distributed), NetEase YRC and QQ QRC (decrypted). handled is
 // false for every other suffix.
 func parseWordTimedSidecar(suffix string, raw []byte) (list model.LyricList, handled bool, err error) {
 	switch strings.ToLower(suffix) {
@@ -118,6 +118,10 @@ func parseWordTimedSidecar(suffix string, raw []byte) (list model.LyricList, han
 			return nil, true, derr
 		}
 		list, err = ParseKRC(text)
+		return list, true, err
+	case ".qrc":
+		text := strings.TrimPrefix(string(raw), "\ufeff")
+		list, _, err = ParseQRC(text)
 		return list, true, err
 	case ".yrc":
 		list, err = ParseYRC(strings.TrimPrefix(string(raw), "\ufeff"))

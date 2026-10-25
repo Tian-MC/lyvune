@@ -65,7 +65,8 @@ func (n *netease) Info() ProviderInfo {
 	return ProviderInfo{
 		ID: neteaseID, Name: "NetEase Cloud Music", Status: StatusReady, Verified: true,
 		Plain: true, Synced: true, WordSync: true, Translation: true, Romanization: true,
-		Storable: n.store, Attribution: "Lyrics from NetEase Cloud Music", Note: note,
+		Storable: n.store, Implemented: true, Configured: true, Auth: AuthNone,
+		Formats: []string{"yrc", "lrc", "translation", "romanization"}, Attribution: "Lyrics from NetEase Cloud Music", Note: note,
 	}
 }
 

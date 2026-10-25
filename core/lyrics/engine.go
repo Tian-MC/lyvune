@@ -46,9 +46,30 @@ func (l *lyricsService) Providers(ctx context.Context) []ProviderStatus {
 	out := make([]ProviderStatus, 0, len(l.providers.All()))
 	for _, p := range l.providers.All() {
 		info := p.Info()
-		out = append(out, ProviderStatus{ProviderInfo: info, Enabled: info.Status == StatusReady && slices.Contains(enabled, info.ID)})
+		st := ProviderStatus{ProviderInfo: info, Enabled: info.Status == StatusReady && slices.Contains(enabled, info.ID)}
+		l.health.apply(&st, l.now())
+		out = append(out, st)
 	}
 	return out
+}
+
+// checkRecording is searched by CheckProviders: a well-known recording that
+// the providers can be expected to have.
+var checkRecording = Recording{Title: "Judas", Artist: "Lady Gaga", Album: "Born This Way", DurationSec: 249}
+
+// CheckProviders asks every provider that is ready and turned on for one
+// well-known recording, so the status shows whether they answer now. It is run
+// on request, never in the background.
+func (l *lyricsService) CheckProviders(ctx context.Context) []ProviderStatus {
+	enabled := l.settings(ctx).Providers
+	var ps []OnlineProvider
+	for _, p := range l.providers.All() {
+		if info := p.Info(); info.Status == StatusReady && slices.Contains(enabled, info.ID) {
+			ps = append(ps, p)
+		}
+	}
+	l.searchRecording(ctx, checkRecording, ps)
+	return l.Providers(ctx)
 }
 
 func (l *lyricsService) Status(ctx context.Context, mf *model.MediaFile) (SongStatus, error) {
@@ -129,7 +150,10 @@ func (l *lyricsService) searchProviders(opts SearchOptions) []OnlineProvider {
 // searchAll queries providers concurrently. One provider failing, being slow or
 // being rate limited never affects the others.
 func (l *lyricsService) searchAll(ctx context.Context, mf *model.MediaFile, providers []OnlineProvider) ([]Candidate, []ProviderOutcome) {
-	rec := RecordingOf(mf)
+	return l.searchRecording(ctx, RecordingOf(mf), providers)
+}
+
+func (l *lyricsService) searchRecording(ctx context.Context, rec Recording, providers []OnlineProvider) ([]Candidate, []ProviderOutcome) {
 	ctx, cancel := context.WithTimeout(ctx, searchTimeout)
 	defer cancel()
 
@@ -173,6 +197,7 @@ func (l *lyricsService) searchAll(ctx context.Context, mf *model.MediaFile, prov
 			out.Status, out.Message = OutcomeError, r.err.Error()
 			log.Debug(ctx, "Lyrics provider failed", "provider", r.id, r.err)
 		}
+		l.health.record(out, r.cands, l.now())
 		outcomes = append(outcomes, out)
 		all = append(all, r.cands...)
 	}

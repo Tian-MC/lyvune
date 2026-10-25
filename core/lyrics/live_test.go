@@ -13,7 +13,7 @@ import (
 	"github.com/navidrome/navidrome/log"
 )
 
-// TestLiveProviders queries the real NetEase and KuGou services. It is opt-in
+// TestLiveProviders queries the real NetEase, KuGou and QQ Music services. It is opt-in
 // (go test -tags live -run TestLiveProviders) because it needs the network and
 // asks the services for a handful of lyrics. It prints what came back; it only
 // fails when a provider errors out on a track it should answer.
@@ -26,11 +26,12 @@ func TestLiveProviders(t *testing.T) {
 		{"Japanese", lyrics.Recording{Title: "マトリョシカ", Artist: "米津玄師", DurationSec: 198}},
 		{"Chinese", lyrics.Recording{Title: "晴天", Artist: "周杰倫", Album: "葉惠美", DurationSec: 269}},
 		{"Korean", lyrics.Recording{Title: "Dynamite", Artist: "BTS", DurationSec: 199}},
+		{"Cached QRC", lyrics.Recording{Title: "Blinding Lights", Artist: "The Weeknd", Album: "After Hours", DurationSec: 200}},
 		{"Mismatch", lyrics.Recording{Title: "Judas", Artist: "Lady Gaga", DurationSec: 30}},
 		{"Metal", lyrics.Recording{Title: "Incultus", Artist: "Xanthochroid", Album: "Incultus", DurationSec: 0}},
 	}
 	log.SetLevel(log.LevelDebug)
-	provs := []lyrics.OnlineProvider{lyrics.NewNetEase("", true), lyrics.NewKuGou("", "", true)}
+	provs := []lyrics.OnlineProvider{lyrics.NewNetEase("", true), lyrics.NewKuGou("", "", true), lyrics.NewQQ("", "", "", true)}
 	out := os.Stdout
 	for _, p := range provs {
 		for _, r := range recs {

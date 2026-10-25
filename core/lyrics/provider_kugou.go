@@ -72,7 +72,8 @@ func (k *kugou) Info() ProviderInfo {
 	return ProviderInfo{
 		ID: kugouID, Name: "KuGou Music", Status: StatusReady, Verified: true,
 		Plain: true, Synced: true, WordSync: true, Translation: true, Romanization: true,
-		Storable: k.store, Attribution: "Lyrics from KuGou Music", Note: note,
+		Storable: k.store, Implemented: true, Configured: true, Auth: AuthNone,
+		Formats: []string{"krc", "lrc", "translation", "romanization"}, Attribution: "Lyrics from KuGou Music", Note: note,
 	}
 }
 

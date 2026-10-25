@@ -35,6 +35,7 @@ func (api *Router) addLyricsRoute(r chi.Router) {
 
 		r.With(adminOnlyMiddleware).Group(func(r chi.Router) {
 			r.Put("/settings", api.putLyricsSettings)
+			r.Post("/providers/check", api.checkLyricsProviders)
 			r.Post("/song/{id}/search", api.withTrack(api.searchLyrics))
 			r.Post("/song/{id}/apply", api.withTrack(api.applyLyrics))
 			r.Post("/song/{id}/import", api.withTrack(api.importLyrics))
@@ -127,6 +128,12 @@ func (api *Router) getLyricsSettings(w http.ResponseWriter, r *http.Request) {
 		"settings":  api.lyrics.Settings(ctx),
 		"providers": api.lyrics.Providers(ctx),
 	})
+}
+
+// checkLyricsProviders searches a well-known recording on every enabled
+// provider, so their status reflects what answers now.
+func (api *Router) checkLyricsProviders(w http.ResponseWriter, r *http.Request) {
+	lyricsJSON(w, http.StatusOK, map[string]any{"providers": api.lyrics.CheckProviders(r.Context())})
 }
 
 func (api *Router) putLyricsSettings(w http.ResponseWriter, r *http.Request) {

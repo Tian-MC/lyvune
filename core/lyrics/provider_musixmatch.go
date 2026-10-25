@@ -73,6 +73,13 @@ func (m *musixmatch) Info() ProviderInfo {
 	info := ProviderInfo{
 		ID: musixmatchID, Name: "Musixmatch", Status: StatusReady, Verified: false,
 		Plain: true, Synced: true, Storable: m.store, Note: note,
+		Implemented: true, Configured: m.apiKey != "", Auth: AuthAPIKey,
+		Formats: []string{"richsync", "lrc", "txt"},
+		Modes: []ProviderMode{
+			{ID: "official", Name: "Official API (your own key)", Auth: AuthAPIKey, Active: m.apiKey != ""},
+			{ID: "keyless", Name: "Without a key", Auth: AuthNone, Active: false,
+				Note: "No authorized keyless route exists: the known ones use the anonymous token of Musixmatch's desktop app, which is not used."},
+		},
 	}
 	if m.apiKey == "" {
 		info.Status = StatusNeedsCredentials

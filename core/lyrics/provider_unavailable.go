@@ -17,7 +17,7 @@ func (u unavailable) Search(context.Context, Recording) ([]Candidate, error) {
 // NewAppleMusic reports Apple Music as unavailable for lyrics.
 func NewAppleMusic() OnlineProvider {
 	return unavailable{ProviderInfo{
-		ID: "apple", Name: "Apple Music", Status: StatusUnavailable, Verified: false,
+		ID: "apple", Name: "Apple Music", Status: StatusUnavailable, Verified: false, Implemented: false, Configured: false, Auth: AuthNone,
 		Reason: "The Apple Music API documents only the hasLyrics flag. The endpoint that returns timed lyrics is private and needs a user's subscription token, so it is not used.",
 		Note:   "hasLyrics says whether lyrics exist, not that they can be downloaded.",
 	}}
