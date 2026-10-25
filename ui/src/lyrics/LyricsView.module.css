@@ -186,3 +186,15 @@
   font-size: var(--text-sm, 0.8125rem);
   color: var(--color-danger, currentColor);
 }
+
+.toggleSelect {
+  align-self: center;
+  max-width: 14rem;
+  padding: var(--space-1) var(--space-2);
+  font: inherit;
+  font-size: var(--text-sm, 0.8125rem);
+  color: inherit;
+  background: transparent;
+  border: 1px solid var(--color-border, currentColor);
+  border-radius: var(--radius-pill, 999px);
+}

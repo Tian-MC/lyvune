@@ -28,6 +28,18 @@ vi.mock('../playback/engine', () => ({
   },
 }))
 
+// The browser build fetches its dictionary over HTTP; tests read it from node_modules
+vi.mock('kuromoji/build/kuromoji.js', async () => {
+  const { realTokenizer } = await import('./romanize/testTokenizer')
+  return {
+    default: {
+      builder: () => ({
+        build: (done) => realTokenizer().then((t) => done(null, t), done),
+      }),
+    },
+  }
+})
+
 import { LyricsView } from './LyricsView'
 
 // FIXTURE data: synthetic text, not lyrics of any real recording
@@ -196,5 +208,58 @@ describe('<LyricsView /> (fixtures)', () => {
       lines: [line('first line'), line('second line')],
     })
     expect(screen.queryByText('Romanization')).toBeNull()
+  })
+
+  it('writes Japanese in the style chosen, and remembers it', async () => {
+    localStorage.clear()
+    show({
+      synced: false,
+      hasWords: false,
+      lang: '',
+      hasTranslation: false,
+      hasPronunciation: false,
+      lines: [line('東京へ行こう'), line('ありがとう')],
+    })
+    fireEvent.click(screen.getByText('Romanization'))
+    expect(await screen.findByText('toukyou e ikou')).toBeTruthy()
+    fireEvent.change(screen.getByLabelText('Romaji style'), {
+      target: { value: 'macron' },
+    })
+    expect(await screen.findByText('tōkyō e ikō')).toBeTruthy()
+    expect(localStorage.getItem('lyrics.romanization.style')).toBe('macron')
+  })
+
+  it('lets the listener say how ambiguous Han characters are read, per song', async () => {
+    localStorage.clear()
+    show({
+      synced: false,
+      hasWords: false,
+      lang: '',
+      hasTranslation: false,
+      hasPronunciation: false,
+      lines: [line('東京大阪'), line('京都神戸')],
+    })
+    fireEvent.click(screen.getByText('Romanization'))
+    expect(await screen.findByText(/dōng jīng/)).toBeTruthy()
+    fireEvent.change(screen.getByLabelText('Read Han characters as'), {
+      target: { value: 'ja' },
+    })
+    expect(await screen.findByText(/toukyou/)).toBeTruthy()
+    expect(localStorage.getItem('lyrics.romanization.han.t1')).toBe('ja')
+  })
+
+  it('does not offer the Han choice when the song says what it is', async () => {
+    localStorage.clear()
+    show({
+      synced: false,
+      hasWords: false,
+      lang: 'jpn',
+      hasTranslation: false,
+      hasPronunciation: false,
+      lines: [line('東京大阪'), line('京都神戸')],
+    })
+    fireEvent.click(screen.getByText('Romanization'))
+    expect(await screen.findByText(/toukyou/)).toBeTruthy()
+    expect(screen.queryByLabelText('Read Han characters as')).toBeNull()
   })
 })

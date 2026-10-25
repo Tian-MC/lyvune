@@ -823,6 +823,10 @@
                 "unreadable": "Non è stato possibile leggere quel file.",
                 "unsafePath": "Quella posizione non è sicura per scrivere."
             },
+            "hanAuto": "Caratteri Han: automatico",
+            "hanChinese": "Caratteri Han: cinese",
+            "hanJapanese": "Caratteri Han: giapponese",
+            "hanReading": "Leggi i caratteri Han come",
             "manage": "Gestisci",
             "manager": {
                 "actions": "Cambia i testi",
@@ -966,6 +970,9 @@
                 "plain": "Semplice",
                 "synced": "Sincronizzato"
             },
+            "romajiAscii": "Vocali doppie (ou, aa)",
+            "romajiMacron": "Macron (ō, ā)",
+            "romajiStyle": "Stile del romaji",
             "romanizationAuto": "Generata su questo dispositivo. È approssimativa e l'arabo è scritto senza vocali brevi.",
             "romanizationFailed": "Impossibile caricare la romanizzazione.",
             "searching": "Ricerca dei testi…",

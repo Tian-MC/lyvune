@@ -886,6 +886,10 @@
         "unreadable": "That file could not be read.",
         "unsafePath": "That location is not safe to write to."
       },
+      "hanAuto": "Han characters: automatic",
+      "hanChinese": "Han characters: Chinese",
+      "hanJapanese": "Han characters: Japanese",
+      "hanReading": "Read Han characters as",
       "manage": "Manage",
       "manager": {
         "actions": "Change lyrics",
@@ -1029,6 +1033,9 @@
         "plain": "Plain",
         "synced": "Synced"
       },
+      "romajiAscii": "Doubled vowels (ou, aa)",
+      "romajiMacron": "Macrons (ō, ā)",
+      "romajiStyle": "Romaji style",
       "romanizationAuto": "Generated on this device. It is approximate, and Arabic is written without short vowels.",
       "romanizationFailed": "Romanization could not be loaded.",
       "searching": "Looking for lyrics…",

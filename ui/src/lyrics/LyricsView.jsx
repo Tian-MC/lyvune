@@ -23,19 +23,33 @@ const MANUAL_SCROLL_GRACE_MS = 4000
 const ROMANIZATION_KEY = 'lyrics.romanization'
 
 // The listener's choice is remembered in this browser; storage may be blocked
-const readRomanization = () => {
+const readStored = (key, fallback) => {
   try {
-    return localStorage.getItem(ROMANIZATION_KEY) === 'on'
+    return localStorage.getItem(key) ?? fallback
   } catch {
-    return false
+    return fallback
   }
 }
-const writeRomanization = (on) => {
+const writeStored = (key, value) => {
   try {
-    localStorage.setItem(ROMANIZATION_KEY, on ? 'on' : 'off')
+    localStorage.setItem(key, value)
   } catch {
     // not remembered
   }
+}
+const readRomanization = () => readStored(ROMANIZATION_KEY, 'off') === 'on'
+const writeRomanization = (on) =>
+  writeStored(ROMANIZATION_KEY, on ? 'on' : 'off')
+
+// How Japanese is written is one choice for every song; how Han characters are
+// read is per song, because it depends on the song
+const STYLE_KEY = 'lyrics.romanization.style'
+const HAN_KEY = 'lyrics.romanization.han.'
+const readStyle = () =>
+  readStored(STYLE_KEY, 'ascii') === 'macron' ? 'macron' : 'ascii'
+const readHan = (trackId) => {
+  const v = readStored(HAN_KEY + trackId, 'auto')
+  return v === 'ja' || v === 'zh' ? v : 'auto'
 }
 
 /**
@@ -265,7 +279,11 @@ export const LyricsView = ({ trackId, title, isRadio, className }) => {
   const { status, lyrics: found, searching } = useLyrics(trackId, !isRadio)
   const [showTranslation, setShowTranslation] = useState(true)
   const [showPronunciation, setShowPronunciation] = useState(readRomanization)
-  const roman = useRomanization(found, showPronunciation)
+  const [style, setStyle] = useState(readStyle)
+  const [han, setHan] = useState(() => readHan(trackId))
+  // Another song has its own reading of Han characters
+  useEffect(() => setHan(readHan(trackId)), [trackId])
+  const roman = useRomanization(found, showPronunciation, { style, han })
   const lyrics = roman.lyrics
 
   let body
@@ -365,6 +383,49 @@ export const LyricsView = ({ trackId, title, isRadio, className }) => {
               {t('ui.lyrics.pronunciation', 'Romanization')}
             </Button>
           )}
+          {showPronunciation &&
+            roman.available &&
+            roman.engines.includes('ja') && (
+              <select
+                className={styles.toggleSelect}
+                aria-label={t('ui.lyrics.romajiStyle', 'Romaji style')}
+                value={style}
+                onChange={(e) => {
+                  writeStored(STYLE_KEY, e.target.value)
+                  setStyle(e.target.value)
+                }}
+              >
+                <option value="ascii">
+                  {t('ui.lyrics.romajiAscii', 'Doubled vowels (ou, aa)')}
+                </option>
+                <option value="macron">
+                  {t('ui.lyrics.romajiMacron', 'Macrons (ō, ā)')}
+                </option>
+              </select>
+            )}
+          {showPronunciation &&
+            roman.available &&
+            (roman.ambiguous || han !== 'auto') && (
+              <select
+                className={styles.toggleSelect}
+                aria-label={t('ui.lyrics.hanReading', 'Read Han characters as')}
+                value={han}
+                onChange={(e) => {
+                  writeStored(HAN_KEY + trackId, e.target.value)
+                  setHan(e.target.value)
+                }}
+              >
+                <option value="auto">
+                  {t('ui.lyrics.hanAuto', 'Han characters: automatic')}
+                </option>
+                <option value="zh">
+                  {t('ui.lyrics.hanChinese', 'Han characters: Chinese')}
+                </option>
+                <option value="ja">
+                  {t('ui.lyrics.hanJapanese', 'Han characters: Japanese')}
+                </option>
+              </select>
+            )}
           {showPronunciation && roman.status === 'error' && (
             <span role="alert" className={styles.toggleError}>
               {t(

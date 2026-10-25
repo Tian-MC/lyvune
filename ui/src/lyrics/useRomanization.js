@@ -1,65 +1,96 @@
 import { useEffect, useMemo, useState } from 'react'
 import { planFor, romanizeLines } from './romanize'
+import { hanIsAmbiguous, needs } from './romanize/scripts'
 
 /**
- * Romanization made in the browser for lyrics that came without one. It only
- * does anything once `enabled`, so the libraries load when a listener asks.
- * Whatever the provider supplied is always preferred.
+ * Romanization made in the browser for the lines of a song that came without
+ * one. It only does anything once `enabled`, so the libraries load when a
+ * listener asks. What the provider supplied is always kept as it is; only the
+ * lines it left empty (or echoed unchanged) are filled in, and the original
+ * text, the timing and the words of the karaoke are never touched.
  *
- * @returns {{ available: boolean, status: 'idle'|'loading'|'ready'|'error', lyrics: object }}
+ * @param {object|null} lyrics  from parseLyrics
+ * @param {boolean} enabled
+ * @param {{ style?: 'macron'|'ascii', han?: 'auto'|'ja'|'zh' }} options
+ * @returns {{ available: boolean, engines: string[], ambiguous: boolean, status: 'idle'|'loading'|'ready'|'error', lyrics: object|null }}
  */
-export const useRomanization = (lyrics, enabled) => {
-  const engines = useMemo(
-    () =>
-      lyrics && !lyrics.hasPronunciation
-        ? planFor(
-            lyrics.lines.map((l) => l.text),
-            lyrics.lang,
-          )
-        : [],
-    [lyrics],
-  )
-  const available = engines.length > 0
+export const useRomanization = (
+  lyrics,
+  enabled,
+  { style = 'ascii', han = 'auto' } = {},
+) => {
+  const plan = useMemo(() => {
+    if (!lyrics) return { engines: [], gaps: [], ambiguous: false }
+    const texts = lyrics.lines.map((l) => l.text)
+    const engines = planFor(texts, lyrics.lang, han)
+    // A provider line that is empty or merely repeats the text is no romanization
+    const provided = lyrics.lines.map((l) => {
+      const p = (l.pronunciation || '').trim()
+      return p && p !== l.text.trim() ? l.pronunciation : null
+    })
+    const gaps = []
+    texts.forEach((text, i) => {
+      if (!provided[i] && text.trim() && engines.some((e) => needs(e, text)))
+        gaps.push(i)
+    })
+    return {
+      engines,
+      gaps,
+      provided,
+      ambiguous: hanIsAmbiguous(texts, lyrics.lang),
+    }
+  }, [lyrics, han])
+
+  const available = plan.gaps.length > 0
+  const active = available && enabled
+  const key = `${plan.engines.join('+')}|${style}`
   const [state, setState] = useState({
     lyrics: null,
+    key: '',
     lines: null,
     status: 'idle',
   })
-  const active = available && enabled
 
   useEffect(() => {
     if (!active) return undefined
     let stale = false
     setState((s) =>
-      s.lyrics === lyrics ? s : { lyrics, lines: null, status: 'loading' },
+      s.lyrics === lyrics && s.key === key
+        ? s
+        : { lyrics, key, lines: null, status: 'loading' },
     )
     romanizeLines(
-      lyrics.lines.map((l) => l.text),
-      engines,
+      plan.gaps.map((i) => lyrics.lines[i].text),
+      plan.engines,
+      { style },
     ).then(
-      (lines) => !stale && setState({ lyrics, lines, status: 'ready' }),
-      () => !stale && setState({ lyrics, lines: null, status: 'error' }),
+      (lines) => !stale && setState({ lyrics, key, lines, status: 'ready' }),
+      () => !stale && setState({ lyrics, key, lines: null, status: 'error' }),
     )
     return () => {
       stale = true
     }
-  }, [active, lyrics, engines])
+  }, [active, lyrics, key, plan, style])
 
-  const mine = state.lyrics === lyrics
+  const mine = state.lyrics === lyrics && state.key === key
   const merged = useMemo(() => {
     if (!active || !mine || !state.lines) return lyrics
+    const generated = new Map(plan.gaps.map((i, n) => [i, state.lines[n]]))
+    const lines = lyrics.lines.map((l, i) => ({
+      ...l,
+      pronunciation: plan.provided[i] ?? generated.get(i) ?? null,
+    }))
     return {
       ...lyrics,
-      hasPronunciation: state.lines.some(Boolean),
-      lines: lyrics.lines.map((l, i) => ({
-        ...l,
-        pronunciation: state.lines[i],
-      })),
+      hasPronunciation: lines.some((l) => l.pronunciation),
+      lines,
     }
-  }, [active, mine, state.lines, lyrics])
+  }, [active, mine, state.lines, lyrics, plan])
 
   return {
     available,
+    engines: plan.engines,
+    ambiguous: plan.ambiguous,
     status: !active ? 'idle' : mine ? state.status : 'loading',
     lyrics: merged,
   }
