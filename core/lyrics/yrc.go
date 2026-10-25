@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/navidrome/navidrome/model"
@@ -24,6 +23,10 @@ var ErrNotYRC = errors.New("not a YRC file")
 
 // ParseYRC parses YRC text. Metadata JSON lines keep their line time only.
 func ParseYRC(text string) (model.LyricList, error) {
+	if err := withinLimits(text); err != nil {
+		return nil, err
+	}
+	text = cleanText(text)
 	var lines []model.Line
 	for raw := range strings.SplitSeq(strings.ReplaceAll(text, "\r\n", "\n"), "\n") {
 		raw = strings.TrimSpace(strings.TrimPrefix(raw, "\ufeff"))
@@ -40,6 +43,9 @@ func ParseYRC(text string) (model.LyricList, error) {
 			start, dur, ok := parsePair(head)
 			if !ok {
 				continue
+			}
+			if len(lines) >= maxLyricLines {
+				return nil, fmt.Errorf("%w: too many lines", ErrLyricsTooLarge)
 			}
 			lines = append(lines, parseYRCLine(start, dur, body))
 		}
@@ -61,7 +67,7 @@ func parseYRCMeta(raw string) (model.Line, bool) {
 			Tx string `json:"tx"`
 		} `json:"c"`
 	}
-	if json.Unmarshal([]byte(raw), &m) != nil || m.T < 0 {
+	if json.Unmarshal([]byte(raw), &m) != nil || m.T < 0 || m.T > maxTimestampMs {
 		return model.Line{}, false
 	}
 	var sb strings.Builder
@@ -89,17 +95,17 @@ func parseYRCLine(start, dur int64, body string) model.Line {
 		tag := rest[open+1 : open+closeIdx]
 		after := rest[open+closeIdx+1:]
 		fields := strings.Split(tag, ",")
-		ws, errS := strconv.ParseInt(strings.TrimSpace(fields[0]), 10, 64)
-		wd, errD := int64(-1), error(nil)
+		ws, okS := parseTimeMs(fields[0])
+		wd, okD := int64(-1), true
 		if len(fields) > 1 {
-			wd, errD = strconv.ParseInt(strings.TrimSpace(fields[1]), 10, 64)
+			wd, okD = parseTimeMs(fields[1])
 		}
 		next := strings.IndexByte(after, '(')
 		text := after
 		if next >= 0 {
 			text = after[:next]
 		}
-		if errS != nil || errD != nil || ws < 0 || len(fields) < 2 {
+		if !okS || !okD || len(fields) < 2 {
 			// Parentheses that are part of the lyric text, e.g. "(oh)"
 			if len(words) > 0 {
 				words[len(words)-1].text += rest[:open+closeIdx+1] + text

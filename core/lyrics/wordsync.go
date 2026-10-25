@@ -1,7 +1,9 @@
 package lyrics
 
 import (
+	"errors"
 	"regexp"
+	"strconv"
 	"strings"
 	"unicode/utf8"
 
@@ -17,6 +19,53 @@ type timedWord struct {
 }
 
 func i64(v int64) *int64 { return &v }
+
+// Limits that keep a hostile or damaged document from costing more than it is
+// worth. Real lyrics are far below all of them.
+const (
+	// maxLyricsDocBytes bounds a document handed to a word-timed parser.
+	maxLyricsDocBytes = 8 << 20
+	// maxLyricLines bounds the lines of one document.
+	maxLyricLines = 50000
+	// maxTimestampMs is the largest time accepted (100 hours). Anything above is
+	// not a position in a song, and larger values would overflow when added.
+	maxTimestampMs = 100 * 3600 * 1000
+	// maxTagOffsetMs bounds an [offset:] tag (one hour either way).
+	maxTagOffsetMs = 3600 * 1000
+)
+
+// ErrLyricsTooLarge means a document is over the parser limits.
+var ErrLyricsTooLarge = errors.New("lyrics document too large")
+
+// cleanText makes a document valid UTF-8 before it is parsed: any byte that is
+// not part of a character becomes U+FFFD, so line text and the byte offsets of
+// its cues always agree.
+func cleanText(text string) string { return strings.ToValidUTF8(text, "\ufffd") }
+
+// withinLimits checks the size of a document before it is parsed.
+func withinLimits(text string) error {
+	if len(text) > maxLyricsDocBytes {
+		return ErrLyricsTooLarge
+	}
+	return nil
+}
+
+// parseTimeMs reads a non-negative millisecond value no larger than
+// maxTimestampMs.
+func parseTimeMs(s string) (int64, bool) {
+	v, err := strconv.ParseInt(strings.TrimSpace(s), 10, 64)
+	return v, err == nil && v >= 0 && v <= maxTimestampMs
+}
+
+// parseOffsetMs reads an [offset:] tag. A value out of bounds is ignored (no
+// shift) rather than clamped, since it is not a plausible correction.
+func parseOffsetMs(s string) int64 {
+	v, err := strconv.ParseInt(strings.TrimSpace(s), 10, 64)
+	if err != nil || v < -maxTagOffsetMs || v > maxTagOffsetMs {
+		return 0
+	}
+	return v
+}
 
 // wordLine builds a line from source-timed words. The line text is the
 // concatenation of the words, so cue byte offsets always land inside it (the

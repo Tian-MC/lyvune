@@ -36,19 +36,25 @@ func secToMs(s float64) int64 { return int64(math.Round(s * 1000)) }
 
 // ParseRichSync parses the richsync_body JSON.
 func ParseRichSync(body string) (model.LyricList, error) {
+	if err := withinLimits(body); err != nil {
+		return nil, err
+	}
 	var in []richSyncLine
 	if err := json.Unmarshal([]byte(body), &in); err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrNotRichSync, err)
 	}
+	if len(in) > maxLyricLines {
+		return nil, fmt.Errorf("%w: too many lines", ErrLyricsTooLarge)
+	}
 	var lines []model.Line
 	for _, l := range in {
-		if l.TS < 0 || math.IsNaN(l.TS) || math.IsInf(l.TS, 0) || l.TE < l.TS {
+		if l.TS < 0 || math.IsNaN(l.TS) || math.IsInf(l.TS, 0) || l.TE < l.TS || l.TE*1000 > maxTimestampMs {
 			continue
 		}
 		start, end := secToMs(l.TS), secToMs(l.TE)
 		var words []timedWord
 		for _, w := range l.L {
-			if w.O < 0 || math.IsNaN(w.O) || math.IsInf(w.O, 0) {
+			if w.O < 0 || math.IsNaN(w.O) || math.IsInf(w.O, 0) || (l.TS+w.O)*1000 > maxTimestampMs {
 				words = nil
 				break
 			}

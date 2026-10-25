@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"strconv"
 	"strings"
 	"unicode/utf8"
 
@@ -89,6 +88,10 @@ type krcLanguage struct {
 // follow when the file carries them. A line with no word tags keeps only its
 // line time.
 func ParseKRC(text string) (model.LyricList, error) {
+	if err := withinLimits(text); err != nil {
+		return nil, err
+	}
+	text = cleanText(text)
 	var (
 		lines  []model.Line
 		offset int64
@@ -104,13 +107,16 @@ func ParseKRC(text string) (model.LyricList, error) {
 			continue
 		}
 		if start, dur, ok := parsePair(head); ok {
+			if len(lines) >= maxLyricLines {
+				return nil, fmt.Errorf("%w: too many lines", ErrLyricsTooLarge)
+			}
 			lines = append(lines, parseKRCLine(start, dur, rest))
 			continue
 		}
 		key, val, _ := strings.Cut(head, ":")
 		switch strings.ToLower(key) {
 		case "offset":
-			offset, _ = strconv.ParseInt(strings.TrimSpace(val), 10, 64)
+			offset = parseOffsetMs(val)
 		case "language":
 			if dec, err := base64.StdEncoding.DecodeString(strings.TrimSpace(val)); err == nil {
 				_ = json.Unmarshal(dec, &lang) // a bad block only loses the extras
@@ -151,9 +157,9 @@ func parsePair(s string) (int64, int64, bool) {
 	if !ok {
 		return 0, 0, false
 	}
-	x, err1 := strconv.ParseInt(strings.TrimSpace(a), 10, 64)
-	y, err2 := strconv.ParseInt(strings.TrimSpace(b), 10, 64)
-	return x, y, err1 == nil && err2 == nil && x >= 0 && y >= 0
+	x, ok1 := parseTimeMs(a)
+	y, ok2 := parseTimeMs(b)
+	return x, y, ok1 && ok2
 }
 
 // parseKRCLine reads "<off,dur,flag>text" groups. Text before the first tag,
@@ -178,12 +184,12 @@ func parseKRCLine(start, dur int64, body string) model.Line {
 			word = rest[:next]
 		}
 		fields := strings.Split(tag, ",")
-		off, errO := strconv.ParseInt(strings.TrimSpace(fields[0]), 10, 64)
-		wdur, errD := int64(-1), error(nil)
+		off, okO := parseTimeMs(fields[0])
+		wdur, okD := int64(-1), true
 		if len(fields) > 1 {
-			wdur, errD = strconv.ParseInt(strings.TrimSpace(fields[1]), 10, 64)
+			wdur, okD = parseTimeMs(fields[1])
 		}
-		if errO != nil || errD != nil || off < 0 {
+		if !okO || !okD {
 			// Not a timing tag: it is part of the text
 			if len(words) > 0 {
 				words[len(words)-1].text += "<" + tag + ">" + word
@@ -206,7 +212,8 @@ func parseKRCLine(start, dur int64, body string) model.Line {
 func shiftLines(lines []model.Line, by int64) {
 	add := func(p **int64) {
 		if *p != nil {
-			*p = i64(**p + by)
+			// A negative offset cannot move a time before the start of the song
+			*p = i64(max(0, **p+by))
 		}
 	}
 	for i := range lines {
