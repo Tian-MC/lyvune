@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { planFor, romanizeLines } from './romanize'
+import { cachedLines, planFor, romanizeLines } from './romanize'
 import { hanIsAmbiguous, needs } from './romanize/scripts'
 
 /**
@@ -57,7 +57,12 @@ export const useRomanization = (
     setState((s) =>
       s.lyrics === lyrics && s.key === key
         ? s
-        : { lyrics, key, lines: null, status: 'loading' },
+        : {
+            lyrics,
+            key,
+            lines: s.lyrics === lyrics ? s.lines : null,
+            status: 'loading',
+          },
     )
     romanizeLines(
       plan.gaps.map((i) => lyrics.lines[i].text),
@@ -72,10 +77,25 @@ export const useRomanization = (
     }
   }, [active, lyrics, key, plan, style])
 
+  // What is already known is shown at once; otherwise the previous romanization
+  // of the same song stays on screen until the new one is ready, so switching
+  // style or reading never blanks the lines in between
+  const known = useMemo(
+    () =>
+      active
+        ? cachedLines(
+            plan.gaps.map((i) => lyrics.lines[i].text),
+            plan.engines,
+            { style },
+          )
+        : null,
+    [active, plan, lyrics, style],
+  )
   const mine = state.lyrics === lyrics && state.key === key
+  const shown = known || (state.lyrics === lyrics ? state.lines : null)
   const merged = useMemo(() => {
-    if (!active || !mine || !state.lines) return lyrics
-    const generated = new Map(plan.gaps.map((i, n) => [i, state.lines[n]]))
+    if (!active || !shown) return lyrics
+    const generated = new Map(plan.gaps.map((i, n) => [i, shown[n]]))
     const lines = lyrics.lines.map((l, i) => ({
       ...l,
       pronunciation: plan.provided[i] ?? generated.get(i) ?? null,
@@ -85,13 +105,19 @@ export const useRomanization = (
       hasPronunciation: lines.some((l) => l.pronunciation),
       lines,
     }
-  }, [active, mine, state.lines, lyrics, plan])
+  }, [active, shown, lyrics, plan])
 
   return {
     available,
     engines: plan.engines,
     ambiguous: plan.ambiguous,
-    status: !active ? 'idle' : mine ? state.status : 'loading',
+    status: !active
+      ? 'idle'
+      : known
+        ? 'ready'
+        : mine
+          ? state.status
+          : 'loading',
     lyrics: merged,
   }
 }

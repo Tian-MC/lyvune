@@ -97,6 +97,28 @@ describe('useRomanization', () => {
     expect(result.current.status).toBe('ready')
   })
 
+  it('never blanks the lines while it switches style', async () => {
+    const l = lyrics(['東京へ行こう', 'ありがとう'])
+    const { result, waitFor, rerender } = renderHook(
+      ({ style }) => useRomanization(l, true, { style }),
+      { initialProps: { style: 'ascii' } },
+    )
+    await waitFor(() => expect(result.current.status).toBe('ready'))
+    const before = result.all.length
+    rerender({ style: 'macron' })
+    await waitFor(() =>
+      expect(result.current.lyrics.lines[0].pronunciation).toBe('tōkyō e ikō'),
+    )
+    // every render after the switch still had a romanization on every line
+    result.all.slice(before).forEach((r) => {
+      expect(r.lyrics.lines.every((x) => x.pronunciation)).toBe(true)
+    })
+    // and going back is answered from the cache in the same render
+    rerender({ style: 'ascii' })
+    expect(result.current.lyrics.lines[0].pronunciation).toBe('toukyou e ikou')
+    expect(result.current.status).toBe('ready')
+  })
+
   it('reads ambiguous Han characters as the listener chose', async () => {
     const l = lyrics(['東京大阪', '京都神戸'])
     const { result, waitFor } = renderHook(

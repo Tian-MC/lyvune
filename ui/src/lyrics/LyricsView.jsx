@@ -386,22 +386,38 @@ export const LyricsView = ({ trackId, title, isRadio, className }) => {
           {showPronunciation &&
             roman.available &&
             roman.engines.includes('ja') && (
-              <select
-                className={styles.toggleSelect}
+              <span
+                className={styles.segmented}
+                role="group"
                 aria-label={t('ui.lyrics.romajiStyle', 'Romaji style')}
-                value={style}
-                onChange={(e) => {
-                  writeStored(STYLE_KEY, e.target.value)
-                  setStyle(e.target.value)
-                }}
               >
-                <option value="ascii">
-                  {t('ui.lyrics.romajiAscii', 'Doubled vowels (ou, aa)')}
-                </option>
-                <option value="macron">
-                  {t('ui.lyrics.romajiMacron', 'Macrons (ō, ā)')}
-                </option>
-              </select>
+                {[
+                  [
+                    'ascii',
+                    'ou · aa',
+                    t('ui.lyrics.romajiAscii', 'Doubled vowels (ou, aa)'),
+                  ],
+                  [
+                    'macron',
+                    'ō · ā',
+                    t('ui.lyrics.romajiMacron', 'Macrons (ō, ā)'),
+                  ],
+                ].map(([value, label, title]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    className={styles.segment}
+                    aria-pressed={style === value}
+                    title={title}
+                    onClick={() => {
+                      writeStored(STYLE_KEY, value)
+                      setStyle(value)
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </span>
             )}
           {showPronunciation &&
             roman.available &&

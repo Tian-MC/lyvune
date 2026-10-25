@@ -222,11 +222,12 @@ describe('<LyricsView /> (fixtures)', () => {
     })
     fireEvent.click(screen.getByText('Romanization'))
     expect(await screen.findByText('toukyou e ikou')).toBeTruthy()
-    fireEvent.change(screen.getByLabelText('Romaji style'), {
-      target: { value: 'macron' },
-    })
+    fireEvent.click(screen.getByTitle('Macrons (ō, ā)'))
     expect(await screen.findByText('tōkyō e ikō')).toBeTruthy()
     expect(localStorage.getItem('lyrics.romanization.style')).toBe('macron')
+    expect(
+      screen.getByTitle('Macrons (ō, ā)').getAttribute('aria-pressed'),
+    ).toBe('true')
   })
 
   it('lets the listener say how ambiguous Han characters are read, per song', async () => {

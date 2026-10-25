@@ -73,5 +73,21 @@ export const romanizeLines = async (
   return out
 }
 
+/**
+ * The romanization of every line, if all of it is already known, so a switch
+ * between styles can show the other one in the same frame instead of waiting.
+ * @returns {(string|null)[]|null}
+ */
+export const cachedLines = (texts, engines, { style = 'ascii' } = {}) => {
+  const tag = `${engines.join('+')}|${style}|`
+  const out = []
+  for (const text of texts) {
+    const key = tag + text
+    if (!cache.has(key)) return null
+    out.push(cache.get(key))
+  }
+  return out
+}
+
 /** Forget what was romanized (tests, and a changed dictionary). */
 export const clearRomanizationCache = () => cache.clear()
