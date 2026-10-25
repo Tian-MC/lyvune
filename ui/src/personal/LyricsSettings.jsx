@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { FormControlLabel, Switch } from '@material-ui/core'
 import { useT } from '../i18n/useT'
 import { Button } from '../design/Button'
+import { ProviderCard } from './ProviderCard'
 import { errorCode, lyricsApi } from '../lyrics/manageApi'
 import styles from './LyricsSettings.module.css'
 
@@ -95,6 +96,7 @@ export const LyricsSettings = () => {
   const [error, setError] = useState(null)
   const [job, setJob] = useState(null)
   const [replaceManual, setReplaceManual] = useState(false)
+  const [checking, setChecking] = useState(false)
   const timer = useRef(null)
 
   useEffect(() => {
@@ -123,6 +125,19 @@ export const LyricsSettings = () => {
     },
     [data],
   )
+
+  const checkProviders = async () => {
+    setChecking(true)
+    setError(null)
+    try {
+      const res = await lyricsApi.checkProviders()
+      setData((d) => ({ ...d, providers: res.providers }))
+    } catch {
+      setError('check')
+    } finally {
+      setChecking(false)
+    }
+  }
 
   const poll = useCallback((id) => {
     lyricsApi
@@ -170,6 +185,10 @@ export const LyricsSettings = () => {
       ),
       busy: t('ui.lyrics.bulk.busy', 'Another bulk job is already running.'),
       start: t('ui.lyrics.bulk.failed', 'The job could not be started.'),
+      check: t(
+        'ui.lyrics.provider.checkFailed',
+        'The providers could not be checked.',
+      ),
     }[error]
 
   if (!data) {
@@ -228,43 +247,22 @@ export const LyricsSettings = () => {
       <h3 className={styles.subtitle}>
         {t('ui.lyrics.settings.providers', 'Providers')}
       </h3>
+      <div className={styles.actions}>
+        <Button size="sm" disabled={checking} onClick={checkProviders}>
+          {checking
+            ? t('ui.lyrics.provider.checking', 'Checking…')
+            : t('ui.lyrics.provider.check', 'Check providers')}
+        </Button>
+        <p className={styles.hint}>
+          {t(
+            'ui.lyrics.provider.checkHint',
+            'Asks each provider that is turned on for one well-known song, so the status shows whether it answers now.',
+          )}
+        </p>
+      </div>
       <ul className={styles.providers}>
         {providers.map((p) => (
-          <li key={p.id} className={styles.provider}>
-            <FormControlLabel
-              labelPlacement="start"
-              control={
-                <Switch
-                  color="primary"
-                  checked={p.enabled}
-                  disabled={p.status !== 'ready'}
-                  onChange={(e) => toggleProvider(p.id, e.target.checked)}
-                  inputProps={{ 'aria-label': p.name }}
-                />
-              }
-              label={<strong>{p.name}</strong>}
-            />
-            <p className={styles.hint}>
-              {p.status === 'ready'
-                ? p.verified
-                  ? t(
-                      'ui.lyrics.provider.verified',
-                      'Ready · checked against the live service',
-                    )
-                  : t(
-                      'ui.lyrics.provider.unverified',
-                      'Ready · not checked against the live service',
-                    )
-                : p.reason}
-              {p.status === 'ready' &&
-                !p.storable &&
-                ` · ${t('ui.lyrics.provider.notStored', 'lyrics are shown but not saved')}`}
-              {p.status === 'ready' &&
-                p.wordSync &&
-                ` · ${t('ui.lyrics.manager.wordTiming', 'Word timing')}`}
-            </p>
-            {p.note && <p className={styles.hint}>{p.note}</p>}
-          </li>
+          <ProviderCard key={p.id} p={p} onToggle={toggleProvider} />
         ))}
       </ul>
 

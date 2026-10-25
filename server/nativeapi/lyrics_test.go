@@ -154,6 +154,7 @@ var _ = Describe("Lyrics API", func() {
 				Expect(w.Code).To(Equal(http.StatusForbidden))
 			},
 			Entry("settings", "PUT", "/lyrics/settings", map[string]any{}),
+			Entry("provider check", "POST", "/lyrics/providers/check", map[string]any{}),
 			Entry("search", "POST", "/lyrics/song/song-1/search", map[string]any{}),
 			Entry("apply", "POST", "/lyrics/song/song-1/apply", map[string]any{"candidateId": "x"}),
 			Entry("import", "POST", "/lyrics/song/song-1/import", map[string]any{"fileName": "a.lrc", "content": "[00:01.00]x"}),
@@ -207,6 +208,29 @@ var _ = Describe("Lyrics API", func() {
 			w := httptest.NewRecorder()
 			router.ServeHTTP(w, req)
 			Expect(w.Code).To(Equal(http.StatusBadRequest))
+		})
+
+		It("refreshes the provider status on request, with the runtime fields and no credential", func() {
+			conf.Server.Lyrics.QQ.BetterLyricsApiKey = "BLKEY"
+			w := do("POST", "/lyrics/providers/check", adminTok, map[string]any{})
+			Expect(w.Code).To(Equal(http.StatusOK))
+			Expect(w.Body.String()).ToNot(ContainSubstring("BLKEY"))
+			first := decode(w)["providers"].([]any)[0].(map[string]any)
+			Expect(first).To(HaveKeyWithValue("id", "fake"))
+			for _, k := range []string{"availability", "liveVerified", "karaokeVerified", "implemented", "configured", "auth"} {
+				Expect(first).To(HaveKey(k))
+			}
+			Expect(first).To(HaveKeyWithValue("liveVerified", true), "the check really asked the provider")
+		})
+
+		It("masks the Better Lyrics key in the configuration view", func() {
+			conf.Server.Lyrics.QQ.BetterLyricsApiKey = "BLKEY"
+			req := httptest.NewRequest("GET", "/config/config", nil)
+			req.Header.Set(consts.UIAuthorizationHeader, "Bearer "+adminTok)
+			w := httptest.NewRecorder()
+			router.ServeHTTP(w, req)
+			Expect(w.Code).To(Equal(http.StatusOK))
+			Expect(w.Body.String()).ToNot(ContainSubstring("BLKEY"))
 		})
 
 		It("masks the Musixmatch API key in the configuration view", func() {
