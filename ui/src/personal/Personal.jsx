@@ -10,6 +10,7 @@ import { NotificationsToggle } from './NotificationsToggle'
 import { LastfmScrobbleToggle } from './LastfmScrobbleToggle'
 import { ListenBrainzScrobbleToggle } from './ListenBrainzScrobbleToggle'
 import { ReplayGainToggle } from './ReplayGainToggle'
+import { LyricsSettings } from './LyricsSettings'
 import config from '../config'
 import styles from './Personal.module.css'
 
@@ -63,6 +64,17 @@ const Personal = () => {
             <Group title={t('ui.settings.notifications', 'Notifications')}>
               <NotificationsToggle />
             </Group>
+            {localStorage.getItem('role') === 'admin' && (
+              <Group
+                title={t('ui.lyrics.settings.title', 'Lyrics')}
+                description={t(
+                  'ui.lyrics.settings.hint',
+                  'Where lyrics come from, and how they are found and saved. These apply to the whole server.',
+                )}
+              >
+                <LyricsSettings />
+              </Group>
+            )}
             {scrobbling && (
               <Group
                 title={t('ui.settings.scrobbling', 'Scrobbling')}

@@ -7,22 +7,26 @@ const mocks = vi.hoisted(() => ({
   seek: vi.fn(),
   play: vi.fn(),
   paused: true,
+  time: 0,
 }))
 
 vi.mock('react-admin', () => ({
   useTranslate: () => (key, opts) => opts?._ ?? key,
 }))
 vi.mock('./useLyrics', () => ({ useLyrics: () => mocks.lyrics }))
+vi.mock('./LyricsSourceBar', () => ({
+  LyricsSourceBar: ({ searching }) => (
+    <div data-testid="source-bar" data-searching={String(!!searching)} />
+  ),
+}))
 vi.mock('../playback/engine', () => ({
   default: {
     seek: mocks.seek,
     play: mocks.play,
-    currentTime: () => 0,
+    currentTime: () => mocks.time,
     getMedia: () => ({ paused: mocks.paused }),
   },
 }))
-// The active line index is driven by the media clock; pin it
-vi.mock('../playback/hooks', () => ({ useMedia: () => 1 }))
 
 import { LyricsView } from './LyricsView'
 
@@ -48,7 +52,31 @@ describe('<LyricsView /> (fixtures)', () => {
     window.matchMedia = () => ({ matches: false })
     Element.prototype.scrollTo = vi.fn()
     mocks.paused = true
+    mocks.time = 0
     mocks.lyrics = { status: 'ready', lyrics: null }
+  })
+
+  it('shows where the lyrics come from, for a track', () => {
+    show(null)
+    expect(screen.getByTestId('source-bar')).toBeInTheDocument()
+  })
+
+  it('has no source line for a radio stream', () => {
+    show(null, { isRadio: true })
+    expect(screen.queryByTestId('source-bar')).not.toBeInTheDocument()
+  })
+
+  it('says it is looking while the server searches online', () => {
+    mocks.lyrics = { status: 'ready', lyrics: null, searching: true }
+    render(<LyricsView trackId="t1" />)
+    expect(screen.getByText('Looking for lyrics…')).toBeInTheDocument()
+    expect(
+      screen.queryByText('No lyrics for this song'),
+    ).not.toBeInTheDocument()
+    expect(screen.getByTestId('source-bar')).toHaveAttribute(
+      'data-searching',
+      'true',
+    )
   })
 
   it('explains that streams have no lyrics', () => {
@@ -86,6 +114,7 @@ describe('<LyricsView /> (fixtures)', () => {
   })
 
   it('renders synchronized lines as buttons that seek and start playback', () => {
+    mocks.time = 3
     show({
       synced: true,
       lang: 'xxx',
@@ -96,7 +125,7 @@ describe('<LyricsView /> (fixtures)', () => {
     })
     const buttons = document.querySelectorAll('button[data-index]')
     expect(buttons).toHaveLength(3)
-    // the pinned clock makes line 1 the active one
+    // the audio clock (3 s) makes line 1 the active one
     expect(buttons[1].getAttribute('aria-current')).toBe('true')
     fireEvent.click(buttons[2])
     expect(mocks.seek).toHaveBeenCalledWith(5)

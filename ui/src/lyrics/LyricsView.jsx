@@ -1,12 +1,20 @@
-import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react'
 import clsx from 'clsx'
 import { useT } from '../i18n/useT'
 import { EmptyState } from '../design/Section'
 import { Button } from '../design/Button'
 import { LyricsIcon, TranslateIcon, QuoteIcon } from '../design/icons'
 import engine from '../playback/engine'
-import { useMedia } from '../playback/hooks'
-import { activeLineIndex } from './parse'
+import { prefersReducedMotion, segmentProgress } from './karaoke'
+import { useActiveLine } from './useActiveLine'
+import { LyricsSourceBar } from './LyricsSourceBar'
 import { useLyrics } from './useLyrics'
 import styles from './LyricsView.module.css'
 
@@ -14,35 +22,48 @@ const MANUAL_SCROLL_GRACE_MS = 4000
 
 /**
  * Word-level karaoke for the active line only. Progress is written to CSS
- * variables from a rAF loop, so React does not re-render per frame.
+ * variables from a rAF loop that reads the audio clock itself, so React does
+ * not re-render per frame, a seek or a pause is followed on the next frame,
+ * and nothing runs on a timer of its own.
  */
 const KaraokeLine = ({ words }) => {
   const ref = useRef(null)
-  useEffect(() => {
+  // Layout effect: the first progress is written before the line is painted, so
+  // a line that becomes active in the middle (after a seek) never shows a frame
+  // of unsung words
+  useLayoutEffect(() => {
     let frame
-    const tick = () => {
+    let lastMs = null
+    const written = []
+    const step = prefersReducedMotion()
+    const apply = () => {
       const el = ref.current
-      if (el) {
-        const ms = engine.currentTime() * 1000
-        const spans = el.children
-        for (let i = 0; i < words.length; i++) {
-          const w = words[i]
-          if (w.start == null) continue
-          const end = w.end ?? w.start + 400
-          const p =
-            ms <= w.start ? 0 : ms >= end ? 1 : (ms - w.start) / (end - w.start)
-          spans[i].style.setProperty('--p', p.toFixed(3))
+      const ms = engine.currentTime() * 1000
+      // Nothing to do while the clock stands still (paused)
+      if (!el || ms === lastMs) return
+      lastMs = ms
+      const progress = segmentProgress(words, ms, step)
+      const spans = el.children
+      for (let i = 0; i < progress.length; i++) {
+        const value = progress[i].toFixed(3)
+        if (written[i] !== value) {
+          written[i] = value
+          spans[i].style.setProperty('--p', value)
         }
       }
+    }
+    const tick = () => {
+      apply()
       frame = requestAnimationFrame(tick)
     }
+    apply()
     frame = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(frame)
   }, [words])
   return (
     <span ref={ref}>
       {words.map((w, i) => (
-        <span key={i} className={w.start != null ? styles.word : undefined}>
+        <span key={i} className={styles.word}>
           {w.text}
         </span>
       ))}
@@ -112,9 +133,7 @@ const SyncedLyrics = ({ lyrics, showTranslation, showPronunciation }) => {
   const containerRef = useRef(null)
   const manualUntil = useRef(0)
   const [following, setFollowing] = useState(true)
-  const active = useMedia((m) =>
-    activeLineIndex(lyrics.lines, m.currentTime * 1000),
-  )
+  const active = useActiveLine(lyrics.lines)
 
   const scrollToActive = useCallback(
     (behavior = 'smooth') => {
@@ -223,9 +242,9 @@ const PlainLyrics = ({ lyrics, showTranslation, showPronunciation }) => {
 }
 
 /** Lyrics for the given track: synced, unsynced, or a quiet fallback. */
-export const LyricsView = ({ trackId, isRadio, className }) => {
+export const LyricsView = ({ trackId, title, isRadio, className }) => {
   const t = useT()
-  const { status, lyrics } = useLyrics(trackId, !isRadio)
+  const { status, lyrics, searching } = useLyrics(trackId, !isRadio)
   const [showTranslation, setShowTranslation] = useState(true)
   const [showPronunciation, setShowPronunciation] = useState(false)
 
@@ -243,6 +262,14 @@ export const LyricsView = ({ trackId, isRadio, className }) => {
     )
   } else if (status === 'loading' || status === 'idle') {
     body = <div className={styles.loading} aria-busy="true" />
+  } else if (searching) {
+    body = (
+      <EmptyState
+        icon={LyricsIcon}
+        title={t('ui.lyrics.searching', 'Looking for lyrics…')}
+        compact
+      />
+    )
   } else if (status === 'error' || !lyrics || lyrics.lines.length === 0) {
     body = (
       <EmptyState
@@ -305,6 +332,13 @@ export const LyricsView = ({ trackId, isRadio, className }) => {
         </div>
       )}
       {body}
+      {!isRadio && trackId && (
+        <LyricsSourceBar
+          trackId={trackId}
+          title={title}
+          searching={searching}
+        />
+      )}
     </div>
   )
 }

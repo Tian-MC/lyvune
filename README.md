@@ -3,9 +3,9 @@
 A fork of [Navidrome](https://www.navidrome.org), the open source web-based music server and streamer, with a
 rewritten web interface.
 
-Only the frontend in `ui/` was rebuilt. The Go backend, the REST and Subsonic APIs, authentication, the database,
-library scanning and streaming are the upstream code, so existing Subsonic clients, configuration and data keep working.
-The fork is based on upstream `master` at commit `ec2e0a9e`.
+The frontend in `ui/` was rebuilt, and the backend gained a lyrics engine. The REST and Subsonic APIs, authentication,
+the database, library scanning and streaming are otherwise the upstream code, so existing Subsonic clients,
+configuration and data keep working. The fork is based on upstream `master` at commit `ec2e0a9e`.
 
 ## What changed
 
@@ -17,6 +17,9 @@ The fork is based on upstream `master` at commit `ec2e0a9e`.
 - Themes saved by existing users keep working. *Dark* and *Extra Dark* map to the new *Navidrome* and
   *Navidrome Black (OLED)* themes, other dark themes are applied as colour tints, and light themes fall back to
   Navidrome.
+- A lyrics engine looks for missing lyrics online (LRCLIB), prefers the files you already have, saves what it finds next
+  to the audio as `.lyrics.json`, and lets you override, lock and undo. It never modifies audio files. Automatic
+  retrieval is on by default, so it writes to the library; see [LYRICS_ENGINE.md](LYRICS_ENGINE.md).
 - The new interface text is translated to English and Italian. Other languages use English for it.
 
 Design decisions, architecture and the status of the work are in [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) and
@@ -43,8 +46,9 @@ make build
 ND_MUSICFOLDER=/path/to/music ND_DATAFOLDER=/path/to/data ./navidrome
 ```
 
-Navidrome only reads the music folder. Configuration options and installation methods other than building from
-source are the same as upstream: see the [Navidrome documentation](https://www.navidrome.org/docs/).
+Navidrome reads the music folder and only writes `.lyrics.json` lyrics files into it (see above). Configuration
+options and installation methods other than building from source are the same as upstream: see the
+[Navidrome documentation](https://www.navidrome.org/docs/).
 
 ## Tests
 

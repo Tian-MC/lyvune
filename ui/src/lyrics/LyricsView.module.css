@@ -56,7 +56,7 @@
   border: 0;
   border-radius: var(--radius-md);
   background: none;
-  color: rgb(255 255 255 / 40%);
+  color: rgb(255 255 255 / 48%);
   font: inherit;
   font-size: clamp(1.375rem, 1rem + 1.1vw, 2rem);
   font-weight: var(--weight-bold);
@@ -83,11 +83,11 @@
 }
 
 .past {
-  color: rgb(255 255 255 / 34%);
+  color: rgb(255 255 255 / 44%);
 }
 
 .future {
-  color: rgb(255 255 255 / 40%);
+  color: rgb(255 255 255 / 48%);
 }
 
 .active {
@@ -98,17 +98,19 @@
   min-height: 1.4em;
 }
 
-/* Karaoke: unsung words dim, sung words fill left to right */
+/* Karaoke: unsung words dim, sung words fill left to right. The edge is
+   slightly feathered so the sweep reads as motion, not as a hard step; at 0
+   nothing is lit and at 1 the whole word is. */
 .karaoke {
-  color: rgb(255 255 255 / 45%);
+  color: rgb(255 255 255 / 50%);
 }
 
 .word {
   --p: 0;
   background: linear-gradient(
     90deg,
-    #fff calc(var(--p) * 100%),
-    rgb(255 255 255 / 45%) calc(var(--p) * 100%)
+    #fff calc(var(--p) * 110% - 10%),
+    rgb(255 255 255 / 50%) calc(var(--p) * 110%)
   );
   -webkit-background-clip: text;
   background-clip: text;

@@ -16,6 +16,7 @@ import { Button } from '../design/Button'
 import { EmptyState } from '../design/Section'
 import { AlertIcon } from '../design/icons'
 import { ShellProvider } from './ShellContext'
+import { useAutoLyrics } from '../playback/useAutoLyrics'
 import { useCheckboxNames } from './useCheckboxNames'
 import { usePresence } from './usePresence'
 import { useShell } from './useShell'
@@ -85,6 +86,8 @@ const ShellLayout = ({ children, logout }) => {
   useSearchRefocus()
   // react-admin's table checkboxes come without an accessible name
   useCheckboxNames()
+  // Looks for lyrics online when a track without any starts playing
+  useAutoLyrics()
 
   return (
     <div
