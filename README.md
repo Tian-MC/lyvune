@@ -7,6 +7,21 @@ The frontend in `ui/` was rebuilt, and the backend gained a lyrics engine. The R
 the database, library scanning and streaming are otherwise the upstream code, so existing Subsonic clients,
 configuration and data keep working. The fork is based on upstream `master` at commit `ec2e0a9e`.
 
+## Screenshots
+
+| | |
+| --- | --- |
+| ![Home](docs/screenshots/home.webp) | ![Albums](docs/screenshots/albums.webp) |
+| Home: recently played and recently added | Albums |
+| ![Album](docs/screenshots/album.webp) | ![Karaoke lyrics](docs/screenshots/lyrics.webp) |
+| An album | Word-by-word karaoke lyrics, with the source shown below |
+| ![Romanization](docs/screenshots/lyrics-romanization.webp) | ![Romanization with macrons](docs/screenshots/lyrics-romanization-macrons.webp) |
+| Romanization above each line, with doubled vowels (`ou · aa`) | The same with macrons (`ō · ā`) |
+
+On a phone the lyrics view keeps the same controls:
+
+<p align="center"><img src="docs/screenshots/lyrics-mobile.webp" alt="Lyrics with romanization on a phone" width="260"></p>
+
 ## What changed
 
 - The shell, playback engine and views were rewritten. Audio is owned by a single `HTMLAudioElement` outside React
