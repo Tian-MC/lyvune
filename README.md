@@ -106,7 +106,8 @@ docker compose up -d --build
 Then open <http://localhost:4533>. The image runs as an unprivileged user, has a health check, and supports `amd64`
 and `arm64`; your music is mounted read-only unless you choose otherwise. There is no published image yet, so it is
 built from this repository. [docs/DOCKER.md](docs/DOCKER.md) is the full guide: permissions, saving lyrics next to
-your music, a reverse proxy, backups, updating, and coming from Navidrome.
+your music, a reverse proxy, backups, updating, and coming from Navidrome. Nothing publishes images or
+releases yet; [docs/RELEASING.md](docs/RELEASING.md) says what runs in CI and what is blocked.
 
 ## Tests
 

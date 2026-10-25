@@ -4,7 +4,7 @@ This guide takes you from nothing to a working Lyvune in a container, keeps your
 covers the questions that come next: permissions, a reverse proxy, backups, updates, coming from Navidrome.
 
 > **There is no published image yet.** Until one is, you build the image from this repository (one command, below).
-> `ghcr.io/tian-mc/lyvune` is where published images will live; see [Images](#images).
+> `ghcr.io/tian-mc/lyvune` is where published images will live; see [Images](#images) and [RELEASING.md](RELEASING.md).
 
 ## What you need
 
@@ -281,12 +281,11 @@ that off; Lyvune then contacts no other host. The lyrics providers can also be s
 | Image | What it is |
 | --- | --- |
 | `lyvune:local` | what `docker compose up --build` builds from your copy of the repository. Yours to keep or rebuild |
-| `ghcr.io/tian-mc/lyvune:<version>` | **not published yet.** A version tag such as `v0.1.0-alpha` will publish exactly that tag and nothing else |
+| `ghcr.io/tian-mc/lyvune:<version>` | **not published, and publishing is switched off** until the image has been tested on a real Docker host. When it is on, a pre-release such as `v0.1.0-alpha` publishes exactly its own tag; see [RELEASING.md](RELEASING.md) |
 | `ghcr.io/tian-mc/lyvune:latest`, `:0.1` | will exist only for stable versions (no `-alpha`, `-beta` or `-rc`) |
-| `ghcr.io/tian-mc/lyvune:dev-<commit>` | a manual test build; never `latest` |
 
-The image has two platforms, `linux/amd64` and `linux/arm64` (Raspberry Pi 4 and 5, many NAS). Docker picks the right
-one. To build for another platform than yours, `docker buildx build --platform linux/arm64 -t lyvune:arm64 .`
+The image is built for two platforms, `linux/amd64` and `linux/arm64` (Raspberry Pi 4 and 5, many NAS), and Docker picks
+the right one. Neither has been run as a Docker image yet: the `arm64` binary has only been compiled, not started. To build for another platform than yours, `docker buildx build --platform linux/arm64 -t lyvune:arm64 .`
 
 ## Building and testing it yourself
 
