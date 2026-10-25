@@ -46,6 +46,11 @@ var (
 	ErrLocked          = errors.New("these lyrics are locked")
 	ErrConfirmRequired = errors.New("replacing the current lyrics needs confirmation")
 	ErrNotStorable     = errors.New("these lyrics may neither be kept nor shown by this server: they can only be previewed")
+	// ErrStorageRestricted means the provider's terms, as recorded, do not allow
+	// keeping its lyrics.
+	ErrStorageRestricted = errors.New("the terms recorded for this provider do not allow keeping its lyrics")
+	// ErrSaveUnverified means a write could not be confirmed by reading it back.
+	ErrSaveUnverified  = errors.New("the lyrics were written but could not be read back as saved")
 	ErrNoCandidate     = errors.New("no such lyrics candidate, search again")
 	ErrEmptyLyrics     = errors.New("the lyrics are empty")
 	ErrNothingToDelete = errors.New("there are no downloaded lyrics to delete")
@@ -65,25 +70,43 @@ type ProviderStatus struct {
 	// KaraokeVerified is true once a verified match with real word timing has
 	// come back since the server started.
 	KaraokeVerified bool `json:"karaokeVerified"`
-	// Display is how results may be shown when they may not be kept: DisplaySession
+	// Display is how results may be shown when they are not saved: DisplaySession
 	// (while playing, from memory, never written to disk) or DisplayPreview (in
 	// the lyrics manager only).
 	Display string `json:"display"`
-	// StoreEligible is true when this provider's lyrics may be kept permanently.
-	// StoreVerified is true only when that rests on a document named in a storage
-	// authorization; StoreBasis and StoreReference say what it rests on. Storable
-	// (embedded) repeats StoreEligible for the clients that read it.
-	StoreEligible  bool   `json:"storeEligible"`
+	// StoreStatus is what is known about the provider's terms on keeping its
+	// lyrics (RightsGranted, RightsUnclear or RightsRestricted). It is a status,
+	// not a permission: "unclear" means nobody checked or the terms could not be
+	// read. StoreVerified is true only when the status rests on a recorded
+	// document (StoreBasis, StoreReference). StoreAllowed is false only for
+	// RightsRestricted: nothing is saved then, whatever the preference.
+	StoreStatus    string `json:"storeStatus"`
+	StoreAllowed   bool   `json:"storeAllowed"`
 	StoreVerified  bool   `json:"storeVerified"`
 	StoreBasis     string `json:"storeBasis,omitempty"`
 	StoreReference string `json:"storeReference,omitempty"`
-	// Offline says whether results stay available without the network: only
-	// once saved, so only for a provider whose lyrics may be kept.
-	Offline          string     `json:"offline"`
-	LastSuccess      *time.Time `json:"lastSuccess,omitempty"`
-	LastFailure      *time.Time `json:"lastFailure,omitempty"`
-	LastError        string     `json:"lastError,omitempty"`
-	RateLimitedUntil *time.Time `json:"rateLimitedUntil,omitempty"`
+	// SavePreference is whether the administrator wants this provider's lyrics
+	// saved automatically, and SavePreferenceSource where that comes from
+	// (PrefDefault, PrefChosen or PrefLegacy). A wish, never a right.
+	SavePreference       bool   `json:"savePreference"`
+	SavePreferenceSource string `json:"savePreferenceSource"`
+	// Offline says whether saved results stay available without the network.
+	Offline string `json:"offline"`
+	// LastSave is the outcome of the last attempt to save this provider's lyrics
+	// since the server started. A success is only reported once the file was read
+	// back and found to hold what was meant to be saved.
+	LastSave         *SaveOutcome `json:"lastSave,omitempty"`
+	LastSuccess      *time.Time   `json:"lastSuccess,omitempty"`
+	LastFailure      *time.Time   `json:"lastFailure,omitempty"`
+	LastError        string       `json:"lastError,omitempty"`
+	RateLimitedUntil *time.Time   `json:"rateLimitedUntil,omitempty"`
+}
+
+// SaveOutcome is the result of one attempt to save lyrics.
+type SaveOutcome struct {
+	At      time.Time `json:"at"`
+	OK      bool      `json:"ok"`
+	Message string    `json:"message,omitempty"`
 }
 
 // SourceInfo describes one set of lyrics a track has, for display.
@@ -177,7 +200,18 @@ type ApplyRequest struct {
 	Confirm bool
 	// Force replaces lyrics that are locked.
 	Force bool
+	// Mode is ModeSave, ModeShow or empty. Empty saves when saving is not ruled
+	// out and otherwise shows.
+	Mode string
 }
+
+// What to do with a chosen result.
+const (
+	// ModeSave writes it as the track's lyrics, next to the audio.
+	ModeSave = "save"
+	// ModeShow shows it from memory without saving it.
+	ModeShow = "show"
+)
 
 // ImportRequest adds lyrics from a file the user provides.
 type ImportRequest struct {

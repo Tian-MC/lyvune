@@ -26,6 +26,7 @@ type providerHealth struct {
 	lastError   string
 	karaokeSeen bool
 	limitedTill time.Time
+	lastSave    *SaveOutcome
 }
 
 // healthTracker records the outcome of every provider search.
@@ -72,6 +73,13 @@ func (h *healthTracker) record(o ProviderOutcome, cands []Candidate, now time.Ti
 	}
 }
 
+// recordSave notes the outcome of an attempt to save a provider's lyrics.
+func (h *healthTracker) recordSave(provider string, ok bool, message string, now time.Time) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	h.get(provider).lastSave = &SaveOutcome{At: now, OK: ok, Message: message}
+}
+
 // apply fills the runtime fields of a provider's status.
 func (h *healthTracker) apply(st *ProviderStatus, now time.Time) {
 	h.mu.Lock()
@@ -92,6 +100,10 @@ func (h *healthTracker) apply(st *ProviderStatus, now time.Time) {
 			st.RateLimitedUntil = &t
 		}
 		st.KaraokeVerified = ph.karaokeSeen
+		if ph.lastSave != nil {
+			o := *ph.lastSave
+			st.LastSave = &o
+		}
 	}
 	st.Availability = availabilityOf(st, ph, now)
 }

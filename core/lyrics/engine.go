@@ -48,7 +48,7 @@ func (l *lyricsService) Providers(ctx context.Context) []ProviderStatus {
 	for _, p := range l.providers.All() {
 		info := p.Info()
 		st := ProviderStatus{ProviderInfo: info, Enabled: info.Status == StatusReady && slices.Contains(enabled, info.ID)}
-		l.applyRights(&st)
+		l.applyRights(&st, cfg)
 		l.health.apply(&st, l.now())
 		out = append(out, st)
 	}
@@ -216,38 +216,51 @@ func (l *lyricsService) searchRecording(ctx context.Context, rec Recording, prov
 	// from the provider's own say-so (a provider the table does not know, such as
 	// a plugin, speaks for itself)
 	now := l.now()
+	cfg := l.settings(ctx)
 	for i := range all {
-		if r, ok := l.rights.get(all[i].Provider, now); ok {
-			all[i].Storable = r.Eligible
-			all[i].DisplayOnly = !r.Eligible && r.Display == DisplaySession
+		c := &all[i]
+		r, ok := l.rights.get(c.Provider, now)
+		if !ok {
+			c.AutoSave = c.Storable && cfg.AutoPersist
+			continue
 		}
+		pref, _ := cfg.savePreference(c.Provider, r)
+		c.Storable = r.allowed()
+		c.AutoSave = c.Storable && pref && cfg.AutoPersist
+		c.CanShow = r.Display == DisplaySession
+		c.DisplayOnly = !c.Storable && c.CanShow
+		c.Rights = r.Status
 	}
 	return all, outcomes
 }
 
-// applyRights fills what may be done with a provider's lyrics.
-func (l *lyricsService) applyRights(st *ProviderStatus) {
+// applyRights fills what is known about keeping a provider's lyrics, and what
+// the administrator wants done with them.
+func (l *lyricsService) applyRights(st *ProviderStatus, cfg Settings) {
 	r, ok := l.rights.get(st.ID, l.now())
 	if !ok {
-		st.Display = DisplayPreview
-		st.StoreEligible = st.ProviderInfo.Storable
+		st.Display, st.StoreStatus, st.StoreAllowed = DisplayPreview, RightsUnclear, st.ProviderInfo.Storable
+		st.SavePreference, st.SavePreferenceSource = st.StoreAllowed, PrefDefault
 	} else {
-		st.Display, st.StoreEligible, st.StoreVerified = r.Display, r.Eligible, r.Verified
+		st.Display, st.StoreStatus, st.StoreAllowed, st.StoreVerified = r.Display, r.Status, r.allowed(), r.verified()
 		st.StoreBasis, st.StoreReference = r.Basis, r.Reference
+		st.SavePreference, st.SavePreferenceSource = cfg.savePreference(st.ID, r)
+		st.SavePreference = st.SavePreference && st.StoreAllowed
 	}
-	st.Storable = st.StoreEligible
+	st.Storable = st.StoreAllowed
 	st.Offline = "when-saved"
-	if !st.StoreEligible {
+	if !st.StoreAllowed {
 		st.Offline = "no"
 	}
 }
 
-// usable keeps the results that can be put to use: saved when they may be kept,
-// or shown from memory when they may be shown and the caller allows it.
+// usable keeps the results that can be put to use: saved when the automatic
+// retrieval may keep them, or shown from memory when they may be shown and the
+// caller allows it.
 func usable(cands []Candidate, opts ResolveOptions) []Candidate {
 	out := make([]Candidate, 0, len(cands))
 	for _, c := range cands {
-		if c.Storable || (c.DisplayOnly && !opts.NoDisplay) {
+		if c.AutoSave || (c.CanShow && !opts.NoDisplay) || (c.DisplayOnly && !opts.NoDisplay) {
 			out = append(out, c)
 		}
 	}
@@ -317,9 +330,14 @@ func (l *lyricsService) save(ctx context.Context, mf *model.MediaFile, cand Cand
 	env := NewEnvelope(cand, origin, l.now())
 	env.Locked, env.OffsetMs = cur.state.Locked, cur.state.OffsetMs
 	prev, err := l.store.Save(targetOf(mf), env)
+	if err == nil {
+		err = verifySaved(ctx, mf, cand)
+	}
 	if err != nil {
+		l.recordSave(cand.Provider, false, saveFailure(err))
 		return Version{}, err
 	}
+	l.recordSave(cand.Provider, true, "")
 	l.display.drop(mf.ID) // what was just saved is now the lyrics of the track
 	if l.ds != nil {
 		// The sidecar now holds the lock and offset
@@ -331,11 +349,67 @@ func (l *lyricsService) save(ctx context.Context, mf *model.MediaFile, cand Cand
 	return prev, nil
 }
 
-func (l *lyricsService) apply(ctx context.Context, mf *model.MediaFile, cand Candidate, confirm, force bool) (ApplyResult, error) {
+// recordSave notes the outcome of a save for the provider's status. Lyrics the
+// user supplied are not a provider's.
+func (l *lyricsService) recordSave(provider string, ok bool, message string) {
+	switch provider {
+	case "", "import", "sidecar", "embedded":
+		return
+	}
+	l.health.recordSave(provider, ok, message, l.now())
+}
+
+// saveFailure says in a few words why a save failed.
+func saveFailure(err error) string {
+	switch {
+	case errors.Is(err, ErrSaveUnverified):
+		return "The file was written but could not be read back as saved."
+	case errors.Is(err, ErrReadOnly), errors.Is(err, ErrNotLocal), errors.Is(err, ErrUnsafePath):
+		return writeErrorText(err)
+	default:
+		return "The file could not be written."
+	}
+}
+
+// verifySaved reads the sidecar back, the way the player will, and checks that
+// it holds what was meant to be saved: the same quality and the same word
+// timing. A save is only reported once this holds.
+func verifySaved(ctx context.Context, mf *model.MediaFile, cand Candidate) error {
+	env, _ := readEnvelope(ctx, mf)
+	if env == nil || QualityOf(env.Lyrics) != QualityOf(cand.Lyrics) || cueCount(env.Lyrics) != cueCount(cand.Lyrics) {
+		return ErrSaveUnverified
+	}
+	return nil
+}
+
+// cueCount counts the word-level cues of the main lyrics.
+func cueCount(list model.LyricList) int {
+	n := 0
+	for _, l := range list {
+		if !l.IsMainKind() {
+			continue
+		}
+		for _, line := range l.Line {
+			n += len(line.Cue)
+		}
+	}
+	return n
+}
+
+func (l *lyricsService) apply(ctx context.Context, mf *model.MediaFile, cand Candidate, confirm, force bool, mode string) (ApplyResult, error) {
 	if cand.Quality == QualityNone || QualityOf(cand.Lyrics) == QualityNone {
 		return ApplyResult{}, ErrEmptyLyrics
 	}
-	if !cand.Storable && !cand.DisplayOnly {
+	// Saving is refused only when the provider's terms are recorded as
+	// restricting it. Showing needs a provider that may be shown.
+	saving := mode == ModeSave || (mode == "" && cand.Storable)
+	switch {
+	case saving && !cand.Storable:
+		if cand.Rights == RightsRestricted {
+			return ApplyResult{}, ErrStorageRestricted
+		}
+		return ApplyResult{}, ErrNotStorable
+	case !saving && !cand.CanShow && !cand.DisplayOnly:
 		return ApplyResult{}, ErrNotStorable
 	}
 	cur, err := l.resolveCurrent(ctx, []*model.MediaFile{mf})
@@ -348,7 +422,7 @@ func (l *lyricsService) apply(ctx context.Context, mf *model.MediaFile, cand Can
 	if needsConfirmation(cur) && !confirm {
 		return ApplyResult{}, ErrConfirmRequired
 	}
-	if !cand.Storable {
+	if !saving {
 		return l.applyDisplay(ctx, mf, cand, cur)
 	}
 	res := ApplyResult{Action: "created-preferred"}
@@ -414,7 +488,7 @@ func (l *lyricsService) Apply(ctx context.Context, mf *model.MediaFile, req Appl
 		}
 		return res, nil
 	}
-	return l.apply(ctx, mf, cand, req.Confirm, req.Force)
+	return l.apply(ctx, mf, cand, req.Confirm, req.Force, req.Mode)
 }
 
 func importSuffix(name string) string {
@@ -453,7 +527,7 @@ func (l *lyricsService) Import(ctx context.Context, mf *model.MediaFile, req Imp
 		Storable:    true,
 		Attribution: "Imported from " + filepath.Base(req.FileName),
 	}
-	return l.apply(ctx, mf, cand, req.Confirm, req.Force)
+	return l.apply(ctx, mf, cand, req.Confirm, req.Force, ModeSave)
 }
 
 // ---------------------------------------------------------------------------
@@ -534,10 +608,10 @@ func (l *lyricsService) Resolve(ctx context.Context, mf *model.MediaFile, opts R
 	return v.(ResolveResult), nil
 }
 
-func storableOnly(cands []Candidate) []Candidate {
+func autoSaveOnly(cands []Candidate) []Candidate {
 	out := make([]Candidate, 0, len(cands))
 	for _, c := range cands {
-		if c.Storable {
+		if c.AutoSave {
 			out = append(out, c)
 		}
 	}
@@ -630,10 +704,10 @@ func (l *lyricsService) retrieveMissing(ctx context.Context, mf *model.MediaFile
 	}
 	// Automatic retrieval keeps lyrics only where keeping is allowed; the best
 	// of those goes to disk even when a better one can only be shown
-	if keep, ok := Choose(storableOnly(cands), pol); ok && !blocked {
+	if keep, ok := Choose(autoSaveOnly(cands), pol); ok && !blocked {
 		if _, err := l.save(ctx, mf, keep, OriginManaged, current{}); err != nil {
 			if errors.Is(err, ErrReadOnly) || errors.Is(err, ErrNotLocal) || errors.Is(err, ErrUnsafePath) {
-				if best.Storable {
+				if best.AutoSave {
 					return ResolveResult{Result: ResolveUnavailable, Message: writeErrorText(err)}, nil
 				}
 			} else {
@@ -643,7 +717,7 @@ func (l *lyricsService) retrieveMissing(ctx context.Context, mf *model.MediaFile
 			persisted = true
 		}
 	}
-	shownOnly := !best.Storable || blocked
+	shownOnly := !best.AutoSave || blocked
 	if shownOnly {
 		l.showAuto(ctx, mf, best)
 	}
@@ -739,7 +813,7 @@ func (l *lyricsService) upgrade(ctx context.Context, mf *model.MediaFile, s Sett
 			break
 		}
 	}
-	if l.ds != nil && !anyFailed(outcomes) && (best == nil || best.Storable) {
+	if l.ds != nil && !anyFailed(outcomes) && (best == nil || best.AutoSave) {
 		if st := l.props.state(ctx, mf.ID); st.Shown {
 			st.Shown = false
 			_ = l.props.putState(ctx, mf.ID, st)
@@ -755,8 +829,8 @@ func (l *lyricsService) upgrade(ctx context.Context, mf *model.MediaFile, s Sett
 		}
 		return ResolveResult{Result: ResolveKept}, nil
 	}
-	if !best.Storable {
-		// Better, but it may not be kept: it is shown from memory, and what is saved stays as it was
+	if !best.AutoSave {
+		// Better, but it is not to be saved automatically: it is shown from memory, and what is saved stays as it was
 		l.showAuto(ctx, mf, *best)
 		info := sourceInfoOf("display", SourceRemote, best.Lyrics)
 		info.Origin, info.Provider, info.Match = originAuto, best.Provider, best.Match.Confidence

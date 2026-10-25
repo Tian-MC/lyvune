@@ -145,12 +145,22 @@ type Candidate struct {
 	Quality  Quality
 	Meta     Meta
 	Match    Match
-	// Storable is false when keeping the lyrics permanently is not allowed (see
-	// rights.go). The engine sets it for the providers it knows.
+	// Storable is true when saving the lyrics is not ruled out: the provider's
+	// terms are not recorded as restricting it (see rights.go). It says nothing
+	// about a right to keep them. The engine sets it for the providers it knows.
 	Storable bool
-	// DisplayOnly is true when the lyrics may not be kept but may be shown while
-	// a track plays, from memory, without ever being written to disk.
+	// AutoSave is true when the automatic retrieval may save this result: it is
+	// Storable, the administrator wants this provider's lyrics saved, and
+	// automatic saving is on.
+	AutoSave bool
+	// CanShow is true when the lyrics may be shown while a track plays, from
+	// memory, without being written to disk.
+	CanShow bool
+	// DisplayOnly is true when the lyrics may be shown but not saved at all.
 	DisplayOnly bool
+	// Rights is the status of the provider's terms (RightsGranted, RightsUnclear
+	// or RightsRestricted); empty for a provider the table does not know.
+	Rights      string
 	Attribution string
 	// File is the sidecar file name for local candidates, relative to the audio folder.
 	File string

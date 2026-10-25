@@ -98,6 +98,10 @@ func failLyrics(w http.ResponseWriter, r *http.Request, err error) {
 		lyricsError(w, http.StatusConflict, "locked", "These lyrics are locked. Unlock them, or replace them anyway.")
 	case errors.Is(err, lyrics.ErrConfirmRequired):
 		lyricsError(w, http.StatusConflict, "confirm-required", "This replaces lyrics that were supplied or chosen on purpose. Confirm to continue.")
+	case errors.Is(err, lyrics.ErrStorageRestricted):
+		lyricsError(w, http.StatusUnprocessableEntity, "storage-restricted", "The terms recorded for this provider do not allow keeping its lyrics. They can still be shown.")
+	case errors.Is(err, lyrics.ErrSaveUnverified):
+		lyricsError(w, http.StatusInternalServerError, "save-unverified", "The lyrics were written but could not be read back as saved, so they are not reported as saved.")
 	case errors.Is(err, lyrics.ErrNotStorable):
 		lyricsError(w, http.StatusUnprocessableEntity, "not-storable", "These lyrics may neither be kept nor shown by this server. They can only be previewed.")
 	case errors.Is(err, lyrics.ErrNoCandidate):
@@ -185,8 +189,13 @@ type candidateDTO struct {
 	Match    lyrics.Match `json:"match"`
 	Meta     lyrics.Meta  `json:"meta"`
 	Storable bool         `json:"storable"`
-	// DisplayOnly means the lyrics may be shown while playing, from memory, but not kept
-	DisplayOnly  bool          `json:"displayOnly"`
+	// DisplayOnly means the lyrics may be shown while playing, from memory, but not saved at all
+	DisplayOnly bool `json:"displayOnly"`
+	// AutoSave: the automatic retrieval would save this result. CanShow: it may be
+	// shown without saving. Rights is the status of the provider's terms.
+	AutoSave     bool          `json:"autoSave"`
+	CanShow      bool          `json:"canShow"`
+	Rights       string        `json:"rights,omitempty"`
 	Attribution  string        `json:"attribution,omitempty"`
 	Lines        int           `json:"lines"`
 	WordTiming   bool          `json:"wordTiming"`
@@ -204,7 +213,7 @@ type previewLine struct {
 func toCandidateDTO(c lyrics.Candidate) candidateDTO {
 	dto := candidateDTO{
 		ID: c.ID, Provider: c.Provider, Source: c.Source.String(), Quality: c.Quality.String(),
-		Verified: c.Match.Verified(), Match: c.Match, Meta: c.Meta, Storable: c.Storable, DisplayOnly: c.DisplayOnly,
+		Verified: c.Match.Verified(), Match: c.Match, Meta: c.Meta, Storable: c.Storable, DisplayOnly: c.DisplayOnly, AutoSave: c.AutoSave, CanShow: c.CanShow, Rights: c.Rights,
 		Attribution: c.Attribution, Preview: []previewLine{},
 	}
 	for _, l := range c.Lyrics {
@@ -257,11 +266,17 @@ func (api *Router) applyLyrics(w http.ResponseWriter, r *http.Request, mf *model
 		CandidateID string `json:"candidateId"`
 		Confirm     bool   `json:"confirm"`
 		Force       bool   `json:"force"`
+		// Mode is "save", "show" or empty (save when saving is not ruled out)
+		Mode string `json:"mode"`
 	}
 	if !decodeLyricsBody(w, r, &body) {
 		return
 	}
-	res, err := api.lyrics.Apply(r.Context(), mf, lyrics.ApplyRequest{CandidateID: body.CandidateID, Confirm: body.Confirm, Force: body.Force})
+	if body.Mode != "" && body.Mode != lyrics.ModeSave && body.Mode != lyrics.ModeShow {
+		lyricsError(w, http.StatusBadRequest, "bad-request", "The mode is \"save\" or \"show\".")
+		return
+	}
+	res, err := api.lyrics.Apply(r.Context(), mf, lyrics.ApplyRequest{CandidateID: body.CandidateID, Confirm: body.Confirm, Force: body.Force, Mode: body.Mode})
 	if err != nil {
 		failLyrics(w, r, err)
 		return

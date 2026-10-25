@@ -36,16 +36,46 @@ type Settings struct {
 	// Providers lists provider IDs, in order, that are searched. A provider not
 	// listed is off.
 	Providers []string `json:"providers"`
-	// Store is a retired setting. It used to let an administrator allow saving a
-	// provider's lyrics without any right to do so. It no longer has any effect:
-	// what may be kept is decided by the storage rights (rights.go). The value is
-	// kept as it was so the interface can tell the administrator, and is cleared
-	// only when they say so.
+	// AutoPersist lets the automatic retrieval and upgrade save what they find,
+	// for the providers whose save preference is on. When off, results are only
+	// shown. Default true.
+	AutoPersist bool `json:"autoPersist"`
+	// StorePref is the administrator's wish, per provider, to have its lyrics
+	// saved automatically. It is a preference and never a right: a provider whose
+	// terms are recorded as restricting storage is not saved whatever it says
+	// (rights.go). A provider without an entry follows Store (below), then its
+	// default.
+	StorePref map[string]bool `json:"storePref,omitempty"`
+	// Store is the list an earlier version kept of providers to save. It is still
+	// read, as a preference, until the administrator chooses one explicitly.
 	Store []string `json:"store,omitempty"`
 	// Ack lists notices the administrator has dismissed ("recommended").
 	Ack []string `json:"ack,omitempty"`
 	// MinConfidence is the lowest recording match accepted automatically.
 	MinConfidence float64 `json:"minConfidence"`
+}
+
+// Where an effective save preference comes from.
+const (
+	// PrefDefault is the provider's default.
+	PrefDefault = "default"
+	// PrefChosen is an explicit choice of the administrator.
+	PrefChosen = "chosen"
+	// PrefLegacy is the list an earlier version kept, still honoured.
+	PrefLegacy = "legacy"
+)
+
+// savePreference returns whether the administrator wants a provider's lyrics
+// saved automatically, and where that comes from. An explicit choice wins, then
+// the earlier list, then the provider's default.
+func (s Settings) savePreference(id string, r providerRights) (bool, string) {
+	if v, ok := s.StorePref[id]; ok {
+		return v, PrefChosen
+	}
+	if slices.Contains(s.Store, id) {
+		return true, PrefLegacy
+	}
+	return r.DefaultSave, PrefDefault
 }
 
 // AckRecommended is the notice about settings that differ from the recommended
@@ -58,6 +88,7 @@ func DefaultSettings() Settings {
 		PreferLocal:       true,
 		AutoRetrieve:      true,
 		AutoUpgrade:       true,
+		AutoPersist:       true,
 		AutoReplaceManual: false,
 		Providers:         []string{lrclibID},
 		MinConfidence:     ConfidenceAuto,
@@ -87,6 +118,15 @@ func (s Settings) Sanitize(known []string) Settings {
 		}
 	}
 	s.Store = store
+	if len(s.StorePref) > 0 {
+		pref := map[string]bool{}
+		for id, v := range s.StorePref {
+			if slices.Contains(known, id) {
+				pref[id] = v
+			}
+		}
+		s.StorePref = pref
+	}
 	var ack []string
 	for _, id := range s.Ack {
 		if id == AckRecommended && !slices.Contains(ack, id) {

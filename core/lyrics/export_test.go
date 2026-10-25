@@ -1,6 +1,7 @@
 package lyrics
 
 import (
+	"context"
 	"time"
 
 	"github.com/navidrome/navidrome/model"
@@ -39,3 +40,11 @@ func RejectSyntheticWordTiming(l model.LyricList) (model.LyricList, bool) {
 
 // CreditsOnly exposes the credits check to the tests.
 func CreditsOnly(l model.LyricList) bool { return creditsOnly(l) }
+
+// ReadEnvelopeForTest reads a track's sidecar the way the engine does.
+func ReadEnvelopeForTest(ctx context.Context, mf *model.MediaFile) (*Envelope, string) {
+	return readEnvelope(ctx, mf)
+}
+
+// CueCountForTest counts the word cues of the main lyrics.
+func CueCountForTest(l model.LyricList) int { return cueCount(l) }

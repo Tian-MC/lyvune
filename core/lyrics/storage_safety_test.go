@@ -67,7 +67,7 @@ var _ = Describe("Saving lyrics: defaults and local files", func() {
 			c.Storable = false
 			fake.set(c)
 			fake.info.Storable = false
-			_, err := engine.SaveSettings(ctx, lyrics.Settings{Providers: []string{"fake"}, MinConfidence: 0.85, AutoRetrieve: true})
+			_, err := engine.SaveSettings(ctx, lyrics.Settings{Providers: []string{"fake"}, MinConfidence: 0.85, AutoRetrieve: true, AutoPersist: true})
 			Expect(err).ToNot(HaveOccurred())
 			res, err := engine.Resolve(ctx, mf, lyrics.ResolveOptions{})
 			Expect(err).ToNot(HaveOccurred())
@@ -89,7 +89,7 @@ var _ = Describe("Saving lyrics: defaults and local files", func() {
 			Expect(mustLyrics(svc.GetLyrics(ctx, mf))).To(BeEmpty(), "the junk line is not served as lyrics")
 
 			fake.set(remote("fake", "1", syncedOf("a real line"), 0.99))
-			_, err := engine.SaveSettings(ctx, lyrics.Settings{Providers: []string{"fake"}, MinConfidence: 0.85, AutoRetrieve: true})
+			_, err := engine.SaveSettings(ctx, lyrics.Settings{Providers: []string{"fake"}, MinConfidence: 0.85, AutoRetrieve: true, AutoPersist: true})
 			Expect(err).ToNot(HaveOccurred())
 			res, err := engine.Resolve(ctx, mf, lyrics.ResolveOptions{})
 			Expect(err).ToNot(HaveOccurred())

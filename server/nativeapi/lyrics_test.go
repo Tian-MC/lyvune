@@ -107,7 +107,7 @@ var _ = Describe("Lyrics API", func() {
 		engine := lyrics.EngineOf(lyrics.NewService(lyrics.Options{
 			DataStore: ds, Providers: lyrics.NewProviders(fake), Store: lyrics.NewStore(GinkgoT().TempDir(), 10),
 		}))
-		_, err := engine.SaveSettings(ctx, lyrics.Settings{Providers: []string{"fake"}, PreferLocal: true, AutoRetrieve: true, AutoUpgrade: true})
+		_, err := engine.SaveSettings(ctx, lyrics.Settings{Providers: []string{"fake"}, PreferLocal: true, AutoRetrieve: true, AutoUpgrade: true, AutoPersist: true})
 		Expect(err).ToNot(HaveOccurred())
 
 		router = server.JWTVerifier(New(ds, nil, playlists.NewPlaylists(ds, nil), nil, tests.NewMockLibraryService(), tests.NewMockUserService(), nil, nil, nil, nil, nil, engine))
@@ -208,6 +208,27 @@ var _ = Describe("Lyrics API", func() {
 			Expect(s["providers"]).To(ConsistOf("fake"))
 		})
 
+		It("keeps the administrator's save preferences and the automatic-saving switch, dropping unknown providers", func() {
+			w := do("PUT", "/lyrics/settings", adminTok, map[string]any{
+				"preferLocal": true, "autoRetrieve": true, "autoUpgrade": true, "autoPersist": false,
+				"providers": []string{"fake"}, "storePref": map[string]bool{"fake": true, "nobody": true}, "minConfidence": 0.9,
+			})
+			Expect(w.Code).To(Equal(http.StatusOK))
+			s := decode(w)["settings"].(map[string]any)
+			Expect(s).To(HaveKeyWithValue("autoPersist", false))
+			Expect(s["storePref"]).To(Equal(map[string]any{"fake": true}))
+			got := decode(do("GET", "/lyrics/settings", adminTok, nil))["settings"].(map[string]any)
+			Expect(got).To(HaveKeyWithValue("autoPersist", false))
+		})
+
+		It("reports, per provider, the rights status, the preference and the last save", func() {
+			w := do("GET", "/lyrics/settings", adminTok, nil)
+			first := decode(w)["providers"].([]any)[0].(map[string]any)
+			for _, k := range []string{"storeStatus", "storeAllowed", "storeVerified", "savePreference", "savePreferenceSource", "offline", "display"} {
+				Expect(first).To(HaveKey(k))
+			}
+		})
+
 		It("rejects a malformed body", func() {
 			req := httptest.NewRequest("PUT", "/lyrics/settings", strings.NewReader("{nope"))
 			req.Header.Set(consts.UIAuthorizationHeader, "Bearer "+adminTok)
@@ -262,6 +283,20 @@ var _ = Describe("Lyrics API", func() {
 			w := do("POST", "/lyrics/song/song-1/resolve", adminTok, nil)
 			Expect(w.Code).To(Equal(http.StatusOK))
 			Expect(decode(w)["result"]).To(Equal("found"))
+			Expect(filepath.Join(root, "Artist", "Album", "01.lyrics.json")).To(BeAnExistingFile())
+		})
+
+		It("rejects an unknown apply mode and applies in the requested one", func() {
+			fake.cands = []lyrics.Candidate{syncedCandidate("fake:1", "chosen", 0.97, true)}
+			w := do("POST", "/lyrics/song/song-1/search", adminTok, map[string]any{})
+			Expect(w.Code).To(Equal(http.StatusOK))
+			bad := do("POST", "/lyrics/song/song-1/apply", adminTok, map[string]any{"candidateId": "fake:1", "mode": "burn"})
+			Expect(bad.Code).To(Equal(http.StatusBadRequest))
+			show := do("POST", "/lyrics/song/song-1/apply", adminTok, map[string]any{"candidateId": "fake:1", "mode": "show"})
+			Expect(show.Code).To(Equal(http.StatusUnprocessableEntity), "this provider cannot be shown without being saved")
+			ok := do("POST", "/lyrics/song/song-1/apply", adminTok, map[string]any{"candidateId": "fake:1", "mode": "save"})
+			Expect(ok.Code).To(Equal(http.StatusOK))
+			Expect(decode(ok)).ToNot(HaveKey("notSaved"))
 			Expect(filepath.Join(root, "Artist", "Album", "01.lyrics.json")).To(BeAnExistingFile())
 		})
 
