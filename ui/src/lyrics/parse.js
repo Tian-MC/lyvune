@@ -32,7 +32,7 @@ const sliceBytes = (bytes, start, end) =>
  * (spaces, punctuation) is kept as untimed segments so the line reads exactly
  * as written.
  */
-export const buildWords = (value, cues) => {
+export const buildWords = (value, cues, lineEnd) => {
   if (!cues || cues.length === 0 || !encoder || !decoder) return null
   const bytes = encoder.encode(value)
   const sorted = [...cues].sort((a, b) => a.byteStart - b.byteStart)
@@ -46,7 +46,9 @@ export const buildWords = (value, cues) => {
     words.push({
       text: sliceBytes(bytes, cue.byteStart, cue.byteEnd + 1) || cue.value,
       start: cue.start,
-      end: cue.end ?? (next ? next.start : undefined),
+      // The last word of a line ends where the source says the line ends;
+      // without that we know no end, and none is made up
+      end: cue.end ?? (next ? next.start : lineEnd),
     })
     cursor = Math.max(cursor, cue.byteEnd + 1)
   })
@@ -126,6 +128,7 @@ export const parseLyrics = (structuredLyrics) => {
           start: shift(c.start),
           end: c.end == null ? undefined : shift(c.end),
         })),
+        cueLine.end == null ? undefined : shift(cueLine.end),
       )
       words = built
     }

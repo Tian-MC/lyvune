@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   seek: vi.fn(),
   play: vi.fn(),
   paused: true,
+  time: 0,
 }))
 
 vi.mock('react-admin', () => ({
@@ -22,12 +23,10 @@ vi.mock('../playback/engine', () => ({
   default: {
     seek: mocks.seek,
     play: mocks.play,
-    currentTime: () => 0,
+    currentTime: () => mocks.time,
     getMedia: () => ({ paused: mocks.paused }),
   },
 }))
-// The active line index is driven by the media clock; pin it
-vi.mock('../playback/hooks', () => ({ useMedia: () => 1 }))
 
 import { LyricsView } from './LyricsView'
 
@@ -53,6 +52,7 @@ describe('<LyricsView /> (fixtures)', () => {
     window.matchMedia = () => ({ matches: false })
     Element.prototype.scrollTo = vi.fn()
     mocks.paused = true
+    mocks.time = 0
     mocks.lyrics = { status: 'ready', lyrics: null }
   })
 
@@ -114,6 +114,7 @@ describe('<LyricsView /> (fixtures)', () => {
   })
 
   it('renders synchronized lines as buttons that seek and start playback', () => {
+    mocks.time = 3
     show({
       synced: true,
       lang: 'xxx',
@@ -124,7 +125,7 @@ describe('<LyricsView /> (fixtures)', () => {
     })
     const buttons = document.querySelectorAll('button[data-index]')
     expect(buttons).toHaveLength(3)
-    // the pinned clock makes line 1 the active one
+    // the audio clock (3 s) makes line 1 the active one
     expect(buttons[1].getAttribute('aria-current')).toBe('true')
     fireEvent.click(buttons[2])
     expect(mocks.seek).toHaveBeenCalledWith(5)
