@@ -54,9 +54,14 @@ build `navidrome/ffmpeg-windows-builds`.
 
 ## What has to be true before publishing
 
-1. **The Docker image has been built and tested on a Docker host.** `scripts/docker-smoke-test.sh` passes on
-   `linux/amd64` and on `linux/arm64`, and it has been seen working with Alpine's runtime libraries, `ffmpeg`, `mpv` and
-   `libwebp`, and with the `HEALTHCHECK` (all of that needs real Docker; none of it has been run yet).
+1. **The Docker image has been built and tested on a Docker host, on both platforms.**
+   - *Done for `linux/amd64`* (run by the maintainer on an Arch Linux host with `scripts/docker-smoke-test.sh`, all checks
+     passed): the image builds, runs as an unprivileged user and is `healthy`; the web interface, assets, accounts,
+     Subsonic, scan, streaming and lyrics work; users and saved lyrics survive a restart; SIGTERM stops it with exit
+     code 0; a read-only library refuses to save lyrics; a copied `navidrome.db` and `navidrome.toml` are used; an
+     unwritable data folder fails loudly; Compose files are valid.
+   - *Not done yet:* `linux/arm64` (the binary has been compiled, never started); the checks added after that run
+     (`mpv`, the `libwebp` libraries, and an MP3 transcode through ffmpeg) on Docker; and `docker.yml` in CI.
 2. **What is published is Lyvune's.** Today only the image and the Linux binaries are. The `.deb`, `.rpm` and Windows
    installers still carry Navidrome's names, paths and users (`/etc/navidrome`, the `navidrome` user, `navidrome.wxs`);
    they are built as snapshots and **not** published until they have been rebranded and tried on a real system.

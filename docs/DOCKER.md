@@ -288,7 +288,7 @@ that off; Lyvune then contacts no other host. The lyrics providers can also be s
 | `ghcr.io/tian-mc/lyvune:latest`, `:0.1` | will exist only for stable versions (no `-alpha`, `-beta` or `-rc`) |
 
 The image is built for two platforms, `linux/amd64` and `linux/arm64` (Raspberry Pi 4 and 5, many NAS), and Docker picks
-the right one. Neither has been run as a Docker image yet: the `arm64` binary has only been compiled, not started. To build for another platform than yours, `docker buildx build --platform linux/arm64 -t lyvune:arm64 .`
+the right one. The `amd64` image has been built and tested on a Docker host (`scripts/docker-smoke-test.sh`); the `arm64` one has only been compiled, not started. To build for another platform than yours, `docker buildx build --platform linux/arm64 -t lyvune:arm64 .`
 
 ## Building and testing it yourself
 

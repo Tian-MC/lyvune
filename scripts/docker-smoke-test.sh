@@ -140,6 +140,9 @@ expect "it runs as an unprivileged user" bash -c "[ \"\$(docker run --rm ${PLATF
 expect "it has the OCI labels" bash -c "docker image inspect -f '{{index .Config.Labels \"org.opencontainers.image.source\"}}' $IMAGE | grep -q github.com/Tian-MC/lyvune"
 expect "the binary is there and reports a version" docker run --rm "${PLATFORM_ARGS[@]}" "$IMAGE" --version
 expect "ffmpeg is there for transcoding" docker run --rm "${PLATFORM_ARGS[@]}" --entrypoint ffmpeg "$IMAGE" -version
+expect "mpv is there for the jukebox" docker run --rm "${PLATFORM_ARGS[@]}" --entrypoint mpv "$IMAGE" --no-video --ao=null --version
+expect "libwebp is there, for native WebP encoding" docker run --rm "${PLATFORM_ARGS[@]}" --entrypoint sh "$IMAGE" -c 'ls /usr/lib/libwebp.so /usr/lib/libwebpdemux.so /usr/lib/libwebpmux.so'
+expect "the image has no curl, so the health check must not need it" docker run --rm "${PLATFORM_ARGS[@]}" --entrypoint sh "$IMAGE" -c '! command -v curl'
 expect "CA certificates are there for HTTPS" docker run --rm "${PLATFORM_ARGS[@]}" --entrypoint sh "$IMAGE" -c 'test -s /etc/ssl/certs/ca-certificates.crt'
 expect "time zones are there" docker run --rm "${PLATFORM_ARGS[@]}" --entrypoint sh "$IMAGE" -c 'test -f /usr/share/zoneinfo/Europe/Rome'
 

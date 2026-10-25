@@ -214,6 +214,16 @@ def run_checks(args):
 
     check("a song streams (real audio bytes)", stream)
 
+    def transcode():
+        # Asking for an MP3 makes the server run ffmpeg on the WAV file: the proof that ffmpeg works inside
+        sid = songs.get("First Song")
+        status, headers, body = s.request("/rest/stream?" + urllib.parse.urlencode(
+            {"u": args.user, "p": args.password, "v": "1.16.1", "c": "smoke-test", "id": sid, "format": "mp3", "maxBitRate": "64"}))
+        mp3 = body[:3] == b"ID3" or (len(body) > 2 and body[0] == 0xFF and body[1] & 0xE0 == 0xE0)
+        return status == 200 and mp3 and body[:4] != b"RIFF", f"HTTP {status}, {len(body)} bytes, {headers.get('Content-Type')}"
+
+    check("a song is transcoded to MP3 by ffmpeg", transcode)
+
     def lyrics(title, first):
         def run():
             _, r = s.subsonic("getLyricsBySongId", id=songs.get(title, ""), enhanced="true")
