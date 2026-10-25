@@ -115,6 +115,15 @@ function kuromojiDictionary() {
           source: readFileSync(join(dir, name)),
         })
       }
+      // The dictionary is mecab-ipadic, whose licence requires its notice and
+      // the Apache licence of kuromoji to travel with every copy
+      for (const name of ['NOTICE.md', 'LICENSE-2.0.txt']) {
+        this.emitFile({
+          type: 'asset',
+          fileName: `kuromoji-dict/${name}`,
+          source: readFileSync(join('node_modules', 'kuromoji', name)),
+        })
+      }
     },
   }
 }
