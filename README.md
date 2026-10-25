@@ -30,9 +30,8 @@ On a phone the lyrics view keeps the same controls:
 - react-admin is still used for the data layer and the administration screens.
 - The previous player, layout, album/artist/playlist pages and the `navidrome-music-player`, `react-drag-listview`
   and `react-measure` dependencies were removed.
-- Themes saved by existing users keep working. *Dark* and *Extra Dark* map to the new *Lyvune* and
-  *Lyvune Black (OLED)* themes, other dark themes are applied as colour tints, and light themes fall back to
-  Lyvune.
+- There are two themes: *Lyvune* and *Lyvune Black (OLED)*. A saved *Dark* or *Extra Dark* theme becomes one of them,
+  and any other saved theme becomes *Lyvune*.
 - A lyrics engine looks for missing lyrics online (LRCLIB, KuGou, NetEase, QQ Music and, with your own key,
   Musixmatch), prefers the files you already have, and lets you override, lock and undo. Word-by-word karaoke is
   shown when a source really has it. Found lyrics are saved next to the audio (`.lyrics.json`, offline, with word timing) according to a per-provider

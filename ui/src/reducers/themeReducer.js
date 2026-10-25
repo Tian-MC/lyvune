@@ -1,11 +1,9 @@
 import { CHANGE_THEME } from '../actions'
 import config from '../config'
-import { DEFAULT_THEME_ID, resolveThemeId } from '../design/themes'
-import { legacyIdByName } from '../design/legacyThemes'
+import { resolveThemeId, themeIdForServerName } from '../design/themes'
 
-// The server-side DefaultTheme names a theme by its display name
 const defaultTheme = () =>
-  resolveThemeId(legacyIdByName(config.defaultTheme) || DEFAULT_THEME_ID)
+  resolveThemeId(themeIdForServerName(config.defaultTheme))
 
 export const themeReducer = (
   previousState = defaultTheme(),

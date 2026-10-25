@@ -171,19 +171,15 @@ column menu and stored in `settings.trackColumns` (falling back to the legacy
 Selection (`useTrackSelection` + `SelectionBar`), drag/Alt+Arrow reordering and the
 context menu are shared by every list.
 
-## 13. Theme compatibility
+## 13. Themes
 
-The interface is dark-only. `design/legacyThemes.js` keeps the theme ids that
-users stored in earlier versions working, without rewriting what is stored:
+There are two themes, both dark: **Lyvune** (the default) and **Lyvune Black (OLED)**, whose canvas is pure black
+(`:root[data-theme='oled']` in `tokens.css`). The 29 community themes of the previous interface were removed.
 
-| Support | Themes | Result |
-| --- | --- | --- |
-| successor | Dark, Extra Dark | the official Lyvune and Lyvune OLED variants |
-| tinted | 18 dark community themes | their accent and background feed the tokens (`computeTint`); secondary text, muted text and filled-accent text are recomputed so contrast stays ≥ 7:1 / 4.5:1 / 4.5:1 |
-| unsupported | 9 light themes | Lyvune is used and the theme picker says so |
-
-The legacy theme definitions in `src/themes/` are data only; none of their
-player or layout stylesheets remain.
+What users stored in earlier versions is not rewritten, but it is read through `design/themes.js`
+(`resolveThemeId`): the ids of *Dark* and *Extra Dark* give Lyvune and Lyvune OLED, and any other id, such as a
+community theme, gives Lyvune. The server's `DefaultTheme` option still names a theme with the old display names, and
+`Extra Dark` gives Lyvune OLED while anything else gives Lyvune.
 
 ## 14. Known limitations
 
@@ -198,6 +194,5 @@ occurs on upstream `master`; reproduced there with the same backend):
 | `SyntaxError: expected property name, got '{'` (×2 at load) | `ui/index.html` holds Go template placeholders (`{{ .AppConfig }}`) that only the Go server substitutes | start `vite` alone |
 | `Could not load user libraries …` | upstream `LibrarySelector` logs when its library request fails right after sign-in | sign in on a fresh browser profile |
 
-Other limits: the nine light legacy themes are not supported (Lyvune is used);
-languages other than English and Italian fall back to English for the new `ui.*`
+Other limits: languages other than English and Italian fall back to English for the new `ui.*`
 strings.

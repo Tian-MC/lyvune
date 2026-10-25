@@ -1073,10 +1073,7 @@
             "playback": "Riproduzione",
             "playbackHint": "Normalizzazione del volume tramite i tag ReplayGain dei file.",
             "scrobbling": "Scrobbling",
-            "scrobblingHint": "Condividi ciò che ascolti con servizi esterni.",
-            "legacyTinted": "legacy, solo colori",
-            "legacyUnsupported": "chiaro, non supportato",
-            "legacyNotice": "Il tema salvato non è supportato dalla nuova interfaccia, quindi viene mostrato Lyvune. Scegli un tema per sostituirlo."
+            "scrobblingHint": "Condividi ciò che ascolti con servizi esterni."
         },
         "track": {
             "missing": "File mancante"

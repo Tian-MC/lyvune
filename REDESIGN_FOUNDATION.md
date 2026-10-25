@@ -126,7 +126,7 @@ about dialog, quick connect.
 | `navidrome-music-player` | **replaced and removed** (also from `package.json`) | it owned both UI and audio, cannot be restyled into the new Now Playing |
 | Layout, AppBar, Menu, all list/show pages, Personal | **rebuilt; legacy files removed** | presentation layer |
 | Dialogs, context menus, admin CRUD forms | **keep logic, restyle** through a token-driven MUI theme | complex, well tested forms; visual consistency comes from the theme |
-| 29 legacy themes | **kept as palette data only** (`src/themes/*.js`) | their stylesheets are gone; `design/legacyThemes.js` maps each to successor / tinted / unsupported (see `DESIGN_SYSTEM.md` §13) |
+| 29 legacy themes | **removed**; only Lyvune and Lyvune OLED remain | stored ids still resolve (Dark and Extra Dark to the two themes, any other to Lyvune), see `DESIGN_SYSTEM.md` §13 |
 
 ## 6. Target architecture
 
@@ -219,8 +219,6 @@ IT.
 ### Known limitations
 * Development-only console warnings that come from upstream code and also occur on
   `master` are listed, with origin and reproduction steps, in `DESIGN_SYSTEM.md` §14.
-* The nine light legacy themes are not supported by the dark-only UI; Lyvune is used
-  instead and the picker says so.
 * Languages other than English and Italian fall back to English for the new `ui.*`
   strings.
 * react-admin applies edits and deletes after a ~5 s undo window, as upstream does.

@@ -21,27 +21,16 @@ describe('useCurrentTheme', () => {
     expect(document.documentElement.dataset.theme).toBe('default')
   })
 
-  it('tints dark legacy themes with their accent', () => {
+  it('falls back to the default theme for one that no longer exists', () => {
     const { result } = renderHook(() => useCurrentTheme(), {
       wrapper: wrapperFor('DraculaTheme'),
     })
-    expect(result.current.themeName).toBe('Dracula')
-    expect(result.current.legacy.support).toBe('tinted')
-    expect(document.documentElement.style.getPropertyValue('--accent')).toBe(
-      '#bd93f9',
-    )
-  })
-
-  it('falls back to Lyvune for light legacy themes and says so', () => {
-    const { result } = renderHook(() => useCurrentTheme(), {
-      wrapper: wrapperFor('LightTheme'),
-    })
     expect(result.current.themeName).toBe('Lyvune')
-    expect(result.current.legacy.support).toBe('unsupported')
-    expect(document.documentElement.style.getPropertyValue('--accent')).toBe('')
+    expect(result.current.oled).toBe(false)
+    expect(document.documentElement.dataset.theme).toBe('default')
   })
 
-  it('maps Dark and Extra Dark to the official variants', () => {
+  it('maps Dark and Extra Dark to the two themes', () => {
     const dark = renderHook(() => useCurrentTheme(), {
       wrapper: wrapperFor('DarkTheme'),
     })

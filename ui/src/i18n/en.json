@@ -1136,10 +1136,7 @@
       "playback": "Playback",
       "playbackHint": "Volume normalisation using the ReplayGain tags of your files.",
       "scrobbling": "Scrobbling",
-      "scrobblingHint": "Share what you listen to with external services.",
-      "legacyTinted": "legacy, colours only",
-      "legacyUnsupported": "light, not supported",
-      "legacyNotice": "Your saved theme is not supported by the new interface, so Lyvune is shown instead. Choose a theme to replace it."
+      "scrobblingHint": "Share what you listen to with external services."
     },
     "track": {
       "missing": "Missing file"
