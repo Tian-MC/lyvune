@@ -83,8 +83,9 @@ var _ = Describe("Saving lyrics: defaults and local files", func() {
 			`"retrievedAt":"2026-10-25T12:00:00Z","attribution":"x","recording":{"title":"Song","artist":"Band","album":"Album","duration":200},` +
 			`"lyrics":[{"lang":"xxx","line":[{"value":"[00:00.00-1] 作曲 : Someone"}],"synced":false}]}`
 
-		It("is not shown, and a retrieval replaces it while keeping it in the history", func() {
-			write("01 - Song.lyrics.json", fmt.Sprintf(junk, "managed"))
+		It("is not shown, and no automatic retrieval overwrites it: the result is shown and the file is left for the administrator", func() {
+			path := write("01 - Song.lyrics.json", fmt.Sprintf(junk, "managed"))
+			before, _ := os.ReadFile(path)
 			Expect(mustLyrics(svc.GetLyrics(ctx, mf))).To(BeEmpty(), "the junk line is not served as lyrics")
 
 			fake.set(remote("fake", "1", syncedOf("a real line"), 0.99))
@@ -93,7 +94,21 @@ var _ = Describe("Saving lyrics: defaults and local files", func() {
 			res, err := engine.Resolve(ctx, mf, lyrics.ResolveOptions{})
 			Expect(err).ToNot(HaveOccurred())
 			Expect(res.Result).To(Equal(lyrics.ResolveFound))
+			Expect(res.Persisted).To(BeFalse())
+			Expect(res.Message).To(ContainSubstring("ignored"))
+			after, _ := os.ReadFile(path)
+			Expect(after).To(Equal(before), "the file is untouched")
 			Expect(firstLine(mustLyrics(svc.GetLyrics(ctx, mf)))).To(Equal("a real line"))
+		})
+
+		It("is replaced when the administrator explicitly chooses a version", func() {
+			write("01 - Song.lyrics.json", fmt.Sprintf(junk, "managed"))
+			fake.set(remote("fake", "1", syncedOf("chosen line"), 0.99))
+			res, err := engine.Search(ctx, mf, lyrics.SearchOptions{})
+			Expect(err).ToNot(HaveOccurred())
+			_, err = engine.Apply(ctx, mf, lyrics.ApplyRequest{CandidateID: res.Candidates[0].ID})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(firstLine(mustLyrics(svc.GetLyrics(ctx, mf)))).To(Equal("chosen line"))
 		})
 
 		It("is never ignored when the user chose it", func() {

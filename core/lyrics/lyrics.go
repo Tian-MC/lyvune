@@ -72,12 +72,24 @@ type Options struct {
 	// RightsFile is where storage authorizations are read from. Empty selects
 	// lyrics-storage-rights.json in the data folder.
 	RightsFile string
+	// ShareState makes the service use the process-wide display cache and provider
+	// health. The application builds one service per router, so without this the
+	// lyrics shown after a search would be invisible to the router the player
+	// reads from. Tests leave it off to stay isolated.
+	ShareState bool
 }
+
+// processDisplay and processHealth are the state shared by the services the
+// application creates with NewLyrics.
+var (
+	processDisplay = newDisplayCache()
+	processHealth  = newHealthTracker()
+)
 
 // NewLyrics creates a new lyrics service. pluginLoader may be nil if no plugin
 // system is available.
 func NewLyrics(ds model.DataStore, pluginLoader PluginLoader) Lyrics {
-	return NewService(Options{DataStore: ds, PluginLoader: pluginLoader})
+	return NewService(Options{DataStore: ds, PluginLoader: pluginLoader, ShareState: true})
 }
 
 // NewService creates a lyrics service from explicit options.
@@ -101,10 +113,14 @@ func NewService(o Options) Lyrics {
 	if o.RightsFile == "" {
 		o.RightsFile = filepath.Join(conf.Server.DataFolder.String(), rightsFileName)
 	}
+	display, health := newDisplayCache(), newHealthTracker()
+	if o.ShareState {
+		display, health = processDisplay, processHealth
+	}
 	return &lyricsService{
 		ds: o.DataStore, pluginLoader: o.PluginLoader,
 		props: propertyStore{ds: o.DataStore}, store: o.Store, providers: o.Providers,
-		searches: newSearchCache(), health: newHealthTracker(), display: newDisplayCache(), rights: newRightsTable(o.RightsFile), now: o.Now, bulkJobs: map[string]*bulkJob{},
+		searches: newSearchCache(), health: health, display: display, rights: newRightsTable(o.RightsFile), now: o.Now, bulkJobs: map[string]*bulkJob{},
 	}
 }
 

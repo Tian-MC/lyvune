@@ -622,9 +622,15 @@ func (l *lyricsService) retrieveMissing(ctx context.Context, mf *model.MediaFile
 		return ResolveResult{Result: result}, nil
 	}
 	persisted := false
+	// An ignored sidecar is Navidrome's own file that is no longer used. Nothing
+	// automatic overwrites it: the administrator removes it, or replaces it by choice.
+	blocked := hasIgnoredSidecar(ctx, mf)
+	if blocked && opts.NoDisplay {
+		return ResolveResult{Result: ResolveNotSaved, Message: "A saved file next to this track is ignored; remove it in the lyrics manager first"}, nil
+	}
 	// Automatic retrieval keeps lyrics only where keeping is allowed; the best
 	// of those goes to disk even when a better one can only be shown
-	if keep, ok := Choose(storableOnly(cands), pol); ok {
+	if keep, ok := Choose(storableOnly(cands), pol); ok && !blocked {
 		if _, err := l.save(ctx, mf, keep, OriginManaged, current{}); err != nil {
 			if errors.Is(err, ErrReadOnly) || errors.Is(err, ErrNotLocal) || errors.Is(err, ErrUnsafePath) {
 				if best.Storable {
@@ -637,16 +643,28 @@ func (l *lyricsService) retrieveMissing(ctx context.Context, mf *model.MediaFile
 			persisted = true
 		}
 	}
-	if !best.Storable {
+	shownOnly := !best.Storable || blocked
+	if shownOnly {
 		l.showAuto(ctx, mf, best)
 	}
 	info := sourceInfoOf("managed", SourceManaged, best.Lyrics)
-	if !best.Storable {
+	if shownOnly {
 		info = sourceInfoOf("display", SourceRemote, best.Lyrics)
 		info.Origin = originAuto
 	}
 	info.Provider, info.Match = best.Provider, best.Match.Confidence
-	return ResolveResult{Result: ResolveFound, Applied: &info, Persisted: persisted}, nil
+	res := ResolveResult{Result: ResolveFound, Applied: &info, Persisted: persisted}
+	if blocked {
+		res.Message = "Shown, not saved: a saved file next to this track is ignored; remove it in the lyrics manager to let lyrics be saved"
+	}
+	return res, nil
+}
+
+// hasIgnoredSidecar reports whether the track has a sidecar Navidrome wrote that
+// is no longer used (see junkManaged).
+func hasIgnoredSidecar(ctx context.Context, mf *model.MediaFile) bool {
+	env, _ := readEnvelope(ctx, mf)
+	return env != nil && junkManaged(env)
 }
 
 // showAuto holds a result that may only be shown, found by the automatic

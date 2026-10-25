@@ -140,6 +140,49 @@ var _ = Describe("Storage rights and display", func() {
 		})
 	})
 
+	Describe("one process, several routers", func() {
+		It("shows to a second service what the first one chose to show, as the player's router must see it", func() {
+			opts := func(f *fakeProvider) lyrics.Options {
+				return lyrics.Options{
+					DataStore: &tests.MockDataStore{MockedProperty: props}, Providers: lyrics.NewProviders(f),
+					Store: lyrics.NewStore(GinkgoT().TempDir(), 10), Now: func() time.Time { return clock },
+					RightsFile: rights, ShareState: true,
+				}
+			}
+			api := newFake("kugou")
+			api.set(remote("kugou", "1", karaokeOf("shown karaoke"), 0.99))
+			native := lyrics.NewService(opts(api))
+			subsonic := lyrics.NewService(opts(newFake("kugou")))
+			_, err := lyrics.EngineOf(native).SaveSettings(ctx, lyrics.Settings{Providers: []string{"kugou"}, MinConfidence: 0.85, PreferLocal: true, AutoRetrieve: true})
+			Expect(err).ToNot(HaveOccurred())
+
+			res, err := lyrics.EngineOf(native).Resolve(ctx, mf, lyrics.ResolveOptions{})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(res.Result).To(Equal(lyrics.ResolveFound))
+			got, err := subsonic.GetLyrics(ctx, mf)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(firstLine(got)).To(Equal("shown karaoke"))
+		})
+
+		It("keeps services apart when state is not shared", func() {
+			a, b := newFake("kugou"), newFake("kugou")
+			a.set(remote("kugou", "1", karaokeOf("shown karaoke"), 0.99))
+			mk := func(f *fakeProvider) lyrics.Lyrics {
+				return lyrics.NewService(lyrics.Options{
+					DataStore: &tests.MockDataStore{MockedProperty: props}, Providers: lyrics.NewProviders(f),
+					Store: lyrics.NewStore(GinkgoT().TempDir(), 10), Now: func() time.Time { return clock }, RightsFile: rights,
+				})
+			}
+			one, two := mk(a), mk(b)
+			_, err := lyrics.EngineOf(one).SaveSettings(ctx, lyrics.Settings{Providers: []string{"kugou"}, MinConfidence: 0.85, PreferLocal: true, AutoRetrieve: true})
+			Expect(err).ToNot(HaveOccurred())
+			_, err = lyrics.EngineOf(one).Resolve(ctx, mf, lyrics.ResolveOptions{})
+			Expect(err).ToNot(HaveOccurred())
+			got, _ := two.GetLyrics(ctx, mf)
+			Expect(got).To(BeEmpty())
+		})
+	})
+
 	Describe("a storage authorization", func() {
 		const valid = `{"authorizations":[{"provider":"kugou","basis":"Licence agreement of 2026-11-02","reference":"contract no. 4711"}]}`
 
