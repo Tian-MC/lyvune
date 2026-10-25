@@ -47,6 +47,8 @@ type lyricsService struct {
 	providers *Providers
 	searches  *searchCache
 	health    *healthTracker
+	display   *displayCache
+	rights    *rightsTable
 	flight    singleflight.Group
 	now       func() time.Time
 
@@ -67,6 +69,9 @@ type Options struct {
 	Providers    *Providers
 	Store        *Store
 	Now          func() time.Time
+	// RightsFile is where storage authorizations are read from. Empty selects
+	// lyrics-storage-rights.json in the data folder.
+	RightsFile string
 }
 
 // NewLyrics creates a new lyrics service. pluginLoader may be nil if no plugin
@@ -80,10 +85,10 @@ func NewService(o Options) Lyrics {
 	if o.Providers == nil {
 		o.Providers = NewProviders(
 			NewLRCLIB(conf.Server.Lyrics.LRCLIB.BaseURL, conf.Server.Lyrics.LRCLIB.Enabled),
-			NewMusixmatch("", conf.Server.Lyrics.Musixmatch.ApiKey, conf.Server.Lyrics.Musixmatch.Store),
-			NewKuGou("", "", conf.Server.Lyrics.KuGou.Store),
-			NewNetEase("", conf.Server.Lyrics.NetEase.Store),
-			NewQQ("", "", conf.Server.Lyrics.QQ.BetterLyricsApiKey, conf.Server.Lyrics.QQ.Store),
+			NewMusixmatch("", conf.Server.Lyrics.Musixmatch.ApiKey),
+			NewKuGou("", ""),
+			NewNetEase(""),
+			NewQQ("", "", conf.Server.Lyrics.QQ.BetterLyricsApiKey),
 			NewAppleMusic(),
 		)
 	}
@@ -93,10 +98,13 @@ func NewService(o Options) Lyrics {
 	if o.Now == nil {
 		o.Now = time.Now
 	}
+	if o.RightsFile == "" {
+		o.RightsFile = filepath.Join(conf.Server.DataFolder.String(), rightsFileName)
+	}
 	return &lyricsService{
 		ds: o.DataStore, pluginLoader: o.PluginLoader,
 		props: propertyStore{ds: o.DataStore}, store: o.Store, providers: o.Providers,
-		searches: newSearchCache(), health: newHealthTracker(), now: o.Now, bulkJobs: map[string]*bulkJob{},
+		searches: newSearchCache(), health: newHealthTracker(), display: newDisplayCache(), rights: newRightsTable(o.RightsFile), now: o.Now, bulkJobs: map[string]*bulkJob{},
 	}
 }
 

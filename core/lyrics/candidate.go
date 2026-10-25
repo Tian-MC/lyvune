@@ -145,8 +145,12 @@ type Candidate struct {
 	Quality  Quality
 	Meta     Meta
 	Match    Match
-	// Storable is false when the provider's terms do not allow keeping the lyrics.
-	Storable    bool
+	// Storable is false when keeping the lyrics permanently is not allowed (see
+	// rights.go). The engine sets it for the providers it knows.
+	Storable bool
+	// DisplayOnly is true when the lyrics may not be kept but may be shown while
+	// a track plays, from memory, without ever being written to disk.
+	DisplayOnly bool
 	Attribution string
 	// File is the sidecar file name for local candidates, relative to the audio folder.
 	File string

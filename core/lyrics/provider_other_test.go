@@ -36,7 +36,7 @@ var _ = Describe("Musixmatch provider", func() {
 			urls = append(urls, r.URL.String())
 			h(r.URL.Path[len("/"):], w)
 		}))
-		p := lyrics.NewMusixmatch(srv.URL, "SECRETKEY", store)
+		p := lyrics.NewMusixmatch(srv.URL, "SECRETKEY")
 		lyrics.FastForTest(p)
 		return p
 	}
@@ -52,18 +52,17 @@ var _ = Describe("Musixmatch provider", func() {
 	})
 
 	It("asks for credentials and makes no request without an API key", func() {
-		p := lyrics.NewMusixmatch("http://127.0.0.1:1", "", false)
+		p := lyrics.NewMusixmatch("http://127.0.0.1:1", "")
 		Expect(p.Info().Status).To(Equal(lyrics.StatusNeedsCredentials))
 		_, err := p.Search(context.Background(), rec)
 		Expect(err).To(MatchError(lyrics.ErrProviderDisabled))
 	})
 
 	It("is honest that it is unverified, claims no word timing, and stores only when allowed", func() {
-		info := lyrics.NewMusixmatch("", "key", false).Info()
+		info := lyrics.NewMusixmatch("", "key").Info()
 		Expect(info.Verified).To(BeFalse())
 		Expect(info.Storable).To(BeFalse())
 		Expect(info.WordSync).To(BeFalse())
-		Expect(lyrics.NewMusixmatch("", "key", true).Info().Storable).To(BeTrue())
 	})
 
 	It("scores the match on the metadata Musixmatch returns", func() {
@@ -96,7 +95,6 @@ var _ = Describe("Musixmatch provider", func() {
 		Expect(err).ToNot(HaveOccurred())
 		Expect(got).To(HaveLen(1))
 		Expect(got[0].Quality).To(Equal(lyrics.QualityKaraoke))
-		Expect(got[0].Storable).To(BeTrue())
 		Expect(got[0].Match.Verified()).To(BeTrue())
 		line := got[0].Lyrics[0].Line[0]
 		Expect(line.Cue).To(HaveLen(3), "the lone space is not a cue of its own")
@@ -120,7 +118,6 @@ var _ = Describe("Musixmatch provider", func() {
 		Expect(err).ToNot(HaveOccurred())
 		Expect(got).To(HaveLen(1))
 		Expect(got[0].Quality).To(Equal(lyrics.QualitySynced))
-		Expect(got[0].Storable).To(BeFalse(), "storage is opt-in")
 
 		p2 := serve(false, func(method string, w http.ResponseWriter) {
 			switch method {
@@ -207,7 +204,7 @@ var _ = Describe("Musixmatch provider", func() {
 	})
 
 	It("never exposes the key through its info", func() {
-		raw, _ := json.Marshal(lyrics.NewMusixmatch("", "SECRETKEY", false).Info())
+		raw, _ := json.Marshal(lyrics.NewMusixmatch("", "SECRETKEY").Info())
 		Expect(string(raw)).ToNot(ContainSubstring("SECRETKEY"))
 	})
 })

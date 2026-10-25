@@ -36,13 +36,21 @@ type Settings struct {
 	// Providers lists provider IDs, in order, that are searched. A provider not
 	// listed is off.
 	Providers []string `json:"providers"`
-	// Store lists providers whose lyrics the administrator allows to be saved
-	// next to the audio, even though the provider itself grants no such
-	// permission (the unofficial ones). Off for every provider by default.
-	Store []string `json:"store"`
+	// Store is a retired setting. It used to let an administrator allow saving a
+	// provider's lyrics without any right to do so. It no longer has any effect:
+	// what may be kept is decided by the storage rights (rights.go). The value is
+	// kept as it was so the interface can tell the administrator, and is cleared
+	// only when they say so.
+	Store []string `json:"store,omitempty"`
+	// Ack lists notices the administrator has dismissed ("recommended").
+	Ack []string `json:"ack,omitempty"`
 	// MinConfidence is the lowest recording match accepted automatically.
 	MinConfidence float64 `json:"minConfidence"`
 }
+
+// AckRecommended is the notice about settings that differ from the recommended
+// ones.
+const AckRecommended = "recommended"
 
 // DefaultSettings returns the recommended defaults.
 func DefaultSettings() Settings {
@@ -79,6 +87,13 @@ func (s Settings) Sanitize(known []string) Settings {
 		}
 	}
 	s.Store = store
+	var ack []string
+	for _, id := range s.Ack {
+		if id == AckRecommended && !slices.Contains(ack, id) {
+			ack = append(ack, id)
+		}
+	}
+	s.Ack = ack
 	return s
 }
 
@@ -87,6 +102,9 @@ type SongState struct {
 	Locked    bool  `json:"locked,omitempty"`
 	OffsetMs  int64 `json:"offsetMs,omitempty"`
 	CheckedAt int64 `json:"checkedAt,omitempty"`
+	// Shown is true when a better result was found that may only be shown, so a
+	// restart (which empties what is shown) does not hide it behind the last check.
+	Shown bool `json:"shown,omitempty"`
 }
 
 func (s SongState) zero() bool { return s == SongState{} }

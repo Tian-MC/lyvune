@@ -45,7 +45,7 @@ func EngineOf(l Lyrics) Engine {
 var (
 	ErrLocked          = errors.New("these lyrics are locked")
 	ErrConfirmRequired = errors.New("replacing the current lyrics needs confirmation")
-	ErrNotStorable     = errors.New("saving is off for this provider: an administrator can allow it in Settings, under Lyrics")
+	ErrNotStorable     = errors.New("these lyrics may neither be kept nor shown by this server: they can only be previewed")
 	ErrNoCandidate     = errors.New("no such lyrics candidate, search again")
 	ErrEmptyLyrics     = errors.New("the lyrics are empty")
 	ErrNothingToDelete = errors.New("there are no downloaded lyrics to delete")
@@ -65,11 +65,21 @@ type ProviderStatus struct {
 	// KaraokeVerified is true once a verified match with real word timing has
 	// come back since the server started.
 	KaraokeVerified bool `json:"karaokeVerified"`
-	// StoreOptIn is true when saving this provider's lyrics needs the
-	// administrator's permission (Settings.Store); StoreAllowed says it was given.
-	// Storable (embedded) is the effective answer.
-	StoreOptIn       bool       `json:"storeOptIn"`
-	StoreAllowed     bool       `json:"storeAllowed"`
+	// Display is how results may be shown when they may not be kept: DisplaySession
+	// (while playing, from memory, never written to disk) or DisplayPreview (in
+	// the lyrics manager only).
+	Display string `json:"display"`
+	// StoreEligible is true when this provider's lyrics may be kept permanently.
+	// StoreVerified is true only when that rests on a document named in a storage
+	// authorization; StoreBasis and StoreReference say what it rests on. Storable
+	// (embedded) repeats StoreEligible for the clients that read it.
+	StoreEligible  bool   `json:"storeEligible"`
+	StoreVerified  bool   `json:"storeVerified"`
+	StoreBasis     string `json:"storeBasis,omitempty"`
+	StoreReference string `json:"storeReference,omitempty"`
+	// Offline says whether results stay available without the network: only
+	// once saved, so only for a provider whose lyrics may be kept.
+	Offline          string     `json:"offline"`
 	LastSuccess      *time.Time `json:"lastSuccess,omitempty"`
 	LastFailure      *time.Time `json:"lastFailure,omitempty"`
 	LastError        string     `json:"lastError,omitempty"`
@@ -94,6 +104,14 @@ type SourceInfo struct {
 	Attribution string     `json:"attribution,omitempty"`
 }
 
+// IgnoredSource is a sidecar that is not used, and why.
+type IgnoredSource struct {
+	File     string `json:"file"`
+	Provider string `json:"provider,omitempty"`
+	// Reason is "credits-only".
+	Reason string `json:"reason"`
+}
+
 // SongStatus is everything the lyrics manager shows for a track.
 type SongStatus struct {
 	// Current is what is shown during playback; nil when there are no lyrics.
@@ -108,6 +126,10 @@ type SongStatus struct {
 	// Writable is false when lyrics cannot be saved for this track (a remote
 	// library, or no readable library folder).
 	Writable bool `json:"writable"`
+	// Ignored lists files next to the audio that Navidrome wrote itself and no
+	// longer uses (a saved result that only held credits), so the administrator
+	// can remove them. Nothing is removed without that decision.
+	Ignored []IgnoredSource `json:"ignored"`
 	// WriteError explains why Writable is false.
 	WriteError string `json:"writeError,omitempty"`
 	// MissingRecently is true when providers recently found nothing.
@@ -177,6 +199,9 @@ type ApplyResult struct {
 	// Undo is the history version that restores the previous state.
 	Undo   string      `json:"undo,omitempty"`
 	Status *SongStatus `json:"status,omitempty"`
+	// NotSaved is true when the lyrics are shown but were not written anywhere:
+	// they are held in memory and are not available offline.
+	NotSaved bool `json:"notSaved,omitempty"`
 }
 
 // ResolveOptions tunes Resolve.
@@ -189,14 +214,21 @@ type ResolveOptions struct {
 	// ReplaceManual lets this run supersede sidecar or embedded lyrics. It is
 	// only honoured for an explicit bulk operation the user confirmed.
 	ReplaceManual bool
+	// NoDisplay keeps results that may not be saved from being shown from
+	// memory. A bulk job sets it: filling memory with lyrics nobody asked to
+	// see is not what it is for.
+	NoDisplay bool
 }
 
 // Resolve results.
 const (
-	ResolveHave        = "have-lyrics"
-	ResolveFound       = "found"
-	ResolveUpgraded    = "upgraded"
-	ResolveNotFound    = "not-found"
+	ResolveHave     = "have-lyrics"
+	ResolveFound    = "found"
+	ResolveUpgraded = "upgraded"
+	ResolveNotFound = "not-found"
+	// ResolveNotSaved means a good result was found but may not be kept, and it
+	// was not shown either (a bulk job).
+	ResolveNotSaved    = "not-saved"
 	ResolveKept        = "kept"
 	ResolveLocked      = "locked"
 	ResolveDisabled    = "disabled"
@@ -211,6 +243,9 @@ type ResolveResult struct {
 	Message string      `json:"message,omitempty"`
 	// RetryAfter is set (in seconds) when a provider asked us to slow down.
 	RetryAfter int `json:"retryAfter,omitempty"`
+	// Persisted is true when something was saved next to the audio. A result
+	// that was only shown has Applied set and Persisted false.
+	Persisted bool `json:"persisted"`
 }
 
 // Bulk actions.
@@ -235,15 +270,17 @@ type BulkRequest struct {
 
 // BulkStatus is the progress of a bulk job.
 type BulkStatus struct {
-	ID       string    `json:"id"`
-	Action   string    `json:"action"`
-	State    string    `json:"state"` // running, done, cancelled
-	Total    int       `json:"total"`
-	Done     int       `json:"done"`
-	Found    int       `json:"found"`
-	Upgraded int       `json:"upgraded"`
-	Kept     int       `json:"kept"`
-	Missing  int       `json:"missing"`
+	ID       string `json:"id"`
+	Action   string `json:"action"`
+	State    string `json:"state"` // running, done, cancelled
+	Total    int    `json:"total"`
+	Done     int    `json:"done"`
+	Found    int    `json:"found"`
+	Upgraded int    `json:"upgraded"`
+	Kept     int    `json:"kept"`
+	Missing  int    `json:"missing"`
+	// Unsaved counts tracks where a good result was found that may not be kept.
+	Unsaved  int       `json:"unsaved"`
 	Failed   int       `json:"failed"`
 	Started  time.Time `json:"started"`
 	Finished time.Time `json:"finished,omitempty"`

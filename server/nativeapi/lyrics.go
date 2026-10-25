@@ -99,7 +99,7 @@ func failLyrics(w http.ResponseWriter, r *http.Request, err error) {
 	case errors.Is(err, lyrics.ErrConfirmRequired):
 		lyricsError(w, http.StatusConflict, "confirm-required", "This replaces lyrics that were supplied or chosen on purpose. Confirm to continue.")
 	case errors.Is(err, lyrics.ErrNotStorable):
-		lyricsError(w, http.StatusUnprocessableEntity, "not-storable", "Saving is off for this provider. An administrator can allow it in Settings, under Lyrics.")
+		lyricsError(w, http.StatusUnprocessableEntity, "not-storable", "These lyrics may neither be kept nor shown by this server. They can only be previewed.")
 	case errors.Is(err, lyrics.ErrNoCandidate):
 		lyricsError(w, http.StatusNotFound, "no-candidate", "That result is no longer available. Search again.")
 	case errors.Is(err, lyrics.ErrEmptyLyrics), errors.Is(err, lyrics.ErrInvalidEnvelope):
@@ -177,14 +177,16 @@ func (api *Router) resolveLyrics(w http.ResponseWriter, r *http.Request, mf *mod
 // lyrics are shown for preview only: applying one refers to it by ID, so the
 // client can never supply lyrics of its own through a "candidate".
 type candidateDTO struct {
-	ID           string        `json:"id"`
-	Provider     string        `json:"provider"`
-	Source       string        `json:"source"`
-	Quality      string        `json:"quality"`
-	Verified     bool          `json:"verified"`
-	Match        lyrics.Match  `json:"match"`
-	Meta         lyrics.Meta   `json:"meta"`
-	Storable     bool          `json:"storable"`
+	ID       string       `json:"id"`
+	Provider string       `json:"provider"`
+	Source   string       `json:"source"`
+	Quality  string       `json:"quality"`
+	Verified bool         `json:"verified"`
+	Match    lyrics.Match `json:"match"`
+	Meta     lyrics.Meta  `json:"meta"`
+	Storable bool         `json:"storable"`
+	// DisplayOnly means the lyrics may be shown while playing, from memory, but not kept
+	DisplayOnly  bool          `json:"displayOnly"`
 	Attribution  string        `json:"attribution,omitempty"`
 	Lines        int           `json:"lines"`
 	WordTiming   bool          `json:"wordTiming"`
@@ -202,7 +204,7 @@ type previewLine struct {
 func toCandidateDTO(c lyrics.Candidate) candidateDTO {
 	dto := candidateDTO{
 		ID: c.ID, Provider: c.Provider, Source: c.Source.String(), Quality: c.Quality.String(),
-		Verified: c.Match.Verified(), Match: c.Match, Meta: c.Meta, Storable: c.Storable,
+		Verified: c.Match.Verified(), Match: c.Match, Meta: c.Meta, Storable: c.Storable, DisplayOnly: c.DisplayOnly,
 		Attribution: c.Attribution, Preview: []previewLine{},
 	}
 	for _, l := range c.Lyrics {

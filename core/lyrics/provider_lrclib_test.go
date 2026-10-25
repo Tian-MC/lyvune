@@ -106,7 +106,7 @@ var _ = Describe("LRCLIB provider", func() {
 		Expect(info.Status).To(Equal(lyrics.StatusReady))
 		Expect(info.Verified).To(BeTrue())
 		Expect(info.WordSync).To(BeTrue())
-		Expect(info.Storable).To(BeTrue())
+		Expect(info.Storable).To(BeFalse(), "what may be kept is decided centrally, from the storage rights, not by the adapter")
 	})
 
 	It("identifies itself with a descriptive User-Agent", func() {
@@ -231,7 +231,7 @@ var _ = Describe("LRCLIB provider", func() {
 			Expect(got[0].Match.Verified()).To(BeTrue())
 			Expect(got[1].Match.Verified()).To(BeFalse(), "the live version is not trusted")
 			Expect(got[2].Match.Verified()).To(BeFalse(), "another artist is not trusted")
-			Expect(got[0].Storable).To(BeTrue())
+			Expect(got[0].Storable).To(BeFalse(), "the engine sets it from the storage rights")
 			Expect(got[0].Source).To(Equal(lyrics.SourceRemote))
 		})
 	})

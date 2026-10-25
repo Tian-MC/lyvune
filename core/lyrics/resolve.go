@@ -91,6 +91,13 @@ func readEnvelope(ctx context.Context, mf *model.MediaFile) (*Envelope, string) 
 	return nil, ""
 }
 
+// Where a result shown from memory came from: found by the automatic retrieval,
+// or chosen by the administrator.
+const (
+	originAuto   = "auto"
+	originChosen = "chosen"
+)
+
 // junkManaged reports a sidecar Navidrome wrote itself that holds no lyrics, only
 // credits. An earlier version saved such an answer (a single "作曲 : name" line)
 // for songs a service had no lyrics for. It is treated as absent, so it is not
@@ -201,18 +208,60 @@ func (l *lyricsService) resolveCurrent(ctx context.Context, mediaFiles []*model.
 		return current{list: withOffset(list, st.OffsetMs), info: info, mf: mf, env: env, state: st}, nil
 	}
 
+	// Lyrics the administrator chose to show, though they may not be kept, outrank
+	// everything for as long as they are held in memory
+	var shown *displayEntry
+	var shownFile *model.MediaFile
+	for _, mf := range mediaFiles {
+		if mf == nil {
+			continue
+		}
+		if e := l.display.get(mf.ID, l.now()); e != nil {
+			shown, shownFile = e, mf
+			break
+		}
+	}
+	showing := func() (current, error) {
+		st := l.effective(ctx, shownFile, nil)
+		info := sourceInfoOf("display", SourceRemote, shown.list)
+		info.Provider, info.Match, info.Attribution = shown.provider, shown.match, shown.attribution
+		at := shown.at
+		info.RetrievedAt, info.Origin = &at, originAuto
+		if shown.chosen {
+			info.Origin = originChosen
+		}
+		return current{list: withOffset(shown.list, st.OffsetMs), info: info, mf: shownFile, state: st}, nil
+	}
+	if shown != nil && shown.chosen {
+		return showing()
+	}
+
 	if user != nil {
 		return finish(user.env.Lyrics, envelopeInfo(user.env, user.name), user.mf, user.env)
 	}
 
+	base := current{}
 	hit, haveLocal := l.resolveLegacy(ctx, mediaFiles)
-	if managed != nil && (!haveLocal || (!l.settings(ctx).PreferLocal && QualityOf(managed.env.Lyrics) > QualityOf(hit.list))) {
-		return finish(managed.env.Lyrics, envelopeInfo(managed.env, managed.name), managed.mf, managed.env)
+	preferLocal := l.settings(ctx).PreferLocal
+	switch {
+	case managed != nil && (!haveLocal || (!preferLocal && QualityOf(managed.env.Lyrics) > QualityOf(hit.list))):
+		base, _ = finish(managed.env.Lyrics, envelopeInfo(managed.env, managed.name), managed.mf, managed.env)
+	case haveLocal:
+		base, _ = finish(hit.list, legacyInfo(hit), hit.mf, nil)
 	}
-	if haveLocal {
-		return finish(hit.list, legacyInfo(hit), hit.mf, nil)
+	// A result found automatically that may only be shown fills a gap, and beats
+	// what was saved only when it is better; local files keep priority
+	if shown != nil {
+		switch {
+		case base.list == nil:
+			return showing()
+		case base.info.Source == SourceManaged.String() && shown.quality > ParseQuality(base.info.Quality):
+			return showing()
+		case !preferLocal && base.info.Source != SourceManaged.String() && shown.quality > ParseQuality(base.info.Quality):
+			return showing()
+		}
 	}
-	return current{}, nil
+	return base, nil
 }
 
 // localCandidates lists every local lyrics source of a track: the Navidrome

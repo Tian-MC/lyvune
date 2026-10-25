@@ -37,18 +37,15 @@ const (
 type netease struct {
 	baseURL string
 	http    *httpProvider
-	store   bool
 }
 
-// NewNetEase returns the NetEase Cloud Music provider. store allows its lyrics
-// to be saved next to the audio; baseURL may be empty for the public service.
-func NewNetEase(baseURL string, store bool) OnlineProvider {
+// NewNetEase returns the NetEase Cloud Music provider. baseURL may be empty for the public service.
+func NewNetEase(baseURL string) OnlineProvider {
 	if baseURL == "" {
 		baseURL = "https://music.163.com"
 	}
 	return &netease{
 		baseURL: strings.TrimRight(baseURL, "/"),
-		store:   store,
 		http: newHTTPProvider(neteaseID, 400*time.Millisecond, map[string]string{
 			"Referer":         "https://music.163.com/",
 			"Accept-Language": "en,zh;q=0.8,ja;q=0.6",
@@ -60,13 +57,10 @@ func (n *netease) Info() ProviderInfo {
 	note := "Unofficial: NetEase has no public lyrics API, so this uses its open web endpoints without any account. " +
 		"Lines are time-synced, and word timing (YRC) comes with some songs. " +
 		"Translations and romanization are included when NetEase has them."
-	if !n.store {
-		note += " Lyrics can be previewed but are not saved unless Lyrics.NetEase.Store is turned on."
-	}
 	return ProviderInfo{
 		ID: neteaseID, Name: "NetEase Cloud Music", Status: StatusReady, Verified: true,
 		Plain: true, Synced: true, WordSync: true, Translation: true, Romanization: true,
-		Storable: n.store, Implemented: true, Configured: true, Auth: AuthNone,
+		Implemented: true, Configured: true, Auth: AuthNone,
 		Formats: []string{"yrc", "lrc", "translation", "romanization"}, Attribution: "Lyrics from NetEase Cloud Music", Note: note,
 	}
 }
@@ -173,7 +167,7 @@ func (n *netease) candidate(ctx context.Context, s neteaseSong, meta Meta, match
 	}
 	c := &Candidate{
 		ID: neteaseID + ":" + strconv.FormatInt(s.ID, 10), Provider: neteaseID, Source: SourceRemote,
-		Meta: meta, Match: match, Storable: n.store, Attribution: "Lyrics from NetEase Cloud Music",
+		Meta: meta, Match: match, Attribution: "Lyrics from NetEase Cloud Music",
 	}
 	if res.PureMusic {
 		c.Meta.Instrumental = true

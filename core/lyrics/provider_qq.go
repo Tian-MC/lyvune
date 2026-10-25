@@ -47,12 +47,11 @@ type qq struct {
 	blKey     string
 	direct    *httpProvider
 	bl        *httpProvider
-	store     bool
 }
 
 // NewQQ returns the QQ Music provider. Empty URLs select the public services.
-// betterLyricsKey is optional. store allows saving its lyrics.
-func NewQQ(directURL, betterLyricsURL, betterLyricsKey string, store bool) OnlineProvider {
+// betterLyricsKey is optional.
+func NewQQ(directURL, betterLyricsURL, betterLyricsKey string) OnlineProvider {
 	if directURL == "" {
 		directURL = "https://c.y.qq.com"
 	}
@@ -61,7 +60,7 @@ func NewQQ(directURL, betterLyricsURL, betterLyricsKey string, store bool) Onlin
 	}
 	q := &qq{
 		directURL: strings.TrimRight(directURL, "/"), blURL: strings.TrimRight(betterLyricsURL, "/"),
-		blKey: strings.TrimSpace(betterLyricsKey), store: store,
+		blKey:  strings.TrimSpace(betterLyricsKey),
 		direct: newHTTPProvider(qqID, 400*time.Millisecond, map[string]string{"Referer": "https://y.qq.com/"}),
 	}
 	hdr := map[string]string{}
@@ -80,13 +79,10 @@ func (q *qq) Info() ProviderInfo {
 		note = "QQ Music's open web endpoints give time-synced lines and translations without any account. " +
 			"Word timing (QRC) comes from Better Lyrics, with your key, so uncached songs are fetched too; both routes are unofficial."
 	}
-	if !q.store {
-		note += " Lyrics can be previewed but are not saved unless Lyrics.QQ.Store is turned on."
-	}
 	return ProviderInfo{
 		ID: qqID, Name: "QQ Music", Status: StatusReady, Verified: true,
 		Plain: true, Synced: true, WordSync: true, Translation: true,
-		Storable: q.store, Implemented: true, Configured: true, Auth: AuthOptionalKey,
+		Implemented: true, Configured: true, Auth: AuthOptionalKey,
 		Formats:     []string{"qrc", "lrc", "translation"},
 		Attribution: "Lyrics from QQ Music",
 		Note:        note,
@@ -251,7 +247,7 @@ func (q *qq) directCandidate(ctx context.Context, rec Recording, s qqSong) (*Can
 	}
 	c := &Candidate{
 		ID: qqID + ":" + s.Mid, Provider: qqID, Source: SourceRemote, Meta: meta, Match: match,
-		Storable: q.store, Attribution: "Lyrics from QQ Music",
+		Attribution: "Lyrics from QQ Music",
 	}
 	if strings.Contains(lyr.Lyric, "纯音乐") && strings.Count(lyr.Lyric, "\n") < 3 {
 		c.Meta.Instrumental = true
@@ -332,7 +328,7 @@ func (q *qq) searchQRC(ctx context.Context, rec Recording, title, artist string)
 	}
 	c := &Candidate{
 		ID: qqID + ":cache:" + tags.Title, Provider: qqID, Source: SourceRemote, Lyrics: list,
-		Quality: QualityOf(list), Meta: meta, Match: match, Storable: q.store, Attribution: "Lyrics from QQ Music (via Better Lyrics)",
+		Quality: QualityOf(list), Meta: meta, Match: match, Attribution: "Lyrics from QQ Music (via Better Lyrics)",
 	}
 	if c.Quality == QualityNone {
 		return nil, nil

@@ -49,7 +49,7 @@ var _ = Describe("NetEase provider", func() {
 				w.WriteHeader(404)
 			}
 		}))
-		p := lyrics.NewNetEase(srv.URL, store)
+		p := lyrics.NewNetEase(srv.URL)
 		lyrics.FastForTest(p)
 		return p
 	}
@@ -57,12 +57,11 @@ var _ = Describe("NetEase provider", func() {
 	const yrc = "[1000,2000](1000,500,0)こ(1500,300,0)ん(1800,900,0)にちは\n[3000,1000](3000,200,0)さよ(3200,800,0)うなら"
 
 	It("is unofficial, advertises what it really returns, and stores only when allowed", func() {
-		info := lyrics.NewNetEase("", false).Info()
+		info := lyrics.NewNetEase("").Info()
 		Expect(info.Status).To(Equal(lyrics.StatusReady))
 		Expect(info.Translation && info.Romanization && info.Synced).To(BeTrue())
 		Expect(info.Storable).To(BeFalse())
 		Expect(info.Note).To(ContainSubstring("Unofficial"))
-		Expect(lyrics.NewNetEase("", true).Info().Storable).To(BeTrue())
 	})
 
 	It("reads word timing from yrc and keeps the translation and romanization as separate tracks", func() {
@@ -76,7 +75,6 @@ var _ = Describe("NetEase provider", func() {
 		Expect(got).To(HaveLen(1))
 		c := got[0]
 		Expect(c.Quality).To(Equal(lyrics.QualityKaraoke))
-		Expect(c.Storable).To(BeTrue())
 		Expect(c.Match.Verified()).To(BeTrue())
 		Expect(c.Lyrics).To(HaveLen(3))
 		Expect([]string{c.Lyrics[0].Kind, c.Lyrics[1].Kind, c.Lyrics[2].Kind}).To(Equal(
@@ -92,7 +90,6 @@ var _ = Describe("NetEase provider", func() {
 		Expect(err).ToNot(HaveOccurred())
 		Expect(got).To(HaveLen(1))
 		Expect(got[0].Quality).To(Equal(lyrics.QualitySynced))
-		Expect(got[0].Storable).To(BeFalse())
 	})
 
 	It("never verifies other recordings: covers, live versions and wrong lengths", func() {
@@ -161,7 +158,7 @@ var _ = Describe("NetEase provider", func() {
 			{func(w http.ResponseWriter, r *http.Request) { w.Header().Set("Retry-After", "30"); w.WriteHeader(429) }, "ratelimit"},
 		} {
 			s := httptest.NewServer(tc.h)
-			p := lyrics.NewNetEase(s.URL, true)
+			p := lyrics.NewNetEase(s.URL)
 			lyrics.FastForTest(p)
 			_, err := p.Search(context.Background(), rec)
 			s.Close()
@@ -178,7 +175,7 @@ var _ = Describe("NetEase provider", func() {
 	It("stops when the request is cancelled", func() {
 		s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { <-r.Context().Done() }))
 		defer s.Close()
-		p := lyrics.NewNetEase(s.URL, true)
+		p := lyrics.NewNetEase(s.URL)
 		ctx, cancel := context.WithCancel(context.Background())
 		cancel()
 		_, err := p.Search(ctx, rec)
@@ -230,7 +227,7 @@ var _ = Describe("KuGou provider", func() {
 				}
 			}
 		}))
-		p := lyrics.NewKuGou(srv.URL, srv.URL, store)
+		p := lyrics.NewKuGou(srv.URL, srv.URL)
 		lyrics.FastForTest(p)
 		return p
 	}
@@ -249,7 +246,7 @@ var _ = Describe("KuGou provider", func() {
 	}
 
 	It("is unofficial, advertises word timing, translation and romanization", func() {
-		info := lyrics.NewKuGou("", "", false).Info()
+		info := lyrics.NewKuGou("", "").Info()
 		Expect(info.WordSync && info.Translation && info.Romanization).To(BeTrue())
 		Expect(info.Storable).To(BeFalse())
 		Expect(info.Note).To(ContainSubstring("Unofficial"))
@@ -262,7 +259,6 @@ var _ = Describe("KuGou provider", func() {
 		Expect(got).To(HaveLen(1))
 		c := got[0]
 		Expect(c.Quality).To(Equal(lyrics.QualityKaraoke))
-		Expect(c.Storable).To(BeTrue())
 		Expect(c.Match.Verified()).To(BeTrue())
 		Expect(c.Lyrics).To(HaveLen(3))
 		Expect(c.Lyrics[0].Line[0].Cue).To(HaveLen(4))
@@ -333,13 +329,13 @@ var _ = Describe("KuGou provider", func() {
 	It("reports a rate limit and a blocked service without affecting other providers", func() {
 		s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.Header().Set("Retry-After", "5"); w.WriteHeader(429) }))
 		defer s.Close()
-		p := lyrics.NewKuGou(s.URL, s.URL, true)
+		p := lyrics.NewKuGou(s.URL, s.URL)
 		lyrics.FastForTest(p)
 		_, err := p.Search(context.Background(), rec)
 		var rl *lyrics.RateLimitedError
 		Expect(err).To(BeAssignableToTypeOf(rl))
 
-		down := lyrics.NewKuGou("http://127.0.0.1:1", "http://127.0.0.1:1", true)
+		down := lyrics.NewKuGou("http://127.0.0.1:1", "http://127.0.0.1:1")
 		lyrics.FastForTest(down)
 		_, err = down.Search(context.Background(), rec)
 		Expect(err).To(MatchError(lyrics.ErrProviderUnavailable))

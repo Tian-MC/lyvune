@@ -62,27 +62,6 @@ var _ = Describe("Saving lyrics: defaults and local files", func() {
 			Expect(s.Providers).To(Equal([]string{"lrclib"}), "only the provider with its own permission is on")
 		})
 
-		It("with the shipped configuration, only LRCLIB may save", func() {
-			conf.Server.Lyrics.Musixmatch.ApiKey = "a-key"
-			svc := lyrics.NewService(lyrics.Options{
-				DataStore: &tests.MockDataStore{MockedProperty: &safeProps{}},
-				Store:     lyrics.NewStore(GinkgoT().TempDir(), 10),
-			})
-			got := map[string]lyrics.ProviderStatus{}
-			for _, p := range lyrics.EngineOf(svc).Providers(ctx) {
-				got[p.ID] = p
-			}
-			Expect(got["lrclib"].Storable).To(BeTrue())
-			for _, id := range []string{"kugou", "netease", "qq", "musixmatch"} {
-				Expect(got[id].Storable).To(BeFalse(), id+" must not save by default")
-				Expect(got[id].StoreAllowed).To(BeFalse(), id)
-				Expect(got[id].StoreOptIn).To(BeTrue(), id+" is an opt-in, never an implicit permission")
-				Expect(got[id].Enabled).To(BeFalse(), id+" is not even searched by default")
-			}
-			Expect(got["apple"].Storable).To(BeFalse())
-			Expect(got["apple"].StoreOptIn).To(BeFalse(), "an unusable provider offers no opt-in")
-		})
-
 		It("never saves a verified karaoke result by itself when the provider may not be saved", func() {
 			c := remote("fake", "1", karaokeOf("fetched"), 0.99)
 			c.Storable = false
@@ -92,23 +71,11 @@ var _ = Describe("Saving lyrics: defaults and local files", func() {
 			Expect(err).ToNot(HaveOccurred())
 			res, err := engine.Resolve(ctx, mf, lyrics.ResolveOptions{})
 			Expect(err).ToNot(HaveOccurred())
-			Expect(res.Result).To(Equal(lyrics.ResolveNotFound))
+			Expect(res.Result).To(Equal(lyrics.ResolveNotSaved))
 			Expect(sidecar()).ToNot(BeAnExistingFile())
 			Expect(fake.calls.Load()).To(BeNumerically(">=", 1), "the provider was asked, nothing was kept")
 		})
 
-		It("saves it once the administrator has allowed that provider, and not for others", func() {
-			c := remote("fake", "1", karaokeOf("fetched"), 0.99)
-			c.Storable = false
-			fake.set(c)
-			fake.info.Storable = false
-			_, err := engine.SaveSettings(ctx, lyrics.Settings{Providers: []string{"fake"}, Store: []string{"fake"}, MinConfidence: 0.85, AutoRetrieve: true})
-			Expect(err).ToNot(HaveOccurred())
-			res, err := engine.Resolve(ctx, mf, lyrics.ResolveOptions{})
-			Expect(err).ToNot(HaveOccurred())
-			Expect(res.Result).To(Equal(lyrics.ResolveFound))
-			Expect(sidecar()).To(BeAnExistingFile())
-		})
 	})
 
 	Describe("a credits-only sidecar saved by an earlier version", func() {

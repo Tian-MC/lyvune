@@ -40,7 +40,6 @@ type kugou struct {
 	searchURL string
 	lyricsURL string
 	http      *httpProvider
-	store     bool
 	// emptyRetry is the pause before asking again after an empty song search.
 	// KuGou answers "0 results" without any error when requests come close
 	// together, so an empty list is asked once more before it is believed.
@@ -48,7 +47,7 @@ type kugou struct {
 }
 
 // NewKuGou returns the KuGou provider. Empty URLs select the public services.
-func NewKuGou(searchURL, lyricsURL string, store bool) OnlineProvider {
+func NewKuGou(searchURL, lyricsURL string) OnlineProvider {
 	if searchURL == "" {
 		searchURL = "https://songsearch.kugou.com"
 	}
@@ -57,7 +56,6 @@ func NewKuGou(searchURL, lyricsURL string, store bool) OnlineProvider {
 	}
 	return &kugou{
 		searchURL: strings.TrimRight(searchURL, "/"), lyricsURL: strings.TrimRight(lyricsURL, "/"),
-		store:      store,
 		http:       newHTTPProvider(kugouID, time.Second, nil),
 		emptyRetry: 2 * time.Second,
 	}
@@ -66,13 +64,10 @@ func NewKuGou(searchURL, lyricsURL string, store bool) OnlineProvider {
 func (k *kugou) Info() ProviderInfo {
 	note := "Unofficial: KuGou has no public lyrics API, so this uses its open web endpoints without any account. " +
 		"Offers word-timed KRC lyrics when KuGou has them, plus translations and romanization."
-	if !k.store {
-		note += " Lyrics can be previewed but are not saved unless Lyrics.KuGou.Store is turned on."
-	}
 	return ProviderInfo{
 		ID: kugouID, Name: "KuGou Music", Status: StatusReady, Verified: true,
 		Plain: true, Synced: true, WordSync: true, Translation: true, Romanization: true,
-		Storable: k.store, Implemented: true, Configured: true, Auth: AuthNone,
+		Implemented: true, Configured: true, Auth: AuthNone,
 		Formats: []string{"krc", "lrc", "translation", "romanization"}, Attribution: "Lyrics from KuGou Music", Note: note,
 	}
 }
@@ -202,7 +197,7 @@ func (k *kugou) candidate(ctx context.Context, s kugouSong, meta Meta, match Mat
 
 	c := &Candidate{
 		ID: kugouID + ":" + s.Hash, Provider: kugouID, Source: SourceRemote, Meta: meta, Match: match,
-		Storable: k.store, Attribution: "Lyrics from KuGou Music",
+		Attribution: "Lyrics from KuGou Music",
 	}
 	var lastErr error
 	for _, e := range entries {

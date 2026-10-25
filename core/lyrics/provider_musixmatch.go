@@ -40,23 +40,20 @@ const musixmatchID = "musixmatch"
 type musixmatch struct {
 	baseURL string
 	apiKey  string
-	store   bool
 	client  *http.Client
 	pacer   *pacer
 	timeout time.Duration
 }
 
 // NewMusixmatch returns the Musixmatch provider. Without an API key it reports
-// that credentials are needed and makes no request. store allows its lyrics to
-// be saved, which only the user's own plan can authorize.
-func NewMusixmatch(baseURL, apiKey string, store bool) OnlineProvider {
+// that credentials are needed and makes no request.
+func NewMusixmatch(baseURL, apiKey string) OnlineProvider {
 	if baseURL == "" {
 		baseURL = "https://api.musixmatch.com/ws/1.1"
 	}
 	return &musixmatch{
 		baseURL: strings.TrimRight(baseURL, "/"),
 		apiKey:  strings.TrimSpace(apiKey),
-		store:   store,
 		client:  &http.Client{},
 		pacer:   newPacer(musixmatchID, time.Second),
 		timeout: 8 * time.Second,
@@ -67,12 +64,9 @@ func (m *musixmatch) Info() ProviderInfo {
 	note := "Official API with your own key. Not verified against the live service. " +
 		"Word timing (RichSync) is read when your plan returns it, but is not advertised until it has been seen working. " +
 		"Free keys return partial lyrics, which are discarded."
-	if !m.store {
-		note += " Lyrics can be previewed but are not saved unless Lyrics.Musixmatch.Store is turned on."
-	}
 	info := ProviderInfo{
 		ID: musixmatchID, Name: "Musixmatch", Status: StatusReady, Verified: false,
-		Plain: true, Synced: true, Storable: m.store, Note: note,
+		Plain: true, Synced: true, Note: note,
 		Implemented: true, Configured: m.apiKey != "", Auth: AuthAPIKey,
 		Formats: []string{"richsync", "lrc", "txt"},
 		Modes: []ProviderMode{
@@ -144,8 +138,7 @@ func (m *musixmatch) Search(ctx context.Context, rec Recording) ([]Candidate, er
 	}
 	c := Candidate{
 		ID: fmt.Sprintf("%s:%d", musixmatchID, t.TrackID), Provider: musixmatchID, Source: SourceRemote,
-		Meta:     Meta{Title: t.Name, Artist: t.Artist, Album: t.Album, DurationSec: t.Length, Instrumental: t.Instrumental == 1},
-		Storable: m.store,
+		Meta: Meta{Title: t.Name, Artist: t.Artist, Album: t.Album, DurationSec: t.Length, Instrumental: t.Instrumental == 1},
 	}
 	c.Match = ScoreMatch(rec, c.Meta)
 	if !c.Match.Listed() {

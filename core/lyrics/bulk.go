@@ -120,7 +120,7 @@ type bulkCtxKey struct{}
 func (l *lyricsService) runBulk(ctx context.Context, job *bulkJob, action string, files model.MediaFiles) {
 	defer job.cancel()
 	ctx = context.WithValue(ctx, bulkCtxKey{}, true)
-	opts := ResolveOptions{Explicit: true, Recheck: action != BulkMissing, ReplaceManual: action == BulkReplaceManual}
+	opts := ResolveOptions{Explicit: true, Recheck: action != BulkMissing, ReplaceManual: action == BulkReplaceManual, NoDisplay: true}
 
 	var (
 		stop    atomic.Bool
@@ -153,6 +153,8 @@ func (l *lyricsService) runBulk(ctx context.Context, job *bulkJob, action string
 				s.Upgraded++
 			case ResolveNotFound:
 				s.Missing++
+			case ResolveNotSaved:
+				s.Unsaved++
 			case ResolveUnavailable:
 				s.Failed++
 			default:

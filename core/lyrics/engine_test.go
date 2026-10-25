@@ -298,7 +298,8 @@ var _ = Describe("Lyrics engine", func() {
 			c := remote("fake", "1", syncedOf("temporary"), 0.99)
 			c.Storable = false
 			fake.set(c)
-			Expect(resolve(lyrics.ResolveOptions{}).Result).To(Equal(lyrics.ResolveNotFound))
+			// good, but neither kept nor shown: reported as found-but-not-saved, not as missing
+			Expect(resolve(lyrics.ResolveOptions{}).Result).To(Equal(lyrics.ResolveNotSaved))
 			Expect(envFile()).ToNot(BeAnExistingFile())
 		})
 

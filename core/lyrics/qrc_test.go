@@ -160,7 +160,7 @@ var _ = Describe("QQ Music provider", func() {
 				w.WriteHeader(404)
 			}
 		}))
-		p := lyrics.NewQQ(srv.URL, srv.URL, key, store)
+		p := lyrics.NewQQ(srv.URL, srv.URL, key)
 		lyrics.FastForTest(p)
 		return p
 	}
@@ -173,15 +173,14 @@ var _ = Describe("QQ Music provider", func() {
 	}
 
 	It("is keyless, unofficial, and advertises word timing only through the community cache", func() {
-		info := lyrics.NewQQ("", "", "", false).Info()
+		info := lyrics.NewQQ("", "", "").Info()
 		Expect(info.Auth).To(Equal(lyrics.AuthOptionalKey))
 		Expect(info.Storable).To(BeFalse())
 		Expect(info.Note).To(ContainSubstring("already cached"))
 		Expect(info.Modes).To(HaveLen(3))
 		Expect(info.Modes[0].Active && info.Modes[1].Active).To(BeTrue())
 		Expect(info.Modes[2].Active).To(BeFalse(), "the keyed mode is off without a key")
-		Expect(lyrics.NewQQ("", "", "k", true).Info().Modes[2].Active).To(BeTrue())
-		Expect(lyrics.NewQQ("", "", "k", true).Info().Storable).To(BeTrue())
+		Expect(lyrics.NewQQ("", "", "k").Info().Modes[2].Active).To(BeTrue())
 	})
 
 	It("reads line-timed lyrics and a translation from the open endpoints, sending a Referer and no key", func() {
@@ -286,7 +285,7 @@ var _ = Describe("QQ Music provider", func() {
 		_, err := serve(f, true, "MYKEY").Search(context_(), rec)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(f.sawKey).To(Equal("MYKEY"))
-		raw, _ := jsonMarshal(lyrics.NewQQ("", "", "MYKEY", false).Info())
+		raw, _ := jsonMarshal(lyrics.NewQQ("", "", "MYKEY").Info())
 		Expect(string(raw)).ToNot(ContainSubstring("MYKEY"))
 	})
 
@@ -297,7 +296,7 @@ var _ = Describe("QQ Music provider", func() {
 		Expect(err).ToNot(HaveOccurred())
 		Expect(got).To(HaveLen(1))
 
-		down := lyrics.NewQQ("http://127.0.0.1:1", "http://127.0.0.1:1", "", true)
+		down := lyrics.NewQQ("http://127.0.0.1:1", "http://127.0.0.1:1", "")
 		lyrics.FastForTest(down)
 		_, err = down.Search(context_(), rec)
 		Expect(err).To(MatchError(lyrics.ErrProviderUnavailable))
@@ -323,7 +322,7 @@ var _ = Describe("QQ Music provider", func() {
 	It("reports a rate limit from either route", func() {
 		s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.Header().Set("Retry-After", "5"); w.WriteHeader(429) }))
 		defer s.Close()
-		p := lyrics.NewQQ(s.URL, s.URL, "", true)
+		p := lyrics.NewQQ(s.URL, s.URL, "")
 		lyrics.FastForTest(p)
 		_, err := p.Search(context_(), rec)
 		var rl *lyrics.RateLimitedError

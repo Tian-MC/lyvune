@@ -31,7 +31,7 @@ func TestLiveProviders(t *testing.T) {
 		{"Metal", lyrics.Recording{Title: "Incultus", Artist: "Xanthochroid", Album: "Incultus", DurationSec: 0}},
 	}
 	log.SetLevel(log.LevelDebug)
-	provs := []lyrics.OnlineProvider{lyrics.NewNetEase("", true), lyrics.NewKuGou("", "", true), lyrics.NewQQ("", "", "", true)}
+	provs := []lyrics.OnlineProvider{lyrics.NewNetEase(""), lyrics.NewKuGou("", ""), lyrics.NewQQ("", "", "")}
 	out := os.Stdout
 	for _, p := range provs {
 		for _, r := range recs {

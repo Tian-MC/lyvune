@@ -62,7 +62,7 @@ func NewLRCLIB(baseURL string, enabled bool) OnlineProvider {
 func (l *lrclib) Info() ProviderInfo {
 	info := ProviderInfo{
 		ID: lrclibID, Name: "LRCLIB", Status: StatusReady, Verified: true,
-		Plain: true, Synced: true, WordSync: true, Storable: true,
+		Plain: true, Synced: true, WordSync: true,
 		Implemented: true, Configured: true, Auth: AuthNone, Formats: []string{"lyricsfile", "lrc", "txt"},
 		Attribution: "Lyrics from LRCLIB (lrclib.net)",
 		Note:        "Free community service. Word timing is offered only for tracks where hasWordSync is set.",
@@ -169,7 +169,6 @@ func lrclibCandidate(ctx context.Context, rec Recording, it lrclibItem) Candidat
 			Title: it.TrackName, Artist: it.ArtistName, Album: it.AlbumName,
 			DurationSec: it.Duration, Instrumental: it.Instrumental,
 		},
-		Storable:    true,
 		Attribution: "Lyrics from LRCLIB (lrclib.net)",
 	}
 	c.Match = ScoreMatch(rec, c.Meta)

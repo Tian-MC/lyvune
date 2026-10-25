@@ -118,45 +118,6 @@ var _ = Describe("Provider status", func() {
 		Expect(statusOf("beta").Availability).To(Equal(lyrics.AvailabilityNotUsable))
 	})
 
-	Describe("permission to save", func() {
-		search := func() []lyrics.Candidate {
-			res, err := engine.Search(context.Background(), &model.MediaFile{ID: "s", Title: "Song", Artist: "Band", Album: "Album", Duration: 200}, lyrics.SearchOptions{})
-			Expect(err).ToNot(HaveOccurred())
-			return res.Candidates
-		}
-		BeforeEach(func() {
-			a.info.Storable = false
-			c := remote("alpha", "1", karaokeOf("x"), 0.99)
-			c.Storable = false
-			a.set(c)
-		})
-
-		It("keeps an unofficial provider's lyrics unsaveable until the administrator allows it", func() {
-			st := statusOf("alpha")
-			Expect(st.StoreOptIn).To(BeTrue())
-			Expect(st.StoreAllowed || st.Storable).To(BeFalse())
-			Expect(search()[0].Storable).To(BeFalse())
-
-			_, err := engine.SaveSettings(context.Background(), lyrics.Settings{Providers: []string{"alpha"}, Store: []string{"alpha", "nope"}, MinConfidence: 0.85})
-			Expect(err).ToNot(HaveOccurred())
-			st = statusOf("alpha")
-			Expect(st.StoreAllowed && st.Storable).To(BeTrue())
-			Expect(engine.Settings(context.Background()).Store).To(Equal([]string{"alpha"}), "unknown providers are dropped")
-			Expect(search()[0].Storable).To(BeTrue())
-
-			// and it can be taken back
-			_, err = engine.SaveSettings(context.Background(), lyrics.Settings{Providers: []string{"alpha"}, MinConfidence: 0.85})
-			Expect(err).ToNot(HaveOccurred())
-			Expect(search()[0].Storable).To(BeFalse())
-		})
-
-		It("offers no opt-in for a provider that already may save, or one that cannot be used", func() {
-			Expect(statusOf("beta").StoreOptIn).To(BeFalse(), "beta may save by itself")
-			b.info.Storable, b.info.Implemented, b.info.Status = false, false, lyrics.StatusUnavailable
-			Expect(statusOf("beta").StoreOptIn).To(BeFalse(), "an unusable provider cannot be opted in")
-		})
-	})
-
 	It("does not offer, or count, a result that is only credits", func() {
 		credits := model.LyricList{{Kind: model.LyricKindMain, Line: []model.Line{{Value: "作曲 : Someone"}}}}
 		c := remote("alpha", "1", credits, 0.99)
