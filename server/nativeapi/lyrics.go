@@ -29,12 +29,16 @@ func (api *Router) addLyricsRoute(r chi.Router) {
 		return
 	}
 	r.Route("/lyrics", func(r chi.Router) {
-		r.Get("/settings", api.getLyricsSettings)
+		// Reading what a track has is open to every signed-in user.
 		r.Get("/song/{id}", api.withTrack(api.getLyricsStatus))
-		r.Post("/song/{id}/resolve", api.withTrack(api.resolveLyrics))
 
+		// Everything that can fetch lyrics from a provider, or change what is
+		// saved, is for administrators. Everyone else only reads what is there.
 		r.With(adminOnlyMiddleware).Group(func(r chi.Router) {
+			r.Get("/settings", api.getLyricsSettings)
+			r.Post("/song/{id}/resolve", api.withTrack(api.resolveLyrics))
 			r.Put("/settings", api.putLyricsSettings)
+			r.Post("/providers/check", api.checkLyricsProviders)
 			r.Post("/song/{id}/search", api.withTrack(api.searchLyrics))
 			r.Post("/song/{id}/apply", api.withTrack(api.applyLyrics))
 			r.Post("/song/{id}/import", api.withTrack(api.importLyrics))
@@ -95,7 +99,7 @@ func failLyrics(w http.ResponseWriter, r *http.Request, err error) {
 	case errors.Is(err, lyrics.ErrConfirmRequired):
 		lyricsError(w, http.StatusConflict, "confirm-required", "This replaces lyrics that were supplied or chosen on purpose. Confirm to continue.")
 	case errors.Is(err, lyrics.ErrNotStorable):
-		lyricsError(w, http.StatusUnprocessableEntity, "not-storable", "This provider does not allow its lyrics to be saved.")
+		lyricsError(w, http.StatusUnprocessableEntity, "not-storable", "Saving is off for this provider. An administrator can allow it in Settings, under Lyrics.")
 	case errors.Is(err, lyrics.ErrNoCandidate):
 		lyricsError(w, http.StatusNotFound, "no-candidate", "That result is no longer available. Search again.")
 	case errors.Is(err, lyrics.ErrEmptyLyrics), errors.Is(err, lyrics.ErrInvalidEnvelope):
@@ -127,6 +131,12 @@ func (api *Router) getLyricsSettings(w http.ResponseWriter, r *http.Request) {
 		"settings":  api.lyrics.Settings(ctx),
 		"providers": api.lyrics.Providers(ctx),
 	})
+}
+
+// checkLyricsProviders searches a well-known recording on every enabled
+// provider, so their status reflects what answers now.
+func (api *Router) checkLyricsProviders(w http.ResponseWriter, r *http.Request) {
+	lyricsJSON(w, http.StatusOK, map[string]any{"providers": api.lyrics.CheckProviders(r.Context())})
 }
 
 func (api *Router) putLyricsSettings(w http.ResponseWriter, r *http.Request) {

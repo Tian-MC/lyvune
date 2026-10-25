@@ -130,7 +130,7 @@ const Candidate = ({ c, busy, onUse }) => {
               className={clsx(styles.tag, styles.tagWarn)}
               title={t(
                 'ui.lyrics.manager.notStorableHint',
-                'This provider does not allow its lyrics to be saved.',
+                'Saving is off for this provider. An administrator can allow it in Settings, under Lyrics and Providers.',
               )}
             >
               {t('ui.lyrics.manager.notStorable', 'Cannot be saved')}
@@ -168,6 +168,13 @@ const Candidate = ({ c, busy, onUse }) => {
 /** The "Find lyrics" tab: search every provider and choose a version. */
 export const ManagerSearch = ({ search, busy, onSearch, onUse }) => {
   const t = useT()
+  const [only, setOnly] = useState('')
+  const providers = [...new Set(search.candidates.map((c) => c.provider))]
+  // A filter whose provider no longer has results (new search) is ignored
+  const active = providers.includes(only) ? only : ''
+  const shown = active
+    ? search.candidates.filter((c) => c.provider === active)
+    : search.candidates
   return (
     <div className={styles.panel}>
       <div className={styles.row}>
@@ -199,8 +206,32 @@ export const ManagerSearch = ({ search, busy, onSearch, onUse }) => {
           {t('ui.lyrics.manager.noResults', 'No matching lyrics were found.')}
         </p>
       )}
+      {providers.length > 1 && (
+        <div
+          className={styles.row}
+          role="group"
+          aria-label={t(
+            'ui.lyrics.manager.filterProvider',
+            'Show results from',
+          )}
+        >
+          {['', ...providers].map((id) => (
+            <Button
+              key={id || 'all'}
+              size="sm"
+              variant={active === id ? 'primary' : 'ghost'}
+              aria-pressed={active === id}
+              onClick={() => setOnly(id)}
+            >
+              {id
+                ? providerName(id)
+                : t('ui.lyrics.manager.allProviders', 'All')}
+            </Button>
+          ))}
+        </div>
+      )}
       <ul className={styles.candidates} aria-busy={search.loading}>
-        {search.candidates.map((c) => (
+        {shown.map((c) => (
           <Candidate key={c.id} c={c} busy={busy} onUse={onUse} />
         ))}
       </ul>

@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
 
 	"github.com/navidrome/navidrome/conf"
 	"github.com/navidrome/navidrome/conf/configtest"
@@ -32,12 +33,16 @@ type noopExtractor struct{}
 func (noopExtractor) Parse(...string) (map[string]metadata.Info, error) { return nil, nil }
 func (noopExtractor) Version() string                                   { return "noop" }
 
-type apiFakeProvider struct{ cands []lyrics.Candidate }
+type apiFakeProvider struct {
+	cands []lyrics.Candidate
+	calls atomic.Int32
+}
 
 func (f *apiFakeProvider) Info() lyrics.ProviderInfo {
 	return lyrics.ProviderInfo{ID: "fake", Name: "Fake", Status: lyrics.StatusReady, Storable: true}
 }
 func (f *apiFakeProvider) Search(context.Context, lyrics.Recording) ([]lyrics.Candidate, error) {
+	f.calls.Add(1)
 	return f.cands, nil
 }
 
@@ -130,8 +135,8 @@ var _ = Describe("Lyrics API", func() {
 	})
 
 	Describe("for a regular user", func() {
-		It("can read the settings and a track's lyrics state", func() {
-			Expect(do("GET", "/lyrics/settings", userTok, nil).Code).To(Equal(http.StatusOK))
+		It("can read a track's lyrics state, but not the provider settings", func() {
+			Expect(do("GET", "/lyrics/settings", userTok, nil).Code).To(Equal(http.StatusForbidden))
 			w := do("GET", "/lyrics/song/song-1", userTok, nil)
 			Expect(w.Code).To(Equal(http.StatusOK))
 			st := decode(w)
@@ -140,12 +145,12 @@ var _ = Describe("Lyrics API", func() {
 			Expect(st["local"]).To(BeEmpty())
 		})
 
-		It("can trigger automatic retrieval, which saves lyrics only when verified", func() {
+		It("cannot make the server fetch lyrics, so listening never downloads anything", func() {
 			fake.cands = []lyrics.Candidate{syncedCandidate("fake:1", "fetched", 0.97, true)}
 			w := do("POST", "/lyrics/song/song-1/resolve", userTok, nil)
-			Expect(w.Code).To(Equal(http.StatusOK))
-			Expect(decode(w)["result"]).To(Equal("found"))
-			Expect(filepath.Join(root, "Artist", "Album", "01.lyrics.json")).To(BeAnExistingFile())
+			Expect(w.Code).To(Equal(http.StatusForbidden))
+			Expect(fake.calls.Load()).To(BeZero(), "no provider was asked")
+			Expect(filepath.Join(root, "Artist", "Album", "01.lyrics.json")).ToNot(BeAnExistingFile())
 		})
 
 		DescribeTable("cannot change anything in the library",
@@ -154,6 +159,8 @@ var _ = Describe("Lyrics API", func() {
 				Expect(w.Code).To(Equal(http.StatusForbidden))
 			},
 			Entry("settings", "PUT", "/lyrics/settings", map[string]any{}),
+			Entry("provider check", "POST", "/lyrics/providers/check", map[string]any{}),
+			Entry("resolve", "POST", "/lyrics/song/song-1/resolve", map[string]any{}),
 			Entry("search", "POST", "/lyrics/song/song-1/search", map[string]any{}),
 			Entry("apply", "POST", "/lyrics/song/song-1/apply", map[string]any{"candidateId": "x"}),
 			Entry("import", "POST", "/lyrics/song/song-1/import", map[string]any{"fileName": "a.lrc", "content": "[00:01.00]x"}),
@@ -209,6 +216,29 @@ var _ = Describe("Lyrics API", func() {
 			Expect(w.Code).To(Equal(http.StatusBadRequest))
 		})
 
+		It("refreshes the provider status on request, with the runtime fields and no credential", func() {
+			conf.Server.Lyrics.QQ.BetterLyricsApiKey = "BLKEY"
+			w := do("POST", "/lyrics/providers/check", adminTok, map[string]any{})
+			Expect(w.Code).To(Equal(http.StatusOK))
+			Expect(w.Body.String()).ToNot(ContainSubstring("BLKEY"))
+			first := decode(w)["providers"].([]any)[0].(map[string]any)
+			Expect(first).To(HaveKeyWithValue("id", "fake"))
+			for _, k := range []string{"availability", "liveVerified", "karaokeVerified", "implemented", "configured", "auth"} {
+				Expect(first).To(HaveKey(k))
+			}
+			Expect(first).To(HaveKeyWithValue("liveVerified", true), "the check really asked the provider")
+		})
+
+		It("masks the Better Lyrics key in the configuration view", func() {
+			conf.Server.Lyrics.QQ.BetterLyricsApiKey = "BLKEY"
+			req := httptest.NewRequest("GET", "/config/config", nil)
+			req.Header.Set(consts.UIAuthorizationHeader, "Bearer "+adminTok)
+			w := httptest.NewRecorder()
+			router.ServeHTTP(w, req)
+			Expect(w.Code).To(Equal(http.StatusOK))
+			Expect(w.Body.String()).ToNot(ContainSubstring("BLKEY"))
+		})
+
 		It("masks the Musixmatch API key in the configuration view", func() {
 			conf.Server.Lyrics.Musixmatch.ApiKey = "SECRETKEY"
 			req := httptest.NewRequest("GET", "/config/config", nil)
@@ -226,6 +256,14 @@ var _ = Describe("Lyrics API", func() {
 			Expect(w.Code).To(Equal(http.StatusOK))
 			return decode(w)
 		}
+
+		It("can have the server fetch missing lyrics, which saves them only when verified", func() {
+			fake.cands = []lyrics.Candidate{syncedCandidate("fake:1", "fetched", 0.97, true)}
+			w := do("POST", "/lyrics/song/song-1/resolve", adminTok, nil)
+			Expect(w.Code).To(Equal(http.StatusOK))
+			Expect(decode(w)["result"]).To(Equal("found"))
+			Expect(filepath.Join(root, "Artist", "Album", "01.lyrics.json")).To(BeAnExistingFile())
+		})
 
 		It("lists candidates with a preview, quality, match and storage eligibility", func() {
 			fake.cands = []lyrics.Candidate{

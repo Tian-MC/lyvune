@@ -6,6 +6,7 @@ const PROVIDER_NAMES = {
   musixmatch: 'Musixmatch',
   kugou: 'KuGou Music',
   netease: 'NetEase Cloud Music',
+  qq: 'QQ Music',
   apple: 'Apple Music',
 }
 

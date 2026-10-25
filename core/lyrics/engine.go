@@ -42,13 +42,38 @@ func (l *lyricsService) SaveSettings(ctx context.Context, s Settings) (Settings,
 }
 
 func (l *lyricsService) Providers(ctx context.Context) []ProviderStatus {
-	enabled := l.settings(ctx).Providers
+	cfg := l.settings(ctx)
+	enabled := cfg.Providers
 	out := make([]ProviderStatus, 0, len(l.providers.All()))
 	for _, p := range l.providers.All() {
 		info := p.Info()
-		out = append(out, ProviderStatus{ProviderInfo: info, Enabled: info.Status == StatusReady && slices.Contains(enabled, info.ID)})
+		st := ProviderStatus{ProviderInfo: info, Enabled: info.Status == StatusReady && slices.Contains(enabled, info.ID)}
+		st.StoreOptIn = info.Implemented && info.Status != StatusUnavailable && !info.Storable
+		st.StoreAllowed = st.StoreOptIn && slices.Contains(cfg.Store, info.ID)
+		st.Storable = info.Storable || st.StoreAllowed
+		l.health.apply(&st, l.now())
+		out = append(out, st)
 	}
 	return out
+}
+
+// checkRecording is searched by CheckProviders: a well-known recording that
+// the providers can be expected to have.
+var checkRecording = Recording{Title: "Judas", Artist: "Lady Gaga", Album: "Born This Way", DurationSec: 249}
+
+// CheckProviders asks every provider that is ready and turned on for one
+// well-known recording, so the status shows whether they answer now. It is run
+// on request, never in the background.
+func (l *lyricsService) CheckProviders(ctx context.Context) []ProviderStatus {
+	enabled := l.settings(ctx).Providers
+	var ps []OnlineProvider
+	for _, p := range l.providers.All() {
+		if info := p.Info(); info.Status == StatusReady && slices.Contains(enabled, info.ID) {
+			ps = append(ps, p)
+		}
+	}
+	l.searchRecording(ctx, checkRecording, ps)
+	return l.Providers(ctx)
 }
 
 func (l *lyricsService) Status(ctx context.Context, mf *model.MediaFile) (SongStatus, error) {
@@ -129,8 +154,15 @@ func (l *lyricsService) searchProviders(opts SearchOptions) []OnlineProvider {
 // searchAll queries providers concurrently. One provider failing, being slow or
 // being rate limited never affects the others.
 func (l *lyricsService) searchAll(ctx context.Context, mf *model.MediaFile, providers []OnlineProvider) ([]Candidate, []ProviderOutcome) {
-	rec := RecordingOf(mf)
-	ctx, cancel := context.WithTimeout(ctx, searchTimeout)
+	return l.searchRecording(ctx, RecordingOf(mf), providers)
+}
+
+func (l *lyricsService) searchRecording(ctx context.Context, rec Recording, providers []OnlineProvider) ([]Candidate, []ProviderOutcome) {
+	timeout := searchTimeout
+	if ctx.Value(bulkCtxKey{}) != nil {
+		timeout = bulkSearchTimeout
+	}
+	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	results := make([]providerResult, len(providers))
@@ -173,8 +205,19 @@ func (l *lyricsService) searchAll(ctx context.Context, mf *model.MediaFile, prov
 			out.Status, out.Message = OutcomeError, r.err.Error()
 			log.Debug(ctx, "Lyrics provider failed", "provider", r.id, r.err)
 		}
+		cands := dropCreditOnly(r.cands)
+		l.health.record(out, cands, l.now())
+		out.Count = len(cands)
 		outcomes = append(outcomes, out)
-		all = append(all, r.cands...)
+		all = append(all, cands...)
+	}
+	// Providers that grant no storage permission of their own are saved only
+	// when the administrator has allowed it for that provider
+	allowed := l.settings(ctx).Store
+	for i := range all {
+		if !all[i].Storable && slices.Contains(allowed, all[i].Provider) {
+			all[i].Storable = true
+		}
 	}
 	return all, outcomes
 }
@@ -597,4 +640,17 @@ func (l *lyricsService) markChecked(ctx context.Context, mf *model.MediaFile) {
 	st := l.props.state(ctx, mf.ID)
 	st.CheckedAt = l.now().Unix()
 	_ = l.props.putState(ctx, mf.ID, st)
+}
+
+// dropCreditOnly removes candidates whose lyrics are only credits. Such an
+// answer means the service has no lyrics for the song; it is not a result.
+func dropCreditOnly(cands []Candidate) []Candidate {
+	out := cands[:0:0]
+	for _, c := range cands {
+		if len(c.Lyrics) > 0 && creditsOnly(c.Lyrics) {
+			continue
+		}
+		out = append(out, c)
+	}
+	return out
 }

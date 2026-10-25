@@ -63,6 +63,7 @@ func (l *lrclib) Info() ProviderInfo {
 	info := ProviderInfo{
 		ID: lrclibID, Name: "LRCLIB", Status: StatusReady, Verified: true,
 		Plain: true, Synced: true, WordSync: true, Storable: true,
+		Implemented: true, Configured: true, Auth: AuthNone, Formats: []string{"lyricsfile", "lrc", "txt"},
 		Attribution: "Lyrics from LRCLIB (lrclib.net)",
 		Note:        "Free community service. Word timing is offered only for tracks where hasWordSync is set.",
 	}

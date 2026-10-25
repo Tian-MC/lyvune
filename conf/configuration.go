@@ -219,6 +219,9 @@ type lastfmOptions struct {
 type lyricsOptions struct {
 	LRCLIB      lrclibOptions
 	Musixmatch  musixmatchOptions
+	KuGou       unofficialProviderOptions
+	NetEase     unofficialProviderOptions
+	QQ          qqOptions
 	HistoryKeep int // previous versions of a track's lyrics kept for undo
 }
 
@@ -229,6 +232,22 @@ type lrclibOptions struct {
 
 type musixmatchOptions struct {
 	ApiKey string //nolint:gosec
+	Store  bool   // keep Musixmatch lyrics in .lyrics.json; only if your plan allows it
+}
+
+// unofficialProviderOptions configures a provider that has no public API. Its
+// lyrics are shown for selection but are saved only when Store is on, because
+// no terms grant that permission.
+// qqOptions configures QQ Music. Its two keyless routes need nothing; the
+// Better Lyrics key is optional and only makes uncached songs available as
+// word-timed QRC.
+type qqOptions struct {
+	Store              bool
+	BetterLyricsApiKey string //nolint:gosec
+}
+
+type unofficialProviderOptions struct {
+	Store bool
 }
 
 type deezerOptions struct {
@@ -1101,6 +1120,11 @@ func setViperDefaults() {
 	viper.SetDefault("lyrics.lrclib.enabled", true)
 	viper.SetDefault("lyrics.lrclib.baseurl", "https://lrclib.net")
 	viper.SetDefault("lyrics.musixmatch.apikey", "")
+	viper.SetDefault("lyrics.musixmatch.store", false)
+	viper.SetDefault("lyrics.kugou.store", false)
+	viper.SetDefault("lyrics.netease.store", false)
+	viper.SetDefault("lyrics.qq.store", false)
+	viper.SetDefault("lyrics.qq.betterlyricsapikey", "")
 	viper.SetDefault("lyrics.historykeep", 10)
 	viper.SetDefault("lastfm.enabled", true)
 	viper.SetDefault("lastfm.language", consts.DefaultInfoLanguage)

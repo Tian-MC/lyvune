@@ -11,17 +11,22 @@ const MAX_REMEMBERED = 500
 // (including "nothing found recently"), so asking again later is cheap.
 const asked = new Set()
 
+// Fetching lyrics is for administrators only; everyone else just reads what is
+// already there. The server refuses anyone else, so this only avoids the call.
+const isAdmin = () => localStorage.getItem('role') === 'admin'
+
 /**
  * Asks the server to look for lyrics when a track starts playing: it fills in
  * missing lyrics and, if upgrades are on, looks for better ones. It never
  * delays playback, and the result appears in the lyrics panel by itself.
+ * Only runs for administrators.
  */
 export const useAutoLyrics = () => {
   const item = useCurrentItem()
   const trackId = item && !item.isRadio ? item.trackId : null
 
   useEffect(() => {
-    if (!trackId || asked.has(trackId)) return undefined
+    if (!trackId || asked.has(trackId) || !isAdmin()) return undefined
     const controller = new AbortController()
     let inFlight = false
     const timer = setTimeout(() => {

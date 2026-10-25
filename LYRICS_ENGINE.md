@@ -125,21 +125,75 @@ A clean "nothing found" is remembered for a week. An outage, a timeout or a rate
 
 ## Providers
 
-| Provider | Status | What it does | Saves lyrics |
+| Provider | Access | What it reads | Saves lyrics |
 | --- | --- | --- | --- |
-| **LRCLIB** | Implemented, checked against the live service | Exact lookup then search; plain, synced and word-synced (Lyricsfile, when `hasWordSync`) | Yes |
-| **Musixmatch** | Implemented, **not verified**; needs your own API key | Official `matcher.lyrics.get` and `matcher.subtitle.get`; no word-level (richsync) | **No** |
-| **KuGou** | Not available | No public lyrics API; no request is ever made | — |
-| **NetEase Cloud Music** | Not available | No public lyrics API; no request is ever made | — |
-| **Apple Music** | Not available | The API documents only `hasLyrics`; the timed-lyrics endpoint is private | — |
+| **LRCLIB** | Public API, no key | Exact lookup then search; plain, synced and word-synced (Lyricsfile, when `hasWordSync`) | Yes |
+| **KuGou Music** | Open web endpoints, no account (unofficial) | Song search, lyric entries, `krc` (word-timed), `lrc` fallback, translation and romanization | Only if you allow it (Settings → Lyrics → provider, or `Lyrics.KuGou.Store`) |
+| **NetEase Cloud Music** | Open web endpoints, no account (unofficial) | Song search, `lrc`, `tlyric`, `romalrc`, and `yrc` (word-timed) for the songs that have it | Only if you allow it (Settings, or `Lyrics.NetEase.Store`) |
+| **QQ Music** | Open web endpoints, no account (unofficial) + Better Lyrics community cache | Line-timed lyrics and translation; word-timed **QRC** when the cache has the song (an optional Better Lyrics key makes any song available) | Only if you allow it (Settings, or `Lyrics.QQ.Store`) |
+| **Musixmatch** | Official API, **your own key** (no authorized keyless route exists) | `matcher.track.get`, `track.richsync.get`, `track.subtitle.get`, `track.lyrics.get` | Only if you allow it (Settings, or `Lyrics.Musixmatch.Store`) |
+| **Apple Music** | None | Not implemented: the timed-lyrics endpoint is private | — |
 
-LRCLIB was checked against the real service: the response has `id`, `trackName`, `artistName`, `albumName`, `duration`, `instrumental`, `hasWordSync`, `plainLyrics`, `syncedLyrics` and `lyricsfile`. The adapter sends a descriptive User-Agent, spaces requests, retries 5xx and network errors at most three times, honours `Retry-After` on 429 (and stops asking during the cool-down), and bounds responses to 4 MB. LRCLIB answered `503 ServerOverloaded` during testing, which is handled. No result with real word timing turned up in the samples tried, so karaoke from LRCLIB is covered by the parser tests and not by a live example.
+### Saving is the administrator's decision, not a grant of rights
 
-Musixmatch: the developer terms could not be read and no key was available, so the adapter is deliberately conservative. Results can be previewed but not chosen (choosing means saving, which is not allowed), the match is never reported as verified, and the key is read from the server configuration only and redacted from errors.
+KuGou, NetEase, QQ and Musixmatch publish no terms that allow their lyrics to be kept. By default none of them is saved, searched or even turned on. The per-provider switch below only lets an administrator take that decision for their own server; it does **not** mean the providers or the rights holders allow it, and this project makes no such claim. Where rights cannot be established, leave the switch off: results can still be previewed and chosen for the moment, but are not kept. Only LRCLIB, which invites clients to store its lyrics, saves by default.
 
-KuGou, NetEase and Apple Music are listed so the interface can say why they are off. KRC and YRC word-timed formats are **not** supported.
+### Allowing a provider to save
+
+A provider whose terms grant no permission to keep its lyrics (KuGou, NetEase, QQ, Musixmatch) shows its results as *Preview only* and a chosen version is refused with "Saving is off for this provider". Administrators can allow saving **per provider** in *Settings → Lyrics → Providers* ("Save its lyrics next to my audio"). It is stored in the database (`store` in the settings), is off by default, and can be taken back; lyrics already saved stay. The `Lyrics.<Provider>.Store` options in the configuration file do the same for the whole server.
+
+### What the provider list shows
+
+*Implemented*, *set up*, *seen working*, *karaoke seen*, *checked in development* and *can be saved* are separate facts, and none is inferred from another:
+
+- **Implemented**: the backend has working code. An outage does not change it.
+- **Set up**: everything needed to make a request is in place (a key, when one is needed).
+- **Seen working** and **karaoke seen**: measured from the searches the server ran since it started. A search that finds nothing still shows the service answered. Karaoke counts only for a *verified* match that carries word timing; line timing is never karaoke. These reset when the server restarts.
+- **Checked in development**: the adapter was checked against the live service when it was written.
+- **Availability** is the state now: available, off, needs your key, not available, rate limited, or temporarily unavailable (the last answer was a failure).
+
+*Check providers* (Settings, administrators; `POST /api/lyrics/providers/check`) asks each provider that is turned on for one well-known song so these update on request. It is never run in the background.
+
+[LYRICS_PROVIDERS_RESEARCH.md](LYRICS_PROVIDERS_RESEARCH.md) has the evidence, the licences and the limits of each.
+
+LRCLIB was checked against the real service: the response has `id`, `trackName`, `artistName`, `albumName`, `duration`, `instrumental`, `hasWordSync`, `plainLyrics`, `syncedLyrics` and `lyricsfile`. The adapter sends a descriptive User-Agent, spaces requests, retries 5xx and network errors at most three times, honours `Retry-After` on 429 (and stops asking during the cool-down), and bounds responses to 4 MB.
+
+**Word timing is only what the source gives.** KRC and YRC are parsed by `krc.go` and `yrc.go`, RichSync by `richsync.go`; none of them depends on a network adapter, and none estimates a time. A word has an end only when the file says so. A document whose word times look divided by formula (most lines with words of equal length in time, or proportional to their letters) is reduced to line timing, so it can never rank as karaoke. A romanization keeps word timing only when it has exactly one piece per original word; a translation never has word timing.
+
+**KuGou and NetEase are unofficial.** Neither has a public lyrics API. The adapters use the open web endpoints their own web clients use, with no account, cookie, token or request signing, and not the signed `weapi`/`eapi` calls. Their terms were not found, so nothing grants permission to keep their lyrics: by default they are shown for selection and **not** saved. An administrator who accepts that responsibility can turn on `Lyrics.KuGou.Store` / `Lyrics.NetEase.Store`. KuGou's song search answers "0 results" without any error when it is asked too quickly, so the adapter spaces its requests by a second and asks once more before believing an empty list.
+
+**Musixmatch** uses only the official API with your own key; the private token of its apps is not used. Which calls a key may make depends on its plan: a call the plan refuses is skipped. Word timing is not advertised for it until it has been seen working.
+
+Your own `.krc`, `.yrc` and `.qrc` files next to the audio are read as local sidecars when their suffix is in `LyricsPriority` (for example `.qrc,.krc,.lrc,embedded`). A `.krc` may be plain text or the distributed `krc1` container; a `.qrc` must be the decrypted XML or its bare body (QQ's encrypted form is not decoded).
+
+**QQ Music.** The direct route (`c.y.qq.com`, with a `Referer`) gives search, title/artist/album/length and line-timed lyrics. Word timing comes from Better Lyrics (`/qq/getLyrics`): without a key it answers **from its cache only**, and an uncached song is refused with `401`, which is treated as ordinary, not as an error. In the tests, one song in eight had QRC cached without a key, and the same song could be cached under one album spelling and not another, so word timing from QQ is real but not dependable. The endpoint reports no match score and no length, so the QRC is matched from its own `[ti:]`, `[ar:]`, `[al:]` tags and rejected if it runs more than 5 s past the track; a QRC that stays under 0.85 only for lack of a length is verified when its line starts agree with those of the verified QQ lyrics (a different version drifts). The QRC envelope is cut out as text because real documents carry raw quotes and are not well-formed XML.
 
 LRCLIB's terms of use could not be read from here either; it is a free community service whose own client downloads and stores lyrics.
+
+### Parser limits and hostile input
+
+The word-timed parsers (KRC, YRC, QRC, RichSync) read documents that come from the network or from a user's disk, so they are bounded:
+
+- a document over 8 MB, or with more than 50,000 lines, is refused (`ErrLyricsTooLarge`); responses are also cut at 4 MB and sidecars at 16 MB;
+- times are limited to 100 hours, so large values cannot wrap around into negative ones; an `[offset:]` beyond one hour either way is ignored, and an offset can never move a time below zero;
+- the QRC token scan looks at most 48 bytes ahead, so a line of unmatched brackets costs linear time (it was quadratic: about 80 s for 4 MB);
+- the QRC envelope is **not parsed as XML** (real documents contain raw quotes and are ill-formed, and an XML decoder would bring DTDs and entities). The first `Lyric_1` block is cut out as text and only HTML/XML character references are decoded, so nothing external is ever resolved (an `<!ENTITY ... SYSTEM "file:///...">` is just text);
+- invalid UTF-8 is replaced with U+FFFD before parsing, so line text and cue byte offsets agree;
+- an unreadable word keeps its line, without a time for that word. Nothing is estimated.
+
+Fuzz targets (`go test -fuzz`) exist for QRC, KRC, YRC, RichSync and the KRC container; the inputs that once failed are kept as regression seeds in `core/lyrics/testdata/fuzz`.
+
+### Bulk jobs
+
+One job runs at a time and works on **4 tracks at once** (`bulkWorkers` in `bulk.go`). Providers still see requests no faster than their own pacing (a request every 0.3 to 1 s, depending on the provider), so the workers overlap the waiting, not the load. A provider asking to slow down, or a cancel, stops the job: tracks already running finish, nothing new starts, and the finished ones are skipped when it is run again. Inside a job the per-search timeout is 90 s instead of 20 s, because the workers' requests to one provider queue on its pacing.
+
+### Results that are only credits
+
+A service that has no lyrics for a song sometimes answers with a header: NetEase sent a single line, `作曲 : <name>`, for an instrumental. A result whose lines are all credits (`作词`, `作曲`, `Composer:`, `Lyrics by:`…), or a title plus credits, is not offered and not saved, for any provider. NetEase's stray `-1` in some timestamps (`[00:00.00-1]`) is removed.
+
+## Who can do what
+
+**Only administrators can make the server fetch lyrics**: searching providers, choosing a version, automatic retrieval and upgrades (`POST /api/lyrics/song/{id}/resolve`, triggered when an administrator plays a track), bulk jobs, imports, locks, offsets, restores, deletion, the provider settings and *Check providers*. Everyone else only **reads** lyrics: the lyrics a track already has (local files, embedded tags, saved `.lyrics.json`) are served to every signed-in user, and a regular user playing a track never causes a download. Anything an administrator saved is visible to all.
 
 ## Offline, restarts and the scanner
 
@@ -180,6 +234,11 @@ A candidate is always referred to by an ID the server issued, so a client cannot
 | `Lyrics.LRCLIB.Enabled` | `true` | |
 | `Lyrics.LRCLIB.BaseURL` | `https://lrclib.net` | |
 | `Lyrics.Musixmatch.ApiKey` | empty | Config file or `ND_LYRICS_MUSIXMATCH_APIKEY`; masked in the configuration view |
+| `Lyrics.Musixmatch.Store` | `false` | Save Musixmatch lyrics; only if your plan allows it |
+| `Lyrics.KuGou.Store` | `false` | Save KuGou lyrics (unofficial endpoints) |
+| `Lyrics.NetEase.Store` | `false` | Save NetEase lyrics (unofficial endpoints) |
+| `Lyrics.QQ.Store` | `false` | Save QQ Music lyrics (unofficial endpoints) |
+| `Lyrics.QQ.BetterLyricsApiKey` | empty | Optional: your own Better Lyrics key, so uncached songs are fetched too; masked in the configuration view |
 | `Lyrics.HistoryKeep` | `10` | Versions kept per track |
 | Prefer local files | on | stored in the database |
 | Find missing lyrics automatically | **on** | stored in the database |
@@ -207,13 +266,24 @@ Run: `go test ./core/lyrics/ ./server/nativeapi/` and `cd ui && npm test`.
 
 Beyond the unit tests, the feature was run end to end against the real LRCLIB with a copy of three library tracks: automatic retrieval for a Japanese title, local-over-remote precedence with a hand-written `.lrc`, confirmed replacement, lock, offset, undo, a full scan, a restart with the network cut, and a check that the audio and the original `.lrc` were byte-identical afterwards.
 
+## Test coverage of this feature
+
+Automated: Go unit, provider, parser, fuzz, engine and API tests (`core/lyrics`, `server/nativeapi`, race detector), and the frontend suite. By hand against real services and real audio on a temporary copy of the library: Chromium and **Firefox 158** (via WebDriver BiDi; QRC karaoke, word highlighting compared with the QRC data frame by frame, seeking, pause and resume, track changes, provider search and filter, translation, history restore), Chromium at 390×844, 360×800 and 320×700, a provider that never answers while music plays, and a regular user who can read lyrics but cannot fetch any. Not covered: Safari, a real touch device, Windows, screen readers.
+
 ## Known limitations
 
-- Changes (choose, import, lock, offset, restore, delete, bulk) are administrator-only.
+- Anything that fetches or changes lyrics (search, choose, automatic retrieval, import, lock, offset, restore, delete, bulk, settings) is administrator-only; other users can only read.
 - Only local libraries can be written to. `.lyrics.json` is the only sidecar written: `.lrc` is not exported, so other players do not see downloaded lyrics.
 - Choosing embedded lyrics copies them into a preferred sidecar; the embedded ones stay in the audio.
 - A library folder reached through a symbolic link that leaves the library is not written to.
-- Bulk jobs run in memory: a restart stops one, and running it again skips finished tracks.
-- Musixmatch is unverified and saves nothing; KuGou, NetEase and Apple Music are off; KRC and YRC are not parsed.
+- Bulk jobs run in memory: a restart stops one, and running it again skips finished tracks. A job of mostly KuGou lookups is limited by KuGou's one-request-a-second pacing, so four workers do not make that provider four times faster.
+- Musixmatch is not verified against the live service (no API key was available); Apple Music is off.
+- KuGou and NetEase use undocumented endpoints that can change or block a region at any time; their lyrics are not saved unless the administrator opts in.
+- NetEase word timing exists only for songs where the endpoint returns `yrc`; the others are line-synced. NetEase's `klyric` is ignored.
+- A matching song can be missing from a service (a cover or live version is not accepted instead), and Simplified/Traditional Chinese artist names are not converted, so such a match is offered as "uncertain" and never chosen automatically.
+- QQ's own QRC is encrypted and is not decoded; word timing from QQ depends on the Better Lyrics cache. Better Lyrics' TTML (syllable) provider was not adopted: without a key it served none of the songs tried, and it does not say where its data comes from.
+- Simplified/Traditional Chinese is not converted: an artist written in the other script scores about 0.82 and is only offered for manual choice.
+- Singer prefixes inside QRC lines are kept as text.
+- The runtime "seen working" and "karaoke seen" marks live in memory and start empty after a restart.
 - The Windows build was not compiled here (it needs CGO for SQLite); the code avoids platform-specific calls.
 - `golangci-lint` was not run.

@@ -70,6 +70,9 @@
 }
 
 .contextLink {
+  display: inline-block;
+  min-height: 24px;
+  line-height: 24px;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -176,6 +179,12 @@
 }
 
 .artist a {
+  display: inline-block;
+  min-height: 24px;
+  max-width: 100%;
+  overflow: hidden;
+  vertical-align: top;
+  text-overflow: ellipsis;
   color: inherit;
   text-decoration: none;
 }

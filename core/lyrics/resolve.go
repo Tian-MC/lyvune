@@ -91,6 +91,15 @@ func readEnvelope(ctx context.Context, mf *model.MediaFile) (*Envelope, string) 
 	return nil, ""
 }
 
+// junkManaged reports a sidecar Navidrome wrote itself that holds no lyrics, only
+// credits. An earlier version saved such an answer (a single "作曲 : name" line)
+// for songs a service had no lyrics for. It is treated as absent, so it is not
+// shown and a later retrieval replaces it (the file is kept in the history). A
+// sidecar the user chose is never ignored this way.
+func junkManaged(env *Envelope) bool {
+	return env.Origin == OriginManaged && creditsOnly(env.Lyrics)
+}
+
 // effective is the lock and offset in force for a track. The sidecar holds them
 // when there is one; otherwise they are in the database.
 func (l *lyricsService) effective(ctx context.Context, mf *model.MediaFile, env *Envelope) SongState {
@@ -175,7 +184,7 @@ func (l *lyricsService) resolveCurrent(ctx context.Context, mediaFiles []*model.
 			continue
 		}
 		env, name := readEnvelope(ctx, mf)
-		if env == nil {
+		if env == nil || junkManaged(env) {
 			continue
 		}
 		f := &found{env: env, name: name, mf: mf}
@@ -216,7 +225,7 @@ func (l *lyricsService) localCandidates(ctx context.Context, mf *model.MediaFile
 			out = append(out, c)
 		}
 	}
-	if env, name := readEnvelope(ctx, mf); env != nil {
+	if env, name := readEnvelope(ctx, mf); env != nil && !junkManaged(env) {
 		info := envelopeInfo(env, name)
 		src := SourceManaged
 		if env.Origin == OriginUser {

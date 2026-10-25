@@ -40,6 +40,40 @@ type ProviderInfo struct {
 	Storable    bool   `json:"storable"`
 	Attribution string `json:"attribution,omitempty"`
 	Note        string `json:"note,omitempty"`
+
+	// Implemented is true when the backend has working code for the provider.
+	// It says nothing about whether the service answers right now.
+	Implemented bool `json:"implemented"`
+	// Configured is true when everything needed to make a request is in place.
+	Configured bool `json:"configured"`
+	// Auth is how the service is reached: AuthNone, AuthAPIKey or AuthOptionalKey.
+	Auth string `json:"auth"`
+	// Formats lists the lyric formats the adapter reads from this service.
+	Formats []string `json:"formats,omitempty"`
+	// Modes lists the ways the provider can be used, when there is more than one.
+	Modes []ProviderMode `json:"modes,omitempty"`
+}
+
+// How a provider is authenticated.
+const (
+	// AuthNone needs no account, key or token.
+	AuthNone = "none"
+	// AuthAPIKey cannot be used without the user's own key.
+	AuthAPIKey = "api-key"
+	// AuthOptionalKey works without a key and does more with one.
+	AuthOptionalKey = "optional-key"
+)
+
+// ProviderMode is one way of using a provider, e.g. a keyless community route
+// next to an official credentialed one.
+type ProviderMode struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+	// Auth is AuthNone or AuthAPIKey for this mode.
+	Auth string `json:"auth"`
+	// Active is true when the mode can be used now.
+	Active bool   `json:"active"`
+	Note   string `json:"note,omitempty"`
 }
 
 // OnlineProvider searches one online lyrics service.

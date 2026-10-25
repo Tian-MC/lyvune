@@ -5,6 +5,14 @@
   gap: var(--space-2);
 }
 
+/* Five buttons of 48 px and a wider play button do not fit a 280 px column at
+   320 px wide with the normal gap */
+@media (max-width: 340px) {
+  .transport {
+    gap: var(--space-1);
+  }
+}
+
 .playPause {
   position: relative;
 }

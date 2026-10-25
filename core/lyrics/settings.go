@@ -36,6 +36,10 @@ type Settings struct {
 	// Providers lists provider IDs, in order, that are searched. A provider not
 	// listed is off.
 	Providers []string `json:"providers"`
+	// Store lists providers whose lyrics the administrator allows to be saved
+	// next to the audio, even though the provider itself grants no such
+	// permission (the unofficial ones). Off for every provider by default.
+	Store []string `json:"store"`
 	// MinConfidence is the lowest recording match accepted automatically.
 	MinConfidence float64 `json:"minConfidence"`
 }
@@ -68,6 +72,13 @@ func (s Settings) Sanitize(known []string) Settings {
 		}
 	}
 	s.Providers = providers
+	var store []string
+	for _, id := range s.Store {
+		if slices.Contains(known, id) && !slices.Contains(store, id) {
+			store = append(store, id)
+		}
+	}
+	s.Store = store
 	return s
 }
 

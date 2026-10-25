@@ -1,5 +1,11 @@
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  within,
+} from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 vi.mock('react-admin', () => ({
@@ -12,6 +18,7 @@ const api = vi.hoisted(() => ({
   startBulk: vi.fn(),
   bulk: vi.fn(),
   cancelBulk: vi.fn(),
+  checkProviders: vi.fn(),
 }))
 vi.mock('../lyrics/manageApi', async () => ({
   ...(await vi.importActual('../lyrics/manageApi')),
@@ -26,6 +33,7 @@ const settings = {
   autoUpgrade: true,
   autoReplaceManual: false,
   providers: ['lrclib'],
+  store: [],
   minConfidence: 0.85,
 }
 const providers = [
@@ -35,6 +43,12 @@ const providers = [
     status: 'ready',
     enabled: true,
     verified: true,
+    implemented: true,
+    configured: true,
+    auth: 'none',
+    availability: 'available',
+    liveVerified: true,
+    karaokeVerified: true,
     storable: true,
     wordSync: true,
     note: 'Free community service.',
@@ -45,6 +59,19 @@ const providers = [
     status: 'needs-credentials',
     enabled: false,
     verified: false,
+    implemented: true,
+    configured: false,
+    auth: 'api-key',
+    availability: 'needs-credentials',
+    modes: [
+      { id: 'official', name: 'Official API (your own key)', active: false },
+      {
+        id: 'keyless',
+        name: 'Without a key',
+        active: false,
+        note: 'No authorized keyless route exists',
+      },
+    ],
     storable: false,
     reason: 'Set Lyrics.Musixmatch.ApiKey in the configuration',
     note: 'Results are not saved.',
@@ -52,10 +79,22 @@ const providers = [
   {
     id: 'kugou',
     name: 'KuGou Music',
-    status: 'unavailable',
-    enabled: false,
-    verified: false,
-    reason: 'KuGou has no public developer API for lyrics.',
+    status: 'ready',
+    enabled: true,
+    verified: true,
+    implemented: true,
+    configured: true,
+    auth: 'none',
+    availability: 'temporarily-unavailable',
+    liveVerified: true,
+    karaokeVerified: false,
+    wordSync: true,
+    storable: false,
+    storeOptIn: true,
+    storeAllowed: false,
+    formats: ['krc', 'lrc'],
+    lastError: 'KuGou answered 503',
+    lastFailure: '2026-10-25T12:00:00Z',
   },
   {
     id: 'apple',
@@ -63,6 +102,10 @@ const providers = [
     status: 'unavailable',
     enabled: false,
     verified: false,
+    implemented: false,
+    configured: false,
+    auth: 'none',
+    availability: 'not-available',
     reason: 'The Apple Music API documents only the hasLyrics flag.',
   },
 ]
@@ -139,21 +182,127 @@ describe('<LyricsSettings />', () => {
   })
 
   describe('providers', () => {
-    it("tells each provider's real status, and never claims what is not verified", async () => {
+    const card = (name) => within(screen.getByTestId(`provider-${name}`))
+
+    it('keeps implemented, set up, seen working and karaoke seen apart', async () => {
       await load()
+      const lrclib = card('lrclib')
+      expect(lrclib.getByText('Available')).toBeInTheDocument()
+      expect(lrclib.getByText('Implemented')).toBeInTheDocument()
+      expect(lrclib.getByText('Seen working')).toBeInTheDocument()
+      expect(lrclib.getByText('Karaoke seen')).toBeInTheDocument()
+      expect(lrclib.getByText('Lyrics can be saved')).toBeInTheDocument()
+
+      // KuGou has the adapter and word timing, but no karaoke was seen yet
+      const kugou = card('kugou')
+      expect(kugou.getByText('Implemented')).toBeInTheDocument()
+      expect(kugou.getByText('Karaoke not seen yet')).toBeInTheDocument()
+      expect(kugou.getByText('Preview only')).toBeInTheDocument()
+      expect(kugou.getByText(/Reads: krc, lrc/)).toBeInTheDocument()
+    })
+
+    it('tells an outage from a missing implementation', async () => {
+      await load()
+      const kugou = card('kugou')
+      expect(kugou.getByText('Temporarily unavailable')).toBeInTheDocument()
       expect(
-        screen.getByText(/Ready · checked against the live service/),
+        kugou.getByText(/Last error: KuGou answered 503/),
+      ).toBeInTheDocument()
+      expect(kugou.queryByText('Not implemented')).toBeNull()
+      expect(kugou.queryByText(/not supported/i)).toBeNull()
+
+      const apple = card('apple')
+      expect(apple.getByText('Not available')).toBeInTheDocument()
+      expect(apple.getByText('Not implemented')).toBeInTheDocument()
+      expect(
+        apple.getByText(/documents only the hasLyrics flag/),
+      ).toBeInTheDocument()
+    })
+
+    it('separates the official key mode from the keyless one', async () => {
+      await load()
+      const mm = card('musixmatch')
+      expect(mm.getByText('Needs your API key')).toBeInTheDocument()
+      expect(mm.getByText('Needs your own API key')).toBeInTheDocument()
+      expect(mm.getByText('Official API (your own key)')).toBeInTheDocument()
+      expect(mm.getByText('Without a key')).toBeInTheDocument()
+      expect(
+        mm.getByText(/No authorized keyless route exists/),
       ).toBeInTheDocument()
       expect(
-        screen.getByText('Set Lyrics.Musixmatch.ApiKey in the configuration'),
+        mm.getByText('Set Lyrics.Musixmatch.ApiKey in the configuration'),
       ).toBeInTheDocument()
+      expect(mm.getByText('Results are not saved.')).toBeInTheDocument()
+    })
+
+    it('refreshes the status on request', async () => {
+      api.checkProviders.mockResolvedValue({
+        providers: providers.map((p) =>
+          p.id === 'kugou'
+            ? { ...p, availability: 'available', lastError: undefined }
+            : p,
+        ),
+      })
+      await load()
+      fireEvent.click(screen.getByRole('button', { name: 'Check providers' }))
+      await waitFor(() => expect(api.checkProviders).toHaveBeenCalledTimes(1))
+      await waitFor(() =>
+        expect(card('kugou').getByText('Available')).toBeInTheDocument(),
+      )
+      expect(card('kugou').queryByText(/Last error/)).toBeNull()
+    })
+
+    it('reports a failed check', async () => {
+      api.checkProviders.mockRejectedValue(new Error('x'))
+      await load()
+      fireEvent.click(screen.getByRole('button', { name: 'Check providers' }))
+      expect(await screen.findByRole('alert')).toHaveTextContent(
+        'could not be checked',
+      )
+    })
+
+    it('lets the administrator allow saving for a provider that grants no permission itself', async () => {
+      await load()
+      const kugou = card('kugou')
+      expect(kugou.getByText('Preview only')).toBeInTheDocument()
+      fireEvent.click(
+        kugou.getByRole('checkbox', {
+          name: 'Save lyrics from KuGou Music next to my audio',
+        }),
+      )
+      await waitFor(() =>
+        expect(api.saveSettings).toHaveBeenCalledWith({
+          ...settings,
+          store: ['kugou'],
+        }),
+      )
+    })
+
+    it('takes the permission back, and offers none for a provider that may already save', async () => {
+      api.settings.mockResolvedValue({
+        settings: { ...settings, store: ['kugou'] },
+        providers: providers.map((p) =>
+          p.id === 'kugou' ? { ...p, storeAllowed: true, storable: true } : p,
+        ),
+      })
+      await load()
+      expect(card('kugou').getByText('Lyrics can be saved')).toBeInTheDocument()
+      fireEvent.click(
+        card('kugou').getByRole('checkbox', {
+          name: 'Save lyrics from KuGou Music next to my audio',
+        }),
+      )
+      await waitFor(() =>
+        expect(api.saveSettings).toHaveBeenCalledWith({
+          ...settings,
+          store: [],
+        }),
+      )
       expect(
-        screen.getByText('KuGou has no public developer API for lyrics.'),
-      ).toBeInTheDocument()
-      expect(
-        screen.getByText(/documents only the hasLyrics flag/),
-      ).toBeInTheDocument()
-      expect(screen.getByText('Results are not saved.')).toBeInTheDocument()
+        within(screen.getByTestId('provider-lrclib')).queryByRole('checkbox', {
+          name: /Save lyrics from/,
+        }),
+      ).toBeNull()
     })
 
     it('switches a ready provider off and on', async () => {
@@ -169,31 +318,38 @@ describe('<LyricsSettings />', () => {
 
     it('cannot turn on a provider that is not usable', async () => {
       await load()
-      for (const name of ['Musixmatch', 'KuGou Music', 'Apple Music'])
+      for (const name of ['Musixmatch', 'Apple Music'])
         expect(toggle(name)).toBeDisabled()
     })
 
-    it('says an unverified provider is unverified, and that its lyrics are not saved', async () => {
+    it('does not claim a provider works before it has been seen working', async () => {
       api.settings.mockResolvedValue({
         settings,
         providers: [
           {
-            id: 'musixmatch',
-            name: 'Musixmatch',
+            id: 'qq',
+            name: 'QQ Music',
             status: 'ready',
             enabled: true,
-            verified: false,
+            implemented: true,
+            configured: true,
+            auth: 'optional-key',
+            availability: 'available',
+            liveVerified: false,
+            karaokeVerified: false,
+            wordSync: true,
             storable: false,
           },
         ],
       })
       await load()
+      const qq = card('qq')
+      expect(qq.getByText('Not seen working yet')).toBeInTheDocument()
+      expect(qq.getByText('Karaoke not seen yet')).toBeInTheDocument()
       expect(
-        screen.getByText(/not checked against the live service/),
+        qq.getByText('Works without a key; a key adds more', { exact: false }),
       ).toBeInTheDocument()
-      expect(
-        screen.getByText(/lyrics are shown but not saved/),
-      ).toBeInTheDocument()
+      expect(qq.getByText('Preview only')).toBeInTheDocument()
     })
   })
 

@@ -31,7 +31,7 @@ const errorText = (t, e) => {
     case 'not-storable':
       return t(
         'ui.lyrics.error.notStorable',
-        'This provider does not allow its lyrics to be saved.',
+        'Saving is off for this provider. An administrator can allow it in Settings, under Lyrics and Providers.',
       )
     case 'no-candidate':
       return t(

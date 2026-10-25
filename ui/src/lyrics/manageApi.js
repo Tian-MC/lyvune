@@ -14,6 +14,7 @@ const send = (method, path, body, options = {}) =>
 export const lyricsApi = {
   settings: () => send('GET', '/settings'),
   saveSettings: (settings) => send('PUT', '/settings', settings),
+  checkProviders: () => send('POST', '/providers/check', {}),
   status: (id, options) => send('GET', `/song/${id}`, undefined, options),
   resolve: (id, options) => send('POST', `/song/${id}/resolve`, {}, options),
   search: (id, body = {}) => send('POST', `/song/${id}/search`, body),
