@@ -1,32 +1,40 @@
 import React from 'react'
+import markUrl from './logo-mark.svg'
+import horizontalUrl from './logo-horizontal.svg'
 import styles from './Logo.module.css'
 
-/** The Lyvune vinyl mark (vector rendition of the official logo). */
+// The icon is 129 x 240 and the horizontal logo 709 x 200: both are set by
+// their height, so they stay as drawn
+const MARK_RATIO = 129 / 240
+const HORIZONTAL_RATIO = 709 / 200
+
+/** The Lyvune icon: three bars cut by a diagonal. */
 export const LogoMark = ({ size = 28 }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 64 64"
+  <img
+    src={markUrl}
+    alt=""
     aria-hidden
+    height={size}
+    width={Math.round(size * MARK_RATIO)}
     className={styles.mark}
-  >
-    <circle cx="32" cy="32" r="30" fill="#1faf8b" />
-    <g fill="none" stroke="#0a1110" strokeWidth="2.6" strokeLinecap="round">
-      <path d="M12.5 26.5A21 21 0 0 1 26.5 12.5" />
-      <path d="M17.6 28.4A15 15 0 0 1 28.4 17.6" />
-      <path d="M51.5 37.5A21 21 0 0 1 37.5 51.5" />
-      <path d="M46.4 35.6A15 15 0 0 1 35.6 46.4" />
-    </g>
-    <circle cx="32" cy="32" r="9.5" fill="#ddfbf1" />
-    <circle cx="32" cy="32" r="4.2" fill="#0a1110" />
-    <circle cx="32" cy="32" r="1.6" fill="#ddfbf1" />
-  </svg>
+  />
 )
 
-export const Logo = ({ compact }) => (
+/** The icon with the wordmark, or the icon alone when the sidebar is collapsed. */
+export const Logo = ({ compact, size = 30 }) => (
   <span className={styles.root}>
-    <LogoMark />
-    {!compact && <span className={styles.word}>Lyvune</span>}
+    {compact ? (
+      <LogoMark size={size} />
+    ) : (
+      <img
+        src={horizontalUrl}
+        alt=""
+        aria-hidden
+        height={size}
+        width={Math.round(size * HORIZONTAL_RATIO)}
+        className={styles.mark}
+      />
+    )}
   </span>
 )
 

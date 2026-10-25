@@ -69,7 +69,7 @@ function manifest() {
     categories: ['music', 'entertainment'],
     display: 'standalone',
     start_url: './',
-    background_color: '#0a1110',
+    background_color: '#06241c',
     theme_color: '#0a1110',
     icons: [
       {

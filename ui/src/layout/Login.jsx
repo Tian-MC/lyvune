@@ -16,7 +16,7 @@ import {
   useTranslate,
   useVersion,
 } from 'react-admin'
-import Logo from '../icons/android-icon-192x192.png'
+import Logo from '../shell/logo-app-icon.svg'
 
 import Notification from './Notification'
 import useCurrentTheme from '../themes/useCurrentTheme'
@@ -127,7 +127,7 @@ const FormLogin = ({ loading, handleSubmit, validate }) => {
               </div>
               <div className={classes.systemName}>
                 <a
-                  href="https://www.navidrome.org"
+                  href="https://github.com/Tian-MC/lyvune"
                   target="_blank"
                   rel="noopener noreferrer"
                   className={classes.systemNameLink}

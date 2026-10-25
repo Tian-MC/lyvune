@@ -19,7 +19,7 @@ import {
   PrevIcon,
   SongIcon,
 } from '../design/icons'
-import { LogoMark } from '../shell/Logo'
+import { Logo } from '../shell/Logo'
 import styles from './SharePlayer.module.css'
 
 // How long the download button stays inert after a click. The browser needs a
@@ -206,8 +206,7 @@ const SharePlayerView = ({ info }) => {
       </div>
 
       <header className={styles.brand}>
-        <LogoMark size={26} />
-        <span>Lyvune</span>
+        <Logo size={28} />
       </header>
 
       <main className={styles.main}>
