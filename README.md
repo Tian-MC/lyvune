@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/brand/transparent/logo-horizontal-for-dark-bg.svg">
+    <img alt="Lyvune" src="docs/brand/transparent/logo-horizontal-for-light-bg.svg" width="420">
+  </picture>
+</p>
+
 # Lyvune
 
 Lyvune is an open source web-based music server and streamer, with a rewritten web interface, word-by-word karaoke
@@ -7,6 +14,12 @@ Reimagined*) and keeps its code, its license and its copyright notices.
 The frontend in `ui/` was rebuilt, and the backend gained a lyrics engine. The REST and Subsonic APIs, authentication,
 the database, library scanning and streaming are otherwise the upstream code, so existing Subsonic clients,
 configuration and data keep working. The fork is based on upstream `master` at commit `ec2e0a9e`.
+
+## Brand
+
+The logos are in [`docs/brand`](docs/brand): the icon, the wordmark, the horizontal logo and the app icon, each in
+dark, light and monochrome versions (SVG, and PNG for the transparent set), plus the small-size tests the favicons
+come from.
 
 ## Screenshots
 
