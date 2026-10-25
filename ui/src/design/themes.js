@@ -5,7 +5,7 @@ import {
 } from './muiTheme'
 import { describeLegacyTheme } from './legacyThemes'
 
-// The two official variants of the black-and-blue identity
+// The two official variants of the black-and-green identity
 const themes = {
   NavidromeTheme,
   NavidromeOledTheme,

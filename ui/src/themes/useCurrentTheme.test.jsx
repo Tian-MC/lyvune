@@ -17,7 +17,7 @@ describe('useCurrentTheme', () => {
       wrapper: wrapperFor('NavidromeTheme'),
     })
     expect(result.current.themeName).toBe('Lyvune')
-    expect(result.current.palette.primary.main).toBe('#0084ff')
+    expect(result.current.palette.primary.main).toBe('#1faf8b')
     expect(document.documentElement.dataset.theme).toBe('default')
   })
 
@@ -27,7 +27,7 @@ describe('useCurrentTheme', () => {
     })
     expect(result.current.themeName).toBe('Dracula')
     expect(result.current.legacy.support).toBe('tinted')
-    expect(document.documentElement.style.getPropertyValue('--nd-blue')).toBe(
+    expect(document.documentElement.style.getPropertyValue('--accent')).toBe(
       '#bd93f9',
     )
   })
@@ -38,9 +38,7 @@ describe('useCurrentTheme', () => {
     })
     expect(result.current.themeName).toBe('Lyvune')
     expect(result.current.legacy.support).toBe('unsupported')
-    expect(document.documentElement.style.getPropertyValue('--nd-blue')).toBe(
-      '',
-    )
+    expect(document.documentElement.style.getPropertyValue('--accent')).toBe('')
   })
 
   it('maps Dark and Extra Dark to the official variants', () => {

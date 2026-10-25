@@ -95,9 +95,9 @@
 
 .searchInput:focus {
   outline: none;
-  border-color: var(--nd-blue);
+  border-color: var(--accent);
   background: rgb(255 255 255 / 9%);
-  box-shadow: 0 0 0 3px var(--nd-blue-soft);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 .kbd {

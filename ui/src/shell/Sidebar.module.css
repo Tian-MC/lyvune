@@ -116,11 +116,11 @@
 .active {
   color: var(--text-1);
   font-weight: var(--weight-semibold);
-  background: var(--nd-blue-softer);
+  background: var(--accent-softer);
 }
 
 .active .itemIcon {
-  color: var(--nd-blue);
+  color: var(--accent);
 }
 
 .active::before {
@@ -131,7 +131,7 @@
   bottom: 9px;
   width: 3px;
   border-radius: 0 3px 3px 0;
-  background: var(--nd-blue);
+  background: var(--accent);
 }
 
 .collapsed .item {
@@ -210,8 +210,8 @@
 
 .dropTarget {
   color: var(--text-1);
-  background: var(--nd-blue-soft);
-  box-shadow: inset 0 0 0 1px var(--nd-blue);
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px var(--accent);
 }
 
 .emptyPlaylists {

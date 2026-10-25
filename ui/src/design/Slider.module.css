@@ -41,7 +41,7 @@
 .root:hover .fill,
 .dragging .fill,
 .root:focus-within .fill {
-  background: var(--nd-blue);
+  background: var(--accent);
 }
 
 .root:hover .track,
@@ -118,11 +118,11 @@
 }
 
 .input:focus-visible::-webkit-slider-thumb {
-  box-shadow: 0 0 0 3px var(--nd-blue);
+  box-shadow: 0 0 0 3px var(--accent);
 }
 
 .input:focus-visible::-moz-range-thumb {
-  box-shadow: 0 0 0 3px var(--nd-blue);
+  box-shadow: 0 0 0 3px var(--accent);
 }
 
 .disabled {

@@ -76,13 +76,13 @@
 
 /* Primary playback action */
 .filled {
-  background: var(--nd-blue);
+  background: var(--accent);
   color: var(--text-on-accent);
-  box-shadow: 0 6px 18px rgb(0 132 255 / 28%);
+  box-shadow: 0 6px 18px rgb(31 175 139 / 28%);
 }
 
 .filled:hover:not(:disabled) {
-  background: var(--nd-blue-hover);
+  background: var(--accent-hover);
   color: var(--text-on-accent);
 }
 
@@ -99,11 +99,11 @@
 
 /* Toggle on (shuffle, repeat, lyrics…) — colour plus a dot, never colour alone */
 .active {
-  color: var(--nd-blue);
+  color: var(--accent);
 }
 
 .active:hover {
-  color: var(--nd-blue-hover);
+  color: var(--accent-hover);
 }
 
 .active::after {

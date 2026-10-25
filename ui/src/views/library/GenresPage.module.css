@@ -17,7 +17,7 @@
   background:
     radial-gradient(
       120% 140% at 100% 0%,
-      var(--nd-blue-softer),
+      var(--accent-softer),
       transparent 60%
     ),
     var(--surface-1);

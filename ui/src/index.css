@@ -46,7 +46,7 @@ button {
 }
 
 ::selection {
-  background: var(--nd-blue-soft);
+  background: var(--accent-soft);
   color: var(--text-1);
 }
 
@@ -55,7 +55,7 @@ button {
 }
 
 :focus-visible {
-  outline: 2px solid var(--nd-blue);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: var(--radius-xs);
 }

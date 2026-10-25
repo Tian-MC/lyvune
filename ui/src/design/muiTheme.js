@@ -3,30 +3,30 @@
 // through this theme, so legacy screens share the new visual language.
 
 export const tokens = {
-  blue: '#0084ff',
-  blueHover: '#2a97ff',
-  blueSolid: '#0073de',
-  blueText: '#4ba6ff',
-  blueSolidHover: '#0a7ce9',
-  blueSoft: 'rgba(0, 132, 255, 0.14)',
-  blueSoftHover: 'rgba(0, 132, 255, 0.2)',
-  blueBorder: 'rgba(0, 132, 255, 0.5)',
-  textOnAccent: '#ffffff',
-  surface3Hover: '#2a2d34',
-  bgApp: '#08090b',
-  bgElevated: '#101114',
-  surface1: '#121317',
-  surface2: '#181a1f',
-  surface3: '#202228',
-  hover: 'rgba(255, 255, 255, 0.05)',
-  active: 'rgba(255, 255, 255, 0.08)',
-  borderSubtle: 'rgba(255, 255, 255, 0.06)',
-  borderDefault: 'rgba(255, 255, 255, 0.10)',
-  borderStrong: 'rgba(255, 255, 255, 0.18)',
-  text1: '#f4f5f7',
-  text2: 'rgba(235, 238, 245, 0.66)',
-  text3: 'rgba(235, 238, 245, 0.50)',
-  textDisabled: 'rgba(235, 238, 245, 0.30)',
+  accent: '#1faf8b',
+  accentHover: '#34c79d',
+  accentSolid: '#1faf8b',
+  accentText: '#34c79d',
+  accentSolidHover: '#34c79d',
+  accentSoft: 'rgba(31, 175, 139, 0.14)',
+  accentSoftHover: 'rgba(31, 175, 139, 0.2)',
+  accentBorder: 'rgba(31, 175, 139, 0.5)',
+  textOnAccent: '#0a1110',
+  surface3Hover: '#273732',
+  bgApp: '#0a1110',
+  bgElevated: '#0f1816',
+  surface1: '#121c1a',
+  surface2: '#182421',
+  surface3: '#1f2d29',
+  hover: 'rgba(221, 251, 241, 0.05)',
+  active: 'rgba(221, 251, 241, 0.08)',
+  borderSubtle: 'rgba(221, 251, 241, 0.07)',
+  borderDefault: 'rgba(221, 251, 241, 0.11)',
+  borderStrong: 'rgba(221, 251, 241, 0.20)',
+  text1: '#ddfbf1',
+  text2: 'rgba(221, 251, 241, 0.68)',
+  text3: 'rgba(221, 251, 241, 0.52)',
+  textDisabled: 'rgba(221, 251, 241, 0.30)',
   danger: '#ff5c5c',
   warning: '#f5b84a',
   success: '#3ccf91',
@@ -59,8 +59,8 @@ export const createNavidromeTheme = ({
     legacy,
     palette: {
       type: 'dark',
-      primary: { main: t.blue, light: t.blueHover, dark: t.blueSolid },
-      secondary: { main: t.blue, light: t.blueHover, dark: t.blueSolid },
+      primary: { main: t.accent, light: t.accentHover, dark: t.accentSolid },
+      secondary: { main: t.accent, light: t.accentHover, dark: t.accentSolid },
       error: { main: t.danger },
       warning: { main: t.warning },
       success: { main: t.success },
@@ -73,7 +73,7 @@ export const createNavidromeTheme = ({
       divider: t.borderSubtle,
       action: {
         hover: t.hover,
-        selected: t.blueSoft,
+        selected: t.accentSoft,
         active: t.text2,
         disabled: t.textDisabled,
         disabledBackground: 'rgba(255,255,255,0.06)',
@@ -143,13 +143,13 @@ export const createNavidromeTheme = ({
           padding: '7px 18px',
           transition: `background-color 150ms ${t.ease}, color 150ms ${t.ease}, border-color 150ms ${t.ease}`,
           '&:focus-visible': {
-            boxShadow: `0 0 0 2px ${bgApp}, 0 0 0 4px ${t.blue}`,
+            boxShadow: `0 0 0 2px ${bgApp}, 0 0 0 4px ${t.accent}`,
           },
         },
         text: { padding: '7px 14px', color: t.text1 },
         textPrimary: {
-          color: t.blueText,
-          '&:hover': { backgroundColor: t.blueSoft },
+          color: t.accentText,
+          '&:hover': { backgroundColor: t.accentSoft },
         },
         contained: {
           backgroundColor: t.surface3,
@@ -159,14 +159,14 @@ export const createNavidromeTheme = ({
           '&:active': { boxShadow: 'none' },
         },
         containedPrimary: {
-          backgroundColor: t.blueSolid,
+          backgroundColor: t.accentSolid,
           color: t.textOnAccent,
-          '&:hover': { backgroundColor: t.blueSolidHover },
+          '&:hover': { backgroundColor: t.accentSolidHover },
         },
         outlined: { borderColor: t.borderStrong, padding: '6px 17px' },
         outlinedPrimary: {
-          borderColor: t.blueBorder,
-          color: t.blueText,
+          borderColor: t.accentBorder,
+          color: t.accentText,
         },
         sizeSmall: { padding: '4px 12px', fontSize: '0.8125rem' },
         startIcon: { marginRight: 6 },
@@ -177,9 +177,9 @@ export const createNavidromeTheme = ({
           padding: 10,
           transition: `background-color 150ms ${t.ease}, color 150ms ${t.ease}`,
           '&:hover': { color: t.text1, backgroundColor: t.hover },
-          '&:focus-visible': { boxShadow: `0 0 0 2px ${t.blue}` },
+          '&:focus-visible': { boxShadow: `0 0 0 2px ${t.accent}` },
         },
-        colorPrimary: { color: t.blue },
+        colorPrimary: { color: t.accent },
         sizeSmall: { padding: 6 },
       },
       MuiOutlinedInput: {
@@ -188,7 +188,7 @@ export const createNavidromeTheme = ({
           backgroundColor: 'rgba(255,255,255,0.03)',
           '&:hover $notchedOutline': { borderColor: t.borderStrong },
           '&$focused $notchedOutline': {
-            borderColor: t.blue,
+            borderColor: t.accent,
             borderWidth: 1.5,
           },
         },
@@ -208,21 +208,21 @@ export const createNavidromeTheme = ({
         underline: {
           '&:before': { borderBottom: 'none' },
           '&:hover:not($disabled):before': { borderBottom: 'none' },
-          '&:after': { borderBottomColor: t.blue, left: 10, right: 10 },
+          '&:after': { borderBottomColor: t.accent, left: 10, right: 10 },
         },
       },
       MuiInput: {
         underline: {
           '&:before': { borderBottomColor: t.borderDefault },
-          '&:after': { borderBottomColor: t.blue },
+          '&:after': { borderBottomColor: t.accent },
         },
       },
       MuiInputLabel: {
-        root: { color: t.text2, '&$focused': { color: t.blueText } },
+        root: { color: t.text2, '&$focused': { color: t.accentText } },
         outlined: { transform: 'translate(14px, 15px) scale(1)' },
       },
       MuiFormLabel: {
-        root: { color: t.text2, '&$focused': { color: t.blueText } },
+        root: { color: t.text2, '&$focused': { color: t.accentText } },
       },
       MuiFormHelperText: { root: { color: t.text3 } },
       MuiSelect: { icon: { color: t.text2 } },
@@ -251,16 +251,16 @@ export const createNavidromeTheme = ({
           paddingBottom: 7,
           '&:hover': { backgroundColor: t.hover },
           '&$selected': {
-            backgroundColor: t.blueSoft,
-            '&:hover': { backgroundColor: t.blueSoftHover },
+            backgroundColor: t.accentSoft,
+            '&:hover': { backgroundColor: t.accentSoftHover },
           },
         },
       },
       MuiListItem: {
         root: {
           '&$selected': {
-            backgroundColor: t.blueSoft,
-            '&:hover': { backgroundColor: t.blueSoftHover },
+            backgroundColor: t.accentSoft,
+            '&:hover': { backgroundColor: t.accentSoftHover },
           },
         },
         button: { '&:hover': { backgroundColor: t.hover } },
@@ -321,7 +321,7 @@ export const createNavidromeTheme = ({
           height: 28,
         },
         outlined: { borderColor: t.borderDefault },
-        colorPrimary: { backgroundColor: t.blueSoft, color: t.blueText },
+        colorPrimary: { backgroundColor: t.accentSoft, color: t.accentText },
         clickable: {
           '&:hover, &:focus': { backgroundColor: 'rgba(255,255,255,0.12)' },
         },
@@ -347,7 +347,7 @@ export const createNavidromeTheme = ({
       MuiTableRow: {
         root: {
           '&$hover:hover': { backgroundColor: t.hover },
-          '&$selected, &$selected:hover': { backgroundColor: t.blueSoft },
+          '&$selected, &$selected:hover': { backgroundColor: t.accentSoft },
         },
       },
       MuiTableSortLabel: {
@@ -361,12 +361,12 @@ export const createNavidromeTheme = ({
         track: { backgroundColor: 'rgba(255,255,255,0.3)', opacity: 1 },
         colorPrimary: {
           '&$checked': { color: '#fff' },
-          '&$checked + $track': { backgroundColor: t.blue, opacity: 1 },
+          '&$checked + $track': { backgroundColor: t.accent, opacity: 1 },
         },
       },
       MuiCheckbox: { root: { color: t.text3 } },
       MuiTabs: {
-        indicator: { backgroundColor: t.blue, height: 2, borderRadius: 2 },
+        indicator: { backgroundColor: t.accent, height: 2, borderRadius: 2 },
       },
       MuiTab: {
         root: {
@@ -380,18 +380,18 @@ export const createNavidromeTheme = ({
       },
       MuiLinearProgress: {
         colorPrimary: { backgroundColor: 'rgba(255,255,255,0.1)' },
-        barColorPrimary: { backgroundColor: t.blue },
+        barColorPrimary: { backgroundColor: t.accent },
       },
-      MuiCircularProgress: { colorPrimary: { color: t.blue } },
+      MuiCircularProgress: { colorPrimary: { color: t.accent } },
       MuiExpansionPanel: { root: { backgroundColor: paper } },
       MuiAccordion: {
         root: { backgroundColor: paper, '&:before': { display: 'none' } },
       },
-      MuiLink: { root: { color: t.blueText } },
+      MuiLink: { root: { color: t.accentText } },
       MuiAvatar: {
         colorDefault: { backgroundColor: t.surface3, color: t.text2 },
       },
-      MuiBadge: { colorPrimary: { backgroundColor: t.blue } },
+      MuiBadge: { colorPrimary: { backgroundColor: t.accent } },
       MuiDrawer: {
         paper: { backgroundColor: t.bgElevated, borderRight: 'none' },
       },
@@ -456,7 +456,7 @@ export const createNavidromeTheme = ({
       RaShow: { card: { overflow: 'visible' } },
       RaFilterForm: { form: { alignItems: 'center' } },
       RaSearchInput: { input: { marginTop: 0 } },
-      RaPaginationActions: { currentPageButton: { color: t.blueText } },
+      RaPaginationActions: { currentPageButton: { color: t.accentText } },
       RaLinearProgress: { root: { margin: 8, borderRadius: 2 } },
       RaSidebar: { drawerPaper: { backgroundColor: 'transparent' } },
       RaNotification: {},
@@ -464,7 +464,7 @@ export const createNavidromeTheme = ({
       // legacy Lyvune component overrides
       NDLogin: {
         main: { backgroundColor: bgApp },
-        systemNameLink: { color: t.blue },
+        systemNameLink: { color: t.accent },
         card: {
           minWidth: 320,
           backgroundColor: 'rgba(18,19,23,0.88)',

@@ -10,11 +10,11 @@ import { contrast, luminance, mix, withAlpha } from './color'
 // - "unsupported": light themes; Lyvune is used and the UI says so
 // The legacy definitions themselves are untouched (src/themes/).
 
-const BRAND = '#0084ff'
-const DEFAULT_BG = '#08090b'
+const BRAND = '#1faf8b'
+const DEFAULT_BG = '#0a1110'
 const WHITE = '#ffffff'
 const BLACK = '#000000'
-const TEXT = '#ebeef5'
+const TEXT = '#ddfbf1'
 
 const SUCCESSORS = {
   DarkTheme: 'NavidromeTheme',
@@ -49,19 +49,19 @@ export const computeTint = (accent, bg) => {
     textOnAccent === WHITE ? ensureContrast(accent, WHITE, 4.5, BLACK) : accent
   const surface2 = mix(bg, WHITE, 0.07)
   return {
-    blue: accent,
-    blueHover: mix(accent, WHITE, 0.15),
-    blueSolid: solid,
-    blueSolidHover: mix(solid, WHITE, 0.08),
-    blueSoftHover: withAlpha(accent, 0.2),
-    blueBorder: withAlpha(accent, 0.5),
+    accent: accent,
+    accentHover: mix(accent, WHITE, 0.15),
+    accentSolid: solid,
+    accentSolidHover: mix(solid, WHITE, 0.08),
+    accentSoftHover: withAlpha(accent, 0.2),
+    accentBorder: withAlpha(accent, 0.5),
     text2: readable(surface2, 7),
     text3: readable(surface2, 4.5),
     surface3Hover: mix(bg, WHITE, 0.15),
-    blueText: ensureContrast(accent, bg, 4.5, WHITE),
-    blueSoft: withAlpha(accent, 0.14),
-    blueSofter: withAlpha(accent, 0.08),
-    blueGlow: withAlpha(accent, 0.35),
+    accentText: ensureContrast(accent, bg, 4.5, WHITE),
+    accentSoft: withAlpha(accent, 0.14),
+    accentSofter: withAlpha(accent, 0.08),
+    accentGlow: withAlpha(accent, 0.35),
     textOnAccent,
     bgApp: bg,
     bgSidebar: mix(bg, BLACK, 0.3),
@@ -74,14 +74,14 @@ export const computeTint = (accent, bg) => {
 
 /** CSS custom properties (design/tokens.css) for a tint. */
 export const tintCssVars = (tint) => ({
-  '--nd-blue': tint.blue,
-  '--nd-blue-hover': tint.blueHover,
-  '--nd-blue-solid': tint.blueSolid,
-  '--nd-blue-solid-hover': tint.blueSolidHover,
-  '--nd-blue-text': tint.blueText,
-  '--nd-blue-soft': tint.blueSoft,
-  '--nd-blue-softer': tint.blueSofter,
-  '--nd-blue-glow': tint.blueGlow,
+  '--accent': tint.accent,
+  '--accent-hover': tint.accentHover,
+  '--accent-solid': tint.accentSolid,
+  '--accent-solid-hover': tint.accentSolidHover,
+  '--accent-text': tint.accentText,
+  '--accent-soft': tint.accentSoft,
+  '--accent-softer': tint.accentSofter,
+  '--accent-glow': tint.accentGlow,
   '--text-on-accent': tint.textOnAccent,
   '--text-2': tint.text2,
   '--text-3': tint.text3,

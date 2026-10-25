@@ -169,7 +169,7 @@
 
 .notesOpen a,
 .notes a {
-  color: var(--nd-blue-text);
+  color: var(--accent-text);
 }
 
 .more {

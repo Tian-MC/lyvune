@@ -3,11 +3,11 @@
 }
 
 .loved {
-  color: var(--nd-blue);
+  color: var(--accent);
 }
 
 .loved:hover {
-  color: var(--nd-blue-hover);
+  color: var(--accent-hover);
 }
 
 .loved svg {

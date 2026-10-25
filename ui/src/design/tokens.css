@@ -4,38 +4,38 @@
  * two in sync (see DESIGN_SYSTEM.md).
  */
 :root {
-  /* Brand — Lyvune Blue, extracted from the official logo (#0084FF) */
-  --nd-blue: #0084ff;
-  --nd-blue-hover: #2a97ff;
-  --nd-blue-solid: #0073de; /* filled controls with text: 4.6:1 against white */
-  --nd-blue-solid-hover: #0a7ce9;
-  --nd-blue-text: #4ba6ff; /* blue used for small text on dark surfaces */
-  --nd-blue-soft: rgb(0 132 255 / 14%);
-  --nd-blue-softer: rgb(0 132 255 / 8%);
-  --nd-blue-glow: rgb(0 132 255 / 35%);
+  /* Brand — the Lyvune greens (#1FAF8B and #34C79D) on a near-black green (#0A1110), text in mint (#DDFBF1) */
+  --accent: #1faf8b;
+  --accent-hover: #34c79d;
+  --accent-solid: #1faf8b; /* filled controls take dark text: 6.9:1 against #0a1110 */
+  --accent-solid-hover: #34c79d;
+  --accent-text: #34c79d; /* the accent as small text on dark surfaces: 8.9:1 */
+  --accent-soft: rgb(31 175 139 / 14%);
+  --accent-softer: rgb(31 175 139 / 8%);
+  --accent-glow: rgb(31 175 139 / 35%);
 
-  /* Surfaces — neutral near-blacks with a hint of cool */
-  --bg-app: #08090b;
-  --bg-sidebar: #050607;
-  --bg-elevated: #101114;
-  --surface-1: #121317;
-  --surface-2: #181a1f;
-  --surface-3: #202228;
-  --surface-hover: rgb(255 255 255 / 5%);
-  --surface-active: rgb(255 255 255 / 8%);
-  --surface-glass: rgb(16 17 20 / 72%);
+  /* Surfaces — near-blacks with a hint of green */
+  --bg-app: #0a1110;
+  --bg-sidebar: #070d0c;
+  --bg-elevated: #0f1816;
+  --surface-1: #121c1a;
+  --surface-2: #182421;
+  --surface-3: #1f2d29;
+  --surface-hover: rgb(221 251 241 / 5%);
+  --surface-active: rgb(221 251 241 / 8%);
+  --surface-glass: rgb(15 24 22 / 72%);
   --scrim: rgb(0 0 0 / 60%);
 
-  --border-subtle: rgb(255 255 255 / 6%);
-  --border-default: rgb(255 255 255 / 10%);
-  --border-strong: rgb(255 255 255 / 18%);
+  --border-subtle: rgb(221 251 241 / 7%);
+  --border-default: rgb(221 251 241 / 11%);
+  --border-strong: rgb(221 251 241 / 20%);
 
   /* Text */
-  --text-1: #f4f5f7;
-  --text-2: rgb(235 238 245 / 66%);
-  --text-3: rgb(235 238 245 / 50%);
-  --text-disabled: rgb(235 238 245 / 30%);
-  --text-on-accent: #ffffff;
+  --text-1: #ddfbf1;
+  --text-2: rgb(221 251 241 / 68%);
+  --text-3: rgb(221 251 241 / 52%);
+  --text-disabled: rgb(221 251 241 / 30%);
+  --text-on-accent: #0a1110;
 
   /* Feedback */
   --danger: #ff5c5c;
@@ -127,7 +127,7 @@
   --safe-right: env(safe-area-inset-right, 0px);
 
   /* Focus */
-  --focus-ring: 0 0 0 2px var(--bg-app), 0 0 0 4px var(--nd-blue);
+  --focus-ring: 0 0 0 2px var(--bg-app), 0 0 0 4px var(--accent);
 
   /* Layers */
   --z-sticky: 10;
@@ -153,9 +153,9 @@
 :root[data-theme='oled'] {
   --bg-app: #000000;
   --bg-sidebar: #000000;
-  --bg-elevated: #0b0b0d;
-  --surface-1: #0b0b0d;
-  --surface-2: #121316;
-  --surface-3: #1a1b1f;
-  --surface-glass: rgb(8 8 10 / 76%);
+  --bg-elevated: #080f0e;
+  --surface-1: #080f0e;
+  --surface-2: #0e1816;
+  --surface-3: #152220;
+  --surface-glass: rgb(6 10 9 / 76%);
 }

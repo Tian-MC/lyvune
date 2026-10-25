@@ -65,7 +65,7 @@
 
 .bio a,
 .bioOpen a {
-  color: var(--nd-blue-text);
+  color: var(--accent-text);
 }
 
 @media (max-width: 699px) {

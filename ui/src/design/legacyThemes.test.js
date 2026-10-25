@@ -46,8 +46,8 @@ describe('legacy theme compatibility', () => {
   })
 
   it('tints dark themes and keeps their accent', () => {
-    expect(describeLegacyTheme('DraculaTheme').tint.blue).toBe('#bd93f9')
-    expect(describeLegacyTheme('SpotifyTheme').tint.blue).toBe('#1db954')
+    expect(describeLegacyTheme('DraculaTheme').tint.accent).toBe('#bd93f9')
+    expect(describeLegacyTheme('SpotifyTheme').tint.accent).toBe('#1db954')
   })
 
   it('resolves a server DefaultTheme name to a theme id', () => {
@@ -56,7 +56,7 @@ describe('legacy theme compatibility', () => {
   })
 
   it('exposes only known css custom properties', () => {
-    Object.keys(tintCssVars(computeTint('#0084ff', '#08090b'))).forEach(
+    Object.keys(tintCssVars(computeTint('#1faf8b', '#0a1110'))).forEach(
       (name) => expect(name).toMatch(/^--[a-z0-9-]+$/),
     )
   })
@@ -70,14 +70,14 @@ describe('legacy theme compatibility', () => {
     })
 
     it('keeps accent text and filled controls readable', () => {
-      expect(contrast(tint.blueText, tint.bgApp)).toBeGreaterThanOrEqual(4.5)
+      expect(contrast(tint.accentText, tint.bgApp)).toBeGreaterThanOrEqual(4.5)
       expect(
-        contrast(tint.textOnAccent, tint.blueSolid),
+        contrast(tint.textOnAccent, tint.accentSolid),
       ).toBeGreaterThanOrEqual(4.5)
     })
 
     it('keeps the accent visible against the background', () => {
-      expect(contrast(tint.blue, tint.bgApp)).toBeGreaterThanOrEqual(3)
+      expect(contrast(tint.accent, tint.bgApp)).toBeGreaterThanOrEqual(3)
     })
 
     it('keeps a dark canvas', () => {

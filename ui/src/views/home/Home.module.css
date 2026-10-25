@@ -73,7 +73,7 @@
 
 .eyebrow {
   margin: 0 0 var(--space-2);
-  color: var(--nd-blue-text);
+  color: var(--accent-text);
   font-size: var(--text-micro);
   font-weight: var(--weight-semibold);
   letter-spacing: var(--tracking-overline);
@@ -114,7 +114,7 @@
 
 .track > div {
   height: 100%;
-  background: var(--nd-blue);
+  background: var(--accent);
   transition: width 250ms linear;
 }
 

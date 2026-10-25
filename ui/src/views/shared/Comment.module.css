@@ -5,7 +5,7 @@
 }
 
 .comment a {
-  color: var(--nd-blue-text);
+  color: var(--accent-text);
   text-decoration: underline;
   text-underline-offset: 2px;
 }

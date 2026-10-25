@@ -1,6 +1,6 @@
 // Colour helpers for artwork-derived ambience. The server computes a
 // `dominantColor` for every artwork; these helpers tame it so it can light a
-// background without ever competing with Lyvune Blue or hurting contrast.
+// background without ever competing with the Lyvune accent or hurting contrast.
 
 const clamp = (v, min, max) => Math.min(max, Math.max(min, v))
 
@@ -36,7 +36,7 @@ const rgbToHsl = ({ r, g, b }) => {
  * `hsl(var(--ambient) / alpha)`. Saturation and lightness are bounded so that
  * neon covers stay elegant and white covers still produce a visible glow.
  */
-export const ambientFrom = (hex, fallback = '212 30% 22%') => {
+export const ambientFrom = (hex, fallback = '165 30% 20%') => {
   const rgb = hexToRgb(hex)
   if (!rgb) return fallback
   const { h, s, l } = rgbToHsl(rgb)

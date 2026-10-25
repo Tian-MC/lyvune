@@ -30,19 +30,19 @@
 }
 
 .row:focus-visible {
-  box-shadow: inset 0 0 0 2px var(--nd-blue);
+  box-shadow: inset 0 0 0 2px var(--accent);
 }
 
 .current {
-  background: var(--nd-blue-softer);
+  background: var(--accent-softer);
 }
 
 .current:hover {
-  background: var(--nd-blue-soft);
+  background: var(--accent-soft);
 }
 
 .current .title {
-  color: var(--nd-blue-text);
+  color: var(--accent-text);
 }
 
 .lead {
@@ -335,15 +335,15 @@
 }
 
 .check input:checked + span {
-  border-color: var(--nd-blue);
-  background: var(--nd-blue);
+  border-color: var(--accent);
+  background: var(--accent);
   color: #fff;
 }
 
 .check input:focus-visible + span {
   box-shadow:
     0 0 0 2px var(--bg-app),
-    0 0 0 4px var(--nd-blue);
+    0 0 0 4px var(--accent);
 }
 
 .row:hover .check,
@@ -354,7 +354,7 @@
 
 .selected,
 .selected:hover {
-  background: var(--nd-blue-soft);
+  background: var(--accent-soft);
 }
 
 .selecting {
@@ -370,7 +370,7 @@
 
 /* Reorder drop target */
 .dropOver {
-  box-shadow: inset 0 2px 0 var(--nd-blue);
+  box-shadow: inset 0 2px 0 var(--accent);
 }
 
 /* Empty rating stars only appear on hover/focus; given ratings stay visible */

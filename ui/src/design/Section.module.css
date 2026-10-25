@@ -258,7 +258,7 @@
   gap: 2px;
   width: 14px;
   height: 14px;
-  color: var(--nd-blue);
+  color: var(--accent);
 }
 
 .bars span {

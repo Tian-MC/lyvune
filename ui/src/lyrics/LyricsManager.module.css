@@ -47,7 +47,7 @@
 }
 
 .tabActive {
-  border-bottom-color: var(--nd-blue);
+  border-bottom-color: var(--accent);
   color: var(--text-1);
 }
 
@@ -116,8 +116,8 @@
 }
 
 .q_karaoke {
-  border-color: var(--nd-blue);
-  color: var(--nd-blue-text);
+  border-color: var(--accent);
+  color: var(--accent-text);
 }
 
 .q_synced {
