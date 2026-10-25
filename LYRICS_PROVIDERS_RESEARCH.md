@@ -33,7 +33,7 @@ What was found about NetEase Cloud Music, KuGou Music and Musixmatch, how each w
 | Word timing | **Yes, for some songs.** For *Judas* the answer carried 9.5 KB of YRC; for another song none. The adapter parses `yrc` when present and otherwise classifies the result as line-synced. |
 | Translation / romanization | Yes, as separate tracks, kept apart from the original |
 | Limits | Undocumented; no rate limit was hit. Requests are spaced 400 ms and 429 is honoured. The original of some songs is missing from search (covers, live and remix versions come back instead, and are rejected). |
-| Storage | No terms were found that grant it. **Not saved unless `Lyrics.NetEase.Store` is on.** |
+| Storage | No terms were found that grant it. **Never kept** (shown while playing from memory only); see the storage policy in `LYRICS_ENGINE.md`. |
 | Confidence | Medium. Works today; undocumented endpoints can change. |
 
 Is the YRC genuine? In the sample, 7 of 55 multi-word lines had words of identical length (chanted "oh oh oh oh" lines); the rest varied. The guard (`rejectSyntheticWordTiming`) only distrusts a document where most lines look divided by formula.
@@ -49,7 +49,7 @@ Is the YRC genuine? In the sample, 7 of 55 multi-word lines had words of identic
 | Word timing | **Yes.** A real KRC of a Japanese song had 80 lines, 0 of them evenly divided; *Judas* gave 518 word cues. |
 | Translation / romanization | In the KRC `[language:]` block, kept as separate tracks. The first sample file had romanization and a blank translation (so none was offered); the two results the adapter returned for the same song carried both. *Judas* had neither. |
 | Limits | The song search silently returns **0 results** when asked in quick succession (observed live). The adapter spaces requests by 1 s and asks once more after an empty list. Entries whose length is more than 5 s from the song are skipped. |
-| Storage | No terms found. **Not saved unless `Lyrics.KuGou.Store` is on.** |
+| Storage | No terms found. **Never kept** (shown while playing from memory only). |
 | Confidence | Medium. Works today; undocumented. |
 
 ## Musixmatch
@@ -63,7 +63,7 @@ Is the YRC genuine? In the sample, 7 of 55 multi-word lines had words of identic
 | Word timing | **Not verified.** No API key was available, so no real RichSync response was seen. The parser is covered by tests from the documented shape only, and the interface does not claim word timing for this provider. |
 | Audit of the previous adapter | It used `matcher.lyrics.get`, which returns no track metadata, so every result got a fixed 0.7 confidence and could never be chosen. It now scores the match on the metadata Musixmatch returns, like the other providers. |
 | Limits | Which calls work depends on the plan. A refused call (403) is skipped; a refused key (401/402) disables the provider. Free keys return partial lyrics ending in a "NOT for Commercial use" notice; those are discarded rather than shown as a whole song. |
-| Storage | Only the user's plan can authorize it. **Not saved unless `Lyrics.Musixmatch.Store` is on.** |
+| Storage | Only the user's plan can authorize it. **Never kept**, and only previewed in the manager; keeping would need an agreement with Musixmatch. |
 | Confidence | Low until a real key has been tried. |
 
 The private tokens used by Musixmatch's desktop and mobile apps give access to RichSync without a commercial plan. They are **not** used: they are credentials extracted from a proprietary app and the request signature is a protection.
@@ -130,7 +130,7 @@ So "keyless" means **cache-only**. In eight songs, QQ had QRC cached for one, Ku
 | Word timing | **QRC**, from the Better Lyrics cache (keyless, cached songs) or from Better Lyrics with the user's own key. QQ's own QRC download is encrypted with a custom DES; it is **not decoded**. |
 | Genuine? | Checked on real documents: *Judas* 522 cues, 75 lines of 4+ words, 0 uniform, 268 distinct durations; *Blinding Lights* credit lines are evenly split but the sung lines vary (142–1083 ms); both kept as karaoke. |
 | Real-world defect found | The QRC envelope is **not well-formed XML** (raw `"` inside `LyricContent`), so an XML parser rejects it. The body is cut out as text instead. |
-| Storage | No terms found. Not saved unless `Lyrics.QQ.Store` is on. |
+| Storage | No terms found. Never kept (shown while playing from memory only). |
 | Confidence | Direct route: medium. Word timing: low to medium (depends on the cache). |
 
 ## Musixmatch without a personal key
@@ -155,8 +155,8 @@ All keep real timestamps, never set a word end the source does not give, and dro
 | Provider | Retrieval | Permanent storage |
 | --- | --- | --- |
 | LRCLIB | Public API | Yes |
-| KuGou, NetEase, QQ | Open web endpoints, no terms found | Off by default; `Lyrics.<Provider>.Store` turns it on |
-| Musixmatch | Official API with the user's key | Off by default; `Lyrics.Musixmatch.Store` |
+| KuGou, NetEase, QQ | Open web endpoints, no terms found | **No.** Shown from memory; kept only with a written authorization |
+| Musixmatch | Official API with the user's key | **No.** Preview only; kept only with a written authorization |
 | Apple Music | Not implemented | — |
 
 Retrieval and storage are separate decisions: a result can be shown and chosen for the session without being kept.
@@ -206,3 +206,10 @@ A working endpoint is not an authorized one, and neither is permission to keep t
 - The Simplified/Traditional Chinese mismatch is not handled.
 - "Seen working" and "karaoke seen" are in memory and start empty after a restart.
 - Browser coverage: Chromium, Firefox 158, emulated mobile viewports. No Safari, real device or assistive technology.
+
+
+# Storage policy (final)
+
+The `Store` setting and `Lyrics.<provider>.Store` options of the earlier phases are withdrawn: an administrator's switch is not a right to keep a provider's lyrics. Storage now follows a rights table in the code (LRCLIB only, its permission an unverified assumption because its terms were not found), a provider's results that may not be kept are shown from memory and never written, and a later authorization is a written record naming its basis and reference. Details, behaviour and tests are in `LYRICS_ENGINE.md`, section *Storage policy*.
+
+Found while validating it: the application builds one lyrics service per router, so state held in memory (what is shown, provider health) has to be shared between them or the player's router never sees what the administrator's router chose. Unit tests of one service cannot show this; the shared state is covered by a test with two services and was confirmed against a running server.

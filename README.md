@@ -17,9 +17,12 @@ configuration and data keep working. The fork is based on upstream `master` at c
 - Themes saved by existing users keep working. *Dark* and *Extra Dark* map to the new *Navidrome* and
   *Navidrome Black (OLED)* themes, other dark themes are applied as colour tints, and light themes fall back to
   Navidrome.
-- A lyrics engine looks for missing lyrics online (LRCLIB), prefers the files you already have, saves what it finds next
-  to the audio as `.lyrics.json`, and lets you override, lock and undo. It never modifies audio files. Automatic
-  retrieval is on by default, so it writes to the library; see [LYRICS_ENGINE.md](LYRICS_ENGINE.md).
+- A lyrics engine looks for missing lyrics online (LRCLIB, KuGou, NetEase, QQ Music and, with your own key,
+  Musixmatch), prefers the files you already have, and lets you override, lock and undo. Word-by-word karaoke is
+  shown when a source really has it. Only LRCLIB's results are saved next to the audio (`.lyrics.json`, with its
+  permission noted as unverified); the other providers' results are shown while playing from memory and never kept,
+  because nothing grants the right to keep them. It never modifies audio files. Automatic retrieval is on by
+  default and, for LRCLIB, writes to the library; see [LYRICS_ENGINE.md](LYRICS_ENGINE.md).
 - The new interface text is translated to English and Italian. Other languages use English for it.
 
 Design decisions, architecture and the status of the work are in [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) and
