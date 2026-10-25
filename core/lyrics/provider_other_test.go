@@ -155,6 +155,13 @@ var _ = Describe("providers without an authorized API", func() {
 		Entry("Apple Music", lyrics.NewAppleMusic()),
 	)
 
+	It("does not claim to understand the word-timed formats it cannot read", func() {
+		Expect(lyrics.NewKuGou().Info().Note).To(ContainSubstring("KRC"))
+		Expect(lyrics.NewKuGou().Info().Note).To(ContainSubstring("not supported"))
+		Expect(lyrics.NewNetEase().Info().Note).To(ContainSubstring("YRC"))
+		Expect(lyrics.NewNetEase().Info().Note).To(ContainSubstring("not supported"))
+	})
+
 	It("explains why Apple Music is not used", func() {
 		Expect(lyrics.NewAppleMusic().Info().Reason).To(ContainSubstring("hasLyrics"))
 	})

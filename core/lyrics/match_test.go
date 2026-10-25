@@ -87,6 +87,14 @@ var _ = Describe("ScoreMatch", func() {
 		Expect(near.Confidence).To(BeNumerically(">", far.Confidence))
 	})
 
+	It("does not trust a result whose length is more than five seconds off, however good the text", func() {
+		ok := lyrics.ScoreMatch(rec, lyrics.Meta{Title: "Born This Way", Artist: "Lady Gaga", Album: "Born This Way", DurationSec: 264})
+		off := lyrics.ScoreMatch(rec, lyrics.Meta{Title: "Born This Way", Artist: "Lady Gaga", Album: "Born This Way", DurationSec: 268})
+		Expect(ok.Verified()).To(BeTrue())
+		Expect(off.Verified()).To(BeFalse())
+		Expect(off.Listed()).To(BeTrue(), "it is still offered for a manual choice")
+	})
+
 	It("treats a missing duration as neutral, not as a match", func() {
 		withDur := lyrics.ScoreMatch(rec, lyrics.Meta{Title: "Born This Way", Artist: "Lady Gaga", DurationSec: 260})
 		without := lyrics.ScoreMatch(rec, lyrics.Meta{Title: "Born This Way", Artist: "Lady Gaga"})

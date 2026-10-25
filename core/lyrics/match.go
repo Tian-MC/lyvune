@@ -57,8 +57,16 @@ type Match struct {
 	Mismatch      []string `json:"mismatch,omitempty"`
 }
 
+// maxVerifiedDurationDelta is how far, in seconds, a candidate's length may
+// differ from the track and still be stored automatically. Synced lyrics from a
+// version that is noticeably longer or shorter drift out of time.
+const maxVerifiedDurationDelta = 5
+
 // Verified reports whether the match is strong enough to store automatically.
-func (m Match) Verified() bool { return m.Confidence >= ConfidenceAuto }
+// A good score is not enough when both lengths are known and far apart.
+func (m Match) Verified() bool {
+	return m.Confidence >= ConfidenceAuto && m.DurationDelta <= maxVerifiedDurationDelta
+}
 
 // Listed reports whether the match is plausible enough to offer to the user.
 func (m Match) Listed() bool { return m.Confidence >= ConfidenceListed }

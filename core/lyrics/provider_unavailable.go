@@ -19,7 +19,7 @@ func NewKuGou() OnlineProvider {
 	return unavailable{ProviderInfo{
 		ID: "kugou", Name: "KuGou Music", Status: StatusUnavailable, Verified: false,
 		Reason: "KuGou has no public developer API for lyrics. The KRC data comes only from undocumented app endpoints, which this project does not use.",
-		Note:   "KRC (word-timed) lyrics are understood only if you add them as a file yourself.",
+		Note:   "The KRC word-timed format is not supported.",
 	}}
 }
 
@@ -28,7 +28,7 @@ func NewNetEase() OnlineProvider {
 	return unavailable{ProviderInfo{
 		ID: "netease", Name: "NetEase Cloud Music", Status: StatusUnavailable, Verified: false,
 		Reason: "NetEase offers no public lyrics API. Existing integrations rely on reverse-engineered web endpoints, which this project does not use.",
-		Note:   "YRC (word-timed) lyrics are understood only if you add them as a file yourself.",
+		Note:   "The YRC word-timed format is not supported.",
 	}}
 }
 
