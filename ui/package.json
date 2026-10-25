@@ -57,7 +57,6 @@
     "redux": "^4.2.1",
     "redux-saga": "^1.4.2",
     "uuid": "^13.0.0",
-    "wanakana": "^5.3.1",
     "workbox-cli": "^7.3.0"
   },
   "devDependencies": {

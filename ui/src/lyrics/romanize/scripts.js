@@ -30,7 +30,7 @@ const langIs = (lang, ...codes) =>
  * in an English song does not offer a romanization. Han characters alone are
  * Chinese unless the song has kana or says it is Japanese.
  */
-export const planFor = (texts, lang) => {
+export const planFor = (texts, lang, han = 'auto') => {
   const totals = {}
   const lineHits = {}
   let ukrainian = false
@@ -47,8 +47,13 @@ export const planFor = (texts, lang) => {
     lineHits[name] >= Math.max(1, Math.round(texts.length * 0.1))
 
   const engines = []
-  const japanese = real('kana') || (real('han') && langIs(lang, 'ja', 'jp'))
-  if (japanese) engines.push('ja')
+  // The listener's own choice beats everything the song says about itself
+  const japanese =
+    han === 'ja' ||
+    (han === 'auto' &&
+      (real('kana') || (real('han') && langIs(lang, 'ja', 'jp'))))
+  if (han === 'zh' && real('han')) engines.push('zh')
+  else if (japanese && (real('kana') || real('han'))) engines.push('ja')
   else if (real('han')) engines.push('zh')
   if (real('hangul')) engines.push('ko')
   if (real('greek')) engines.push('el')
@@ -56,6 +61,20 @@ export const planFor = (texts, lang) => {
     engines.push(ukrainian || langIs(lang, 'uk') ? 'uk' : 'ru')
   if (real('arabic')) engines.push('ar')
   return engines
+}
+
+/**
+ * Han characters are the one script that is ambiguous: kanji with no kana in
+ * the song and no language tag could be Chinese or Japanese.
+ */
+export const hanIsAmbiguous = (texts, lang) => {
+  const all = texts.join('\n')
+  const c = countScripts(all)
+  return (
+    (c.han || 0) >= 3 &&
+    !c.kana &&
+    !langIs(lang, 'ja', 'jp', 'zh', 'zho', 'chi', 'cmn', 'yue')
+  )
 }
 
 /** Whether `text` has anything the given engine would change. */

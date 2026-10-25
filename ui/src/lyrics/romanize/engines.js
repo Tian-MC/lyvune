@@ -15,13 +15,18 @@ const pick = (mod, key) => {
   throw new Error('romanizer export not found')
 }
 
-// The Japanese dictionary is only fetched for lines with kanji; kana alone
-// is converted by a small table.
+// The Japanese dictionary (about 17 MB) is fetched the first time a Japanese
+// line is romanized, never at startup, and only once. A load that fails is not
+// retried for a while, so a missing dictionary does not stall every line.
 const DICT = 'kuromoji-dict/'
 const DICT_TIMEOUT_MS = 60000
+const DICT_RETRY_MS = 30000
 
 let tokenizer = null
+let failedAt = 0
 const dictionary = () => {
+  if (Date.now() - failedAt < DICT_RETRY_MS)
+    return Promise.reject(new Error('dictionary unavailable'))
   if (!tokenizer) {
     tokenizer = (async () => {
       const builder = pick(
@@ -41,33 +46,12 @@ const dictionary = () => {
         )
       })
     })()
-    // A failed load may be retried the next time
-    tokenizer.catch(() => (tokenizer = null))
+    tokenizer.catch(() => {
+      tokenizer = null
+      failedAt = Date.now()
+    })
   }
   return tokenizer
-}
-
-// Particles are read as they are pronounced
-const PARTICLE = { は: 'wa', へ: 'e', を: 'o' }
-const ATTACHED = new Set(['助動詞'])
-
-/** Romanize Japanese from kuromoji's tokens, words separated by spaces. */
-const japanese = (tokens, toRomaji) => {
-  let out = ''
-  tokens.forEach((t) => {
-    const piece =
-      t.pos === '助詞' && PARTICLE[t.surface_form]
-        ? PARTICLE[t.surface_form]
-        : t.reading && t.reading !== '*'
-          ? toRomaji(t.reading)
-          : toRomaji(t.surface_form)
-    const attach =
-      ATTACHED.has(t.pos) ||
-      ['非自立', '接尾'].includes(t.pos_detail_1) ||
-      (t.pos === '助詞' && ['て', 'で'].includes(t.surface_form))
-    out += (out && !attach ? ' ' : '') + piece
-  })
-  return out
 }
 
 // Punctuation the source languages write full-width
@@ -98,12 +82,20 @@ const tidy = (s) =>
     .trim()
 
 export const loaders = {
-  async ja(hasHan) {
-    const { toRomaji } = await import('wanakana')
-    return async (text) => {
-      if (!hasHan(text)) return tidy(toRomaji(text))
-      const t = await dictionary()
-      return tidy(japanese(t.tokenize(text), toRomaji))
+  async ja() {
+    const { romanizeJapanese, hasKanji } = await import('./japanese')
+    const { kanaToRomaji } = await import('./kana')
+    const cache = new Map()
+    return async (text, { style } = {}) => {
+      let tk
+      try {
+        tk = await dictionary()
+      } catch (e) {
+        // Without the dictionary kana can still be read, kanji cannot
+        if (hasKanji(text)) throw e
+        return tidy(kanaToRomaji(text, style))
+      }
+      return romanizeJapanese(tk, text, { style, cache })
     }
   },
   async zh() {
