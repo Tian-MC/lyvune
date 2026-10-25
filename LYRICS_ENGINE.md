@@ -166,6 +166,10 @@ Your own `.krc`, `.yrc` and `.qrc` files next to the audio are read as local sid
 
 LRCLIB's terms of use could not be read from here either; it is a free community service whose own client downloads and stores lyrics.
 
+## Who can do what
+
+**Only administrators can make the server fetch lyrics**: searching providers, choosing a version, automatic retrieval and upgrades (`POST /api/lyrics/song/{id}/resolve`, triggered when an administrator plays a track), bulk jobs, imports, locks, offsets, restores, deletion, the provider settings and *Check providers*. Everyone else only **reads** lyrics: the lyrics a track already has (local files, embedded tags, saved `.lyrics.json`) are served to every signed-in user, and a regular user playing a track never causes a download. Anything an administrator saved is visible to all.
+
 ## Offline, restarts and the scanner
 
 - Saved lyrics are read from disk on every request. They need no network and no database state, and survive restarts, updates and library rescans.
@@ -239,7 +243,7 @@ Beyond the unit tests, the feature was run end to end against the real LRCLIB wi
 
 ## Known limitations
 
-- Changes (choose, import, lock, offset, restore, delete, bulk) are administrator-only.
+- Anything that fetches or changes lyrics (search, choose, automatic retrieval, import, lock, offset, restore, delete, bulk, settings) is administrator-only; other users can only read.
 - Only local libraries can be written to. `.lyrics.json` is the only sidecar written: `.lrc` is not exported, so other players do not see downloaded lyrics.
 - Choosing embedded lyrics copies them into a preferred sidecar; the embedded ones stay in the audio.
 - A library folder reached through a symbolic link that leaves the library is not written to.

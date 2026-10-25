@@ -23,8 +23,27 @@ describe('useAutoLyrics', () => {
     mocks.resolve.mockReset()
     mocks.resolve.mockResolvedValue({ result: 'have-lyrics' })
     mocks.item = null
+    localStorage.setItem('role', 'admin')
   })
-  afterEach(() => vi.useRealTimers())
+  afterEach(() => {
+    vi.useRealTimers()
+    localStorage.removeItem('role')
+  })
+
+  it('never asks the server to fetch lyrics for anyone but an administrator', async () => {
+    localStorage.setItem('role', 'regular')
+    mocks.item = track('al-user')
+    renderHook(() => useAutoLyrics())
+    await vi.advanceTimersByTimeAsync(5000)
+    expect(mocks.resolve).not.toHaveBeenCalled()
+    expect(isResolving('al-user')).toBe(false)
+
+    localStorage.removeItem('role')
+    mocks.item = track('al-nobody')
+    renderHook(() => useAutoLyrics())
+    await vi.advanceTimersByTimeAsync(5000)
+    expect(mocks.resolve).not.toHaveBeenCalled()
+  })
 
   it('does nothing without a track, and never for a radio stream', async () => {
     renderHook(() => useAutoLyrics())

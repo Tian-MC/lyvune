@@ -29,11 +29,14 @@ func (api *Router) addLyricsRoute(r chi.Router) {
 		return
 	}
 	r.Route("/lyrics", func(r chi.Router) {
-		r.Get("/settings", api.getLyricsSettings)
+		// Reading what a track has is open to every signed-in user.
 		r.Get("/song/{id}", api.withTrack(api.getLyricsStatus))
-		r.Post("/song/{id}/resolve", api.withTrack(api.resolveLyrics))
 
+		// Everything that can fetch lyrics from a provider, or change what is
+		// saved, is for administrators. Everyone else only reads what is there.
 		r.With(adminOnlyMiddleware).Group(func(r chi.Router) {
+			r.Get("/settings", api.getLyricsSettings)
+			r.Post("/song/{id}/resolve", api.withTrack(api.resolveLyrics))
 			r.Put("/settings", api.putLyricsSettings)
 			r.Post("/providers/check", api.checkLyricsProviders)
 			r.Post("/song/{id}/search", api.withTrack(api.searchLyrics))
