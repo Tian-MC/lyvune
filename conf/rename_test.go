@@ -11,11 +11,18 @@ import (
 	"github.com/spf13/viper"
 )
 
-var _ = Describe("telemetry", func() {
-	It("is off unless someone turns it on", func() {
+var _ = Describe("what is sent to Navidrome's servers", func() {
+	BeforeEach(func() {
 		viper.Reset()
 		conf.SetViperDefaults()
+	})
+
+	It("is no usage statistics unless someone turns the insights collector on", func() {
 		Expect(viper.GetBool("enableinsightscollector")).To(BeFalse())
+	})
+
+	It("is no request for a sign-in background: the plain one is the default", func() {
+		Expect(viper.GetString("uiloginbackgroundurl")).To(Equal(consts.DefaultUILoginBackgroundURLOffline))
 	})
 })
 

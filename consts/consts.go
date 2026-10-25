@@ -72,8 +72,9 @@ const (
 	// Jellyfin API. Jellyfin clients cache this value, so it must survive process restarts.
 	JellyfinServerIDKey = "JellyfinServerID"
 
-	// DefaultUILoginBackgroundURL uses Lyvune curated background images collection,
-	// available at https://unsplash.com/collections/20072696/navidrome
+	// DefaultUILoginBackgroundURL is the sign-in page background that Navidrome's curated collection
+	// (https://unsplash.com/collections/20072696/navidrome) provides, fetched by the server from
+	// navidrome.org. It is opt-in in Lyvune: set UILoginBackgroundURL to this value to use it.
 	DefaultUILoginBackgroundURL = "/backgrounds"
 
 	// DefaultUILoginBackgroundOffline Background image used in case external integrations are disabled

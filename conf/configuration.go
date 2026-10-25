@@ -1010,7 +1010,8 @@ func setViperDefaults() {
 	viper.SetDefault("baseurl", "")
 	viper.SetDefault("tlscert", "")
 	viper.SetDefault("tlskey", "")
-	viper.SetDefault("uiloginbackgroundurl", consts.DefaultUILoginBackgroundURL)
+	// A plain background: the curated one is fetched from navidrome.org, which Lyvune does not do unasked
+	viper.SetDefault("uiloginbackgroundurl", consts.DefaultUILoginBackgroundURLOffline)
 	viper.SetDefault("uiwelcomemessage", "")
 	viper.SetDefault("maxsidebarplaylists", consts.DefaultMaxSidebarPlaylists)
 	viper.SetDefault("enabletranscodingconfig", false)
