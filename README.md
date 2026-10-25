@@ -96,6 +96,18 @@ Lyvune does not send usage statistics anywhere: the anonymous insights collector
 tracks you play, and the login page may fetch a background image from navidrome.org (set `UILoginBackgroundURL` to
 change it).
 
+## Docker
+
+```sh
+cp .env.example .env        # set LYVUNE_MUSIC_DIR to your music folder
+docker compose up -d --build
+```
+
+Then open <http://localhost:4533>. The image runs as an unprivileged user, has a health check, and supports `amd64`
+and `arm64`; your music is mounted read-only unless you choose otherwise. There is no published image yet, so it is
+built from this repository. [docs/DOCKER.md](docs/DOCKER.md) is the full guide: permissions, saving lyrics next to
+your music, a reverse proxy, backups, updating, and coming from Navidrome.
+
 ## Tests
 
 ```sh
