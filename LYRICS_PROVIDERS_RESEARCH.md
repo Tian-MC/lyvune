@@ -68,14 +68,14 @@ Is the YRC genuine? In the sample, 7 of 55 multi-word lines had words of identic
 
 The private tokens used by Musixmatch's desktop and mobile apps give access to RichSync without a commercial plan. They are **not** used: they are credentials extracted from a proprietary app and the request signature is a protection.
 
-## Not done (Phase 10)
+## Not done
 
-- **QQ Music (QRC)** is not implemented.
+- **QQ's own encrypted QRC** is not decoded (word timing from QQ comes from the Better Lyrics cache; see Phase 11 below).
 - **NetEase `klyric`** and `ytlrc` are not parsed.
 - **Apple Music** stays off: the timed-lyrics endpoint is private.
 - **Traditional/Simplified Chinese** artist names are not converted. A match differing only in script scores about 0.82 and is offered for manual choice, never chosen automatically (seen live with 周杰倫 / 周杰伦).
 
-## Live results
+## Live results (Phase 10)
 
 From `go test -tags live -run TestLiveProviders ./core/lyrics` (opt-in; it calls the real services). Recorded 25 Oct 2026.
 
