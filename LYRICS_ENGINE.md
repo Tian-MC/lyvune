@@ -166,6 +166,14 @@ Your own `.krc`, `.yrc` and `.qrc` files next to the audio are read as local sid
 
 LRCLIB's terms of use could not be read from here either; it is a free community service whose own client downloads and stores lyrics.
 
+### Bulk jobs
+
+One job runs at a time and works on **4 tracks at once** (`bulkWorkers` in `bulk.go`). Providers still see requests no faster than their own pacing (a request every 0.3 to 1 s, depending on the provider), so the workers overlap the waiting, not the load. A provider asking to slow down, or a cancel, stops the job: tracks already running finish, nothing new starts, and the finished ones are skipped when it is run again. Inside a job the per-search timeout is 90 s instead of 20 s, because the workers' requests to one provider queue on its pacing.
+
+### Results that are only credits
+
+A service that has no lyrics for a song sometimes answers with a header: NetEase sent a single line, `作曲 : <name>`, for an instrumental. A result whose lines are all credits (`作词`, `作曲`, `Composer:`, `Lyrics by:`…), or a title plus credits, is not offered and not saved, for any provider. NetEase's stray `-1` in some timestamps (`[00:00.00-1]`) is removed.
+
 ## Who can do what
 
 **Only administrators can make the server fetch lyrics**: searching providers, choosing a version, automatic retrieval and upgrades (`POST /api/lyrics/song/{id}/resolve`, triggered when an administrator plays a track), bulk jobs, imports, locks, offsets, restores, deletion, the provider settings and *Check providers*. Everyone else only **reads** lyrics: the lyrics a track already has (local files, embedded tags, saved `.lyrics.json`) are served to every signed-in user, and a regular user playing a track never causes a download. Anything an administrator saved is visible to all.
@@ -247,7 +255,7 @@ Beyond the unit tests, the feature was run end to end against the real LRCLIB wi
 - Only local libraries can be written to. `.lyrics.json` is the only sidecar written: `.lrc` is not exported, so other players do not see downloaded lyrics.
 - Choosing embedded lyrics copies them into a preferred sidecar; the embedded ones stay in the audio.
 - A library folder reached through a symbolic link that leaves the library is not written to.
-- Bulk jobs run in memory: a restart stops one, and running it again skips finished tracks.
+- Bulk jobs run in memory: a restart stops one, and running it again skips finished tracks. A job of mostly KuGou lookups is limited by KuGou's one-request-a-second pacing, so four workers do not make that provider four times faster.
 - Musixmatch is not verified against the live service (no API key was available); Apple Music is off.
 - KuGou and NetEase use undocumented endpoints that can change or block a region at any time; their lyrics are not saved unless the administrator opts in.
 - NetEase word timing exists only for songs where the endpoint returns `yrc`; the others are line-synced. NetEase's `klyric` is ignored.

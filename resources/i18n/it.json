@@ -796,7 +796,7 @@
                 "cancelled": "Annullato. Riavvialo per continuare: i brani già completati vengono saltati.",
                 "done": "Completato.",
                 "failed": "Non è stato possibile avviare il lavoro.",
-                "hint": "Parte un solo lavoro alla volta, lentamente, e si può annullare. I brani già completati vengono saltati, quindi rilanciarlo riprende da dove si era fermato.",
+                "hint": "Un job alla volta, che lavora su 4 brani contemporaneamente senza chiedere ai provider più in fretta di quanto permettano. Si può annullare. I brani già completati vengono saltati, quindi rilanciarlo riprende da dove si era fermato.",
                 "missing": "Scarica i testi mancanti",
                 "progress": "Avanzamento",
                 "recheck": "Ricontrolla tutto",

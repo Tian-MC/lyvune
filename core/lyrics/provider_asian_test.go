@@ -113,6 +113,27 @@ var _ = Describe("NetEase provider", func() {
 		Expect(auto).To(BeFalse(), "karaoke from a wrong recording is never chosen automatically")
 	})
 
+	It("does not turn a credits-only answer or a malformed timestamp into lyrics", func() {
+		// NetEase answers like this for a song it has no lyrics for
+		p := serve(true, []map[string]any{song(7, "こんにちは", "テスト歌手", 200000)},
+			map[int]map[string]any{7: {"code": 200, "lrc": map[string]any{"lyric": "[00:00.00-1] 作曲 : Someone"}}})
+		got, err := p.Search(context.Background(), rec)
+		Expect(err).ToNot(HaveOccurred())
+		for _, c := range got {
+			Expect(lyrics.CreditsOnly(c.Lyrics)).To(BeTrue(), "the provider may return it; the engine drops it")
+		}
+
+		// the stray "-1" is removed from real lyrics
+		p = serve(true, []map[string]any{song(7, "こんにちは", "テスト歌手", 200000)},
+			map[int]map[string]any{7: {"code": 200, "lrc": map[string]any{"lyric": "[00:01.00-1]first line\n[00:03.50-1]second line"}}})
+		got, err = p.Search(context.Background(), rec)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(got).To(HaveLen(1))
+		Expect(got[0].Quality).To(Equal(lyrics.QualitySynced))
+		Expect(got[0].Lyrics[0].Line[0].Value).To(Equal("first line"))
+		Expect(*got[0].Lyrics[0].Line[1].Start).To(Equal(int64(3500)))
+	})
+
 	It("reports instrumentals and songs without lyrics", func() {
 		p := serve(true, []map[string]any{song(7, "こんにちは", "テスト歌手", 200000)},
 			map[int]map[string]any{7: {"code": 200, "pureMusic": true}})

@@ -158,7 +158,11 @@ func (l *lyricsService) searchAll(ctx context.Context, mf *model.MediaFile, prov
 }
 
 func (l *lyricsService) searchRecording(ctx context.Context, rec Recording, providers []OnlineProvider) ([]Candidate, []ProviderOutcome) {
-	ctx, cancel := context.WithTimeout(ctx, searchTimeout)
+	timeout := searchTimeout
+	if ctx.Value(bulkCtxKey{}) != nil {
+		timeout = bulkSearchTimeout
+	}
+	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	results := make([]providerResult, len(providers))
@@ -201,9 +205,11 @@ func (l *lyricsService) searchRecording(ctx context.Context, rec Recording, prov
 			out.Status, out.Message = OutcomeError, r.err.Error()
 			log.Debug(ctx, "Lyrics provider failed", "provider", r.id, r.err)
 		}
-		l.health.record(out, r.cands, l.now())
+		cands := dropCreditOnly(r.cands)
+		l.health.record(out, cands, l.now())
+		out.Count = len(cands)
 		outcomes = append(outcomes, out)
-		all = append(all, r.cands...)
+		all = append(all, cands...)
 	}
 	// Providers that grant no storage permission of their own are saved only
 	// when the administrator has allowed it for that provider
@@ -634,4 +640,17 @@ func (l *lyricsService) markChecked(ctx context.Context, mf *model.MediaFile) {
 	st := l.props.state(ctx, mf.ID)
 	st.CheckedAt = l.now().Unix()
 	_ = l.props.putState(ctx, mf.ID, st)
+}
+
+// dropCreditOnly removes candidates whose lyrics are only credits. Such an
+// answer means the service has no lyrics for the song; it is not a result.
+func dropCreditOnly(cands []Candidate) []Candidate {
+	out := cands[:0:0]
+	for _, c := range cands {
+		if len(c.Lyrics) > 0 && creditsOnly(c.Lyrics) {
+			continue
+		}
+		out = append(out, c)
+	}
+	return out
 }

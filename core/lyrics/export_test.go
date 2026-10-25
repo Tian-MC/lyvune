@@ -36,3 +36,6 @@ func FastForTest(p OnlineProvider) {
 func RejectSyntheticWordTiming(l model.LyricList) (model.LyricList, bool) {
 	return rejectSyntheticWordTiming(l)
 }
+
+// CreditsOnly exposes the credits check to the tests.
+func CreditsOnly(l model.LyricList) bool { return creditsOnly(l) }

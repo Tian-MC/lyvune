@@ -285,7 +285,7 @@ export const LyricsSettings = () => {
       <p className={styles.hint}>
         {t(
           'ui.lyrics.bulk.hint',
-          'One job runs at a time, slowly, and can be cancelled. Tracks that are already done are skipped, so running it again continues where it stopped.',
+          'One job runs at a time and works on 4 tracks at once, without asking any provider faster than it allows. It can be cancelled. Tracks that are already done are skipped, so running it again continues where it stopped.',
         )}
       </p>
       <div className={styles.actions}>

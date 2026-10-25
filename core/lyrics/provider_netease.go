@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -188,6 +189,12 @@ func (n *netease) candidate(ctx context.Context, s neteaseSong, meta Meta, match
 	return c, nil
 }
 
+// neteaseBadStamp matches the stray "-1" NetEase appends to some timestamps
+// ("[00:00.00-1]"), which would otherwise stay in the text as a literal.
+var neteaseBadStamp = regexp.MustCompile(`(?m)^\[(\d+:\d+(?:[.:]\d+)?)-\d+\]`)
+
+func cleanNetEaseLRC(text string) string { return neteaseBadStamp.ReplaceAllString(text, "[$1]") }
+
 // neteaseLyrics builds the best original lyrics the answer really has (YRC
 // word timing, else timed LRC, else text) and attaches the translation and
 // romanization as separate tracks.
@@ -203,7 +210,7 @@ func neteaseLyrics(ctx context.Context, res neteaseLyric) (model.LyricList, Qual
 			main, q = list, QualityOf(list)
 		}
 	}
-	if text := strings.TrimSpace(res.Lrc.Lyric); text != "" {
+	if text := strings.TrimSpace(cleanNetEaseLRC(res.Lrc.Lyric)); text != "" {
 		if list, err := model.ParseLyrics(ctx, ".lrc", "xxx", []byte(text)); err == nil && len(list) > 0 {
 			if lq := QualityOf(list); lq > q {
 				main, q = list, lq
@@ -219,6 +226,7 @@ func neteaseLyrics(ctx context.Context, res neteaseLyric) (model.LyricList, Qual
 		}
 	}
 	extra := func(text, kind string) {
+		text = cleanNetEaseLRC(text)
 		if strings.TrimSpace(text) == "" {
 			return
 		}

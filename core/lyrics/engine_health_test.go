@@ -157,6 +157,21 @@ var _ = Describe("Provider status", func() {
 		})
 	})
 
+	It("does not offer, or count, a result that is only credits", func() {
+		credits := model.LyricList{{Kind: model.LyricKindMain, Line: []model.Line{{Value: "作曲 : Someone"}}}}
+		c := remote("alpha", "1", credits, 0.99)
+		c.Quality = lyrics.QualityPlain
+		a.set(c)
+		res, err := engine.Search(context.Background(), &model.MediaFile{ID: "s", Title: "Song", Artist: "Band", Album: "Album", Duration: 200}, lyrics.SearchOptions{})
+		Expect(err).ToNot(HaveOccurred())
+		Expect(res.Candidates).To(BeEmpty())
+		for _, o := range res.Providers {
+			if o.ID == "alpha" {
+				Expect(o.Count).To(BeZero())
+			}
+		}
+	})
+
 	It("asks only providers that are ready and turned on when checking", func() {
 		_, err := engine.SaveSettings(context.Background(), lyrics.Settings{Providers: []string{"alpha"}, MinConfidence: 0.85})
 		Expect(err).ToNot(HaveOccurred())

@@ -207,3 +207,30 @@ var _ = Describe("RichSync", func() {
 		}
 	})
 })
+
+var _ = Describe("credit-only lyrics", func() {
+	lines := func(vs ...string) model.LyricList {
+		out := make([]model.Line, len(vs))
+		for i, v := range vs {
+			out[i] = model.Line{Value: v}
+		}
+		return model.LyricList{{Kind: model.LyricKindMain, Line: out}}
+	}
+
+	It("is not a lyric when every line is a credit, a title or blank", func() {
+		Expect(lyrics.CreditsOnly(lines("作曲 : Someone"))).To(BeTrue())
+		Expect(lyrics.CreditsOnly(lines("作词 : A", "作曲 : B", "编曲 : C", ""))).To(BeTrue())
+		Expect(lyrics.CreditsOnly(lines("Composer: A", "Lyrics by: B"))).To(BeTrue())
+		Expect(lyrics.CreditsOnly(lines("Song - Artist", "作曲：A"))).To(BeTrue(), "a title and credits is still a header")
+	})
+
+	It("is a lyric once there are real lines, whatever credits come first", func() {
+		Expect(lyrics.CreditsOnly(lines("作词 : A", "作曲 : B", "first sung line", "second sung line"))).To(BeFalse())
+		Expect(lyrics.CreditsOnly(lines("hello", "world"))).To(BeFalse())
+		Expect(lyrics.CreditsOnly(lines("こんにちは", "さようなら"))).To(BeFalse())
+	})
+
+	It("does not mistake a sung line that starts like a credit for one", func() {
+		Expect(lyrics.CreditsOnly(lines("Music is my escape", "Words fail me now"))).To(BeFalse())
+	})
+})

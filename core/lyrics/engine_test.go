@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"sync"
@@ -66,6 +67,9 @@ type fakeProvider struct {
 	err   error
 	calls atomic.Int32
 	delay time.Duration
+	// active and peak record how many searches ran at the same moment
+	active atomic.Int32
+	peak   atomic.Int32
 }
 
 func newFake(id string) *fakeProvider {
@@ -74,6 +78,14 @@ func newFake(id string) *fakeProvider {
 func (f *fakeProvider) Info() lyrics.ProviderInfo { return f.info }
 func (f *fakeProvider) Search(_ context.Context, _ lyrics.Recording) ([]lyrics.Candidate, error) {
 	f.calls.Add(1)
+	now := f.active.Add(1)
+	for {
+		p := f.peak.Load()
+		if now <= p || f.peak.CompareAndSwap(p, now) {
+			break
+		}
+	}
+	defer f.active.Add(-1)
 	time.Sleep(f.delay)
 	f.mu.Lock()
 	defer f.mu.Unlock()
@@ -798,6 +810,7 @@ var _ = Describe("Lyrics engine", func() {
 
 	Describe("bulk operations", func() {
 		var files model.MediaFiles
+		var addTracks func(n int)
 		BeforeEach(func() {
 			files = nil
 			repo := tests.CreateMockMediaFileRepo()
@@ -807,6 +820,16 @@ var _ = Describe("Lyrics engine", func() {
 				files = append(files, model.MediaFile{ID: id, Title: "Song", Artist: "Band", Album: "Album", Duration: 200, Path: "Artist/Album/" + base, LibraryPath: root})
 			}
 			repo.SetData(files)
+			// the mock library ignores filters, so a test that needs more tracks adds them to it
+			addTracks = func(n int) {
+				for i := len(files) + 1; i <= n; i++ {
+					id := fmt.Sprintf("t%d", i)
+					base := id + ".flac"
+					Expect(os.WriteFile(filepath.Join(dir(), base), []byte("AUDIO"), 0o644)).To(Succeed())
+					files = append(files, model.MediaFile{ID: id, Title: "Song", Artist: "Band", Album: "Album", Duration: 200, Path: "Artist/Album/" + base, LibraryPath: root})
+				}
+				repo.SetData(files)
+			}
 			svc = lyrics.NewService(lyrics.Options{
 				DataStore: &tests.MockDataStore{MockedProperty: props, MockedMediaFile: repo},
 				Providers: lyrics.NewProviders(fake), Store: lyrics.NewStore(hist, 10), Now: func() time.Time { return clock },
@@ -892,14 +915,59 @@ var _ = Describe("Lyrics engine", func() {
 			Expect(wait(st.ID).State).To(Equal("cancelled"))
 		})
 
-		It("stops when a provider asks to slow down", func() {
-			fake.mu.Lock()
-			fake.err = &lyrics.RateLimitedError{Provider: "fake", RetryAfter: 45 * time.Second}
-			fake.mu.Unlock()
+		It("uses no more workers than there are tracks", func() {
+			fake.delay = 60 * time.Millisecond
+			fake.set(remote("fake", "1", syncedOf("fetched"), 0.97))
 			st, _ := engine.StartBulk(ctx, lyrics.BulkRequest{Action: lyrics.BulkMissing, TrackIDs: []string{"t1", "t2", "t3"}})
-			done := wait(st.ID)
-			Expect(done.Done).To(Equal(1), "it did not keep hitting the provider")
-			Expect(done.Message).To(ContainSubstring("slow down"))
+			Expect(wait(st.ID).Done).To(Equal(3))
+			Expect(fake.peak.Load()).To(Equal(int32(3)))
+		})
+
+		Describe("with many tracks", func() {
+			all12 := []string{"t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8", "t9", "t10", "t11", "t12"}
+			BeforeEach(func() { addTracks(12) })
+
+			It("works on four tracks at once, no more, and counts every track exactly once", func() {
+				fake.delay = 80 * time.Millisecond
+				fake.set(remote("fake", "1", syncedOf("fetched"), 0.97))
+				st, err := engine.StartBulk(ctx, lyrics.BulkRequest{Action: lyrics.BulkMissing, TrackIDs: all12})
+				Expect(err).ToNot(HaveOccurred())
+				done := wait(st.ID)
+				Expect(done.State).To(Equal("done"))
+				Expect(done.Total).To(Equal(12))
+				Expect(done.Done).To(Equal(12))
+				Expect(done.Found).To(Equal(12))
+				Expect(fake.peak.Load()).To(Equal(int32(4)), "four searches overlapped, never more")
+				for _, id := range all12 {
+					Expect(filepath.Join(dir(), id+".lyrics.json")).To(BeAnExistingFile())
+				}
+			})
+
+			It("stops every worker when cancelled, and keeps what was finished", func() {
+				fake.delay = 120 * time.Millisecond
+				fake.set(remote("fake", "1", syncedOf("fetched"), 0.97))
+				st, _ := engine.StartBulk(ctx, lyrics.BulkRequest{Action: lyrics.BulkMissing, TrackIDs: all12})
+				Eventually(func() int32 { return fake.calls.Load() }, 2*time.Second, 10*time.Millisecond).Should(BeNumerically(">=", 1))
+				Expect(engine.CancelBulk(st.ID)).To(BeTrue())
+				done := wait(st.ID)
+				Expect(done.State).To(Equal("cancelled"))
+				Expect(done.Done).To(BeNumerically("<", 12))
+				Expect(fake.active.Load()).To(BeZero(), "no worker is left running")
+				time.Sleep(250 * time.Millisecond)
+				Expect(fake.calls.Load()).To(BeNumerically("<", 12), "nothing new started after the cancel")
+			})
+
+			It("stops when a provider asks to slow down, without starting new tracks", func() {
+				fake.mu.Lock()
+				fake.err = &lyrics.RateLimitedError{Provider: "fake", RetryAfter: 45 * time.Second}
+				fake.mu.Unlock()
+				st, _ := engine.StartBulk(ctx, lyrics.BulkRequest{Action: lyrics.BulkMissing, TrackIDs: all12})
+				done := wait(st.ID)
+				Expect(done.Done).To(BeNumerically("<=", 4), "only the tracks already running finished")
+				Expect(done.Done).To(BeNumerically(">=", 1))
+				Expect(done.Done).To(BeNumerically("<", 12))
+				Expect(done.Message).To(ContainSubstring("slow down"))
+			})
 		})
 
 		It("rejects an unknown action and an empty selection", func() {
