@@ -208,6 +208,14 @@ export const LyricsSettings = () => {
         : settings.providers.filter((p) => p !== id),
     })
 
+  const toggleStore = (id, on) =>
+    save({
+      ...settings,
+      store: on
+        ? [...(settings.store ?? []), id]
+        : (settings.store ?? []).filter((p) => p !== id),
+    })
+
   return (
     <div className={styles.root}>
       {error && (
@@ -262,7 +270,12 @@ export const LyricsSettings = () => {
       </div>
       <ul className={styles.providers}>
         {providers.map((p) => (
-          <ProviderCard key={p.id} p={p} onToggle={toggleProvider} />
+          <ProviderCard
+            key={p.id}
+            p={p}
+            onToggle={toggleProvider}
+            onStore={toggleStore}
+          />
         ))}
       </ul>
 

@@ -130,7 +130,7 @@ const Candidate = ({ c, busy, onUse }) => {
               className={clsx(styles.tag, styles.tagWarn)}
               title={t(
                 'ui.lyrics.manager.notStorableHint',
-                'This provider does not allow its lyrics to be saved.',
+                'Saving is off for this provider. An administrator can allow it in Settings, under Lyrics and Providers.',
               )}
             >
               {t('ui.lyrics.manager.notStorable', 'Cannot be saved')}

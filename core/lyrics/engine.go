@@ -42,11 +42,15 @@ func (l *lyricsService) SaveSettings(ctx context.Context, s Settings) (Settings,
 }
 
 func (l *lyricsService) Providers(ctx context.Context) []ProviderStatus {
-	enabled := l.settings(ctx).Providers
+	cfg := l.settings(ctx)
+	enabled := cfg.Providers
 	out := make([]ProviderStatus, 0, len(l.providers.All()))
 	for _, p := range l.providers.All() {
 		info := p.Info()
 		st := ProviderStatus{ProviderInfo: info, Enabled: info.Status == StatusReady && slices.Contains(enabled, info.ID)}
+		st.StoreOptIn = info.Implemented && info.Status != StatusUnavailable && !info.Storable
+		st.StoreAllowed = st.StoreOptIn && slices.Contains(cfg.Store, info.ID)
+		st.Storable = info.Storable || st.StoreAllowed
 		l.health.apply(&st, l.now())
 		out = append(out, st)
 	}
@@ -200,6 +204,14 @@ func (l *lyricsService) searchRecording(ctx context.Context, rec Recording, prov
 		l.health.record(out, r.cands, l.now())
 		outcomes = append(outcomes, out)
 		all = append(all, r.cands...)
+	}
+	// Providers that grant no storage permission of their own are saved only
+	// when the administrator has allowed it for that provider
+	allowed := l.settings(ctx).Store
+	for i := range all {
+		if !all[i].Storable && slices.Contains(allowed, all[i].Provider) {
+			all[i].Storable = true
+		}
 	}
 	return all, outcomes
 }

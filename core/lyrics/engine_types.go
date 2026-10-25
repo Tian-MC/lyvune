@@ -45,7 +45,7 @@ func EngineOf(l Lyrics) Engine {
 var (
 	ErrLocked          = errors.New("these lyrics are locked")
 	ErrConfirmRequired = errors.New("replacing the current lyrics needs confirmation")
-	ErrNotStorable     = errors.New("this provider does not allow its lyrics to be saved")
+	ErrNotStorable     = errors.New("saving is off for this provider: an administrator can allow it in Settings, under Lyrics")
 	ErrNoCandidate     = errors.New("no such lyrics candidate, search again")
 	ErrEmptyLyrics     = errors.New("the lyrics are empty")
 	ErrNothingToDelete = errors.New("there are no downloaded lyrics to delete")
@@ -64,7 +64,12 @@ type ProviderStatus struct {
 	LiveVerified bool `json:"liveVerified"`
 	// KaraokeVerified is true once a verified match with real word timing has
 	// come back since the server started.
-	KaraokeVerified  bool       `json:"karaokeVerified"`
+	KaraokeVerified bool `json:"karaokeVerified"`
+	// StoreOptIn is true when saving this provider's lyrics needs the
+	// administrator's permission (Settings.Store); StoreAllowed says it was given.
+	// Storable (embedded) is the effective answer.
+	StoreOptIn       bool       `json:"storeOptIn"`
+	StoreAllowed     bool       `json:"storeAllowed"`
 	LastSuccess      *time.Time `json:"lastSuccess,omitempty"`
 	LastFailure      *time.Time `json:"lastFailure,omitempty"`
 	LastError        string     `json:"lastError,omitempty"`

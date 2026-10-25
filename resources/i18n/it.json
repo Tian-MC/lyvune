@@ -816,7 +816,7 @@
                 "notFound": "Non c’è niente da ripristinare o eliminare.",
                 "notLocal": "I testi si possono salvare solo per librerie su un disco locale.",
                 "notManaged": "Esiste un file con quel nome che Navidrome non ha scritto, quindi è stato lasciato com’è.",
-                "notStorable": "Questo provider non permette di salvare i suoi testi.",
+                "notStorable": "Il salvataggio è disattivato per questo provider. Un amministratore può attivarlo in Impostazioni, sotto Testi e Provider.",
                 "readOnly": "Non è possibile scrivere nella cartella della libreria.",
                 "unreadable": "Non è stato possibile leggere quel file.",
                 "unsafePath": "Quella posizione non è sicura per scrivere."
@@ -824,6 +824,7 @@
             "manage": "Gestisci",
             "manager": {
                 "actions": "Cambia i testi",
+                "allProviders": "Tutti",
                 "applied": "Testi aggiornati.",
                 "confirm": "Conferma",
                 "confirmEmbedded": "I testi dentro il file audio non vengono modificati, ma al loro posto viene mostrata la versione scelta.",
@@ -835,6 +836,7 @@
                 "delete": "Elimina i testi salvati",
                 "deleted": "Testi salvati eliminati.",
                 "embeddedHint": "I testi incorporati restano nel file audio così come sono. Sceglierne uno salva una copia preferita accanto al file.",
+                "filterProvider": "Mostra i risultati di",
                 "find": "Trova testi",
                 "findBetter": "Cerca testi migliori",
                 "hidePreview": "Nascondi anteprima",
@@ -854,9 +856,7 @@
                 "noResults": "Non sono stati trovati testi corrispondenti.",
                 "noneBefore": "Prima che fossero salvati dei testi",
                 "notStorable": "Non si può salvare",
-                "notStorableHint": "Il salvataggio è disattivato per questo provider. Un amministratore può attivarlo nella configurazione del server, se i suoi termini lo permettono.",
-                "filterProvider": "Mostra i risultati di",
-                "allProviders": "Tutti",
+                "notStorableHint": "Il salvataggio è disattivato per questo provider. Attivalo in Impostazioni, sotto Testi e Provider.",
                 "offset": "Sfasamento temporale",
                 "outcome": {
                     "disabled": "non configurato",
@@ -922,6 +922,9 @@
                 "notStoredShort": "Solo anteprima",
                 "off": "Disattivato",
                 "rateLimited": "Limite di richieste raggiunto",
+                "saveHint": "I suoi termini non concedono il permesso di conservare i testi, quindi la scelta è tua. Disattivato di default; senza, puoi comunque vedere l'anteprima e scegliere una versione per ora.",
+                "saveSwitch": "Salva i testi di %{name} accanto al mio audio",
+                "saveSwitchLabel": "Salva i suoi testi accanto al mio audio",
                 "seenWorking": "Visto funzionare",
                 "temporarily": "Temporaneamente non disponibile",
                 "unknown": "Sconosciuto"

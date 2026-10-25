@@ -399,7 +399,7 @@ describe('<LyricsManager />', () => {
     })
 
     it.each([
-      ['not-storable', 'does not allow its lyrics to be saved'],
+      ['not-storable', 'Saving is off for this provider'],
       ['no-candidate', 'no longer available'],
       ['read-only', 'cannot be written to'],
       ['not-managed', 'did not write'],

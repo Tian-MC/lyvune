@@ -48,7 +48,7 @@ const Tag = ({ on, children, warn }) => (
  * implemented, set up, seen working and seen returning karaoke are separate
  * facts, and none is inferred from another.
  */
-export const ProviderCard = ({ p, onToggle }) => {
+export const ProviderCard = ({ p, onToggle, onStore }) => {
   const t = useT()
   const [availKey, availDefault, tone] = AVAILABILITY[p.availability] ?? [
     'ui.lyrics.provider.unknown',
@@ -84,6 +84,39 @@ export const ProviderCard = ({ p, onToggle }) => {
       </div>
 
       {p.reason && <p className={styles.hint}>{p.reason}</p>}
+
+      {p.storeOptIn && (
+        <div className={styles.store}>
+          <FormControlLabel
+            labelPlacement="start"
+            control={
+              <Switch
+                color="primary"
+                size="small"
+                checked={!!p.storeAllowed}
+                onChange={(e) => onStore(p.id, e.target.checked)}
+                inputProps={{
+                  'aria-label': t(
+                    'ui.lyrics.provider.saveSwitch',
+                    'Save lyrics from %{name} next to my audio',
+                    { name: p.name },
+                  ),
+                }}
+              />
+            }
+            label={t(
+              'ui.lyrics.provider.saveSwitchLabel',
+              'Save its lyrics next to my audio',
+            )}
+          />
+          <p className={styles.hint}>
+            {t(
+              'ui.lyrics.provider.saveHint',
+              'Its terms grant no permission to keep the lyrics, so this is your decision. Off by default; without it you can still preview and choose a version for now.',
+            )}
+          </p>
+        </div>
+      )}
 
       <p className={styles.tags}>
         <Tag on={p.implemented}>

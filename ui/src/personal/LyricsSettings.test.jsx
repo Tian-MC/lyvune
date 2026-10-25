@@ -33,6 +33,7 @@ const settings = {
   autoUpgrade: true,
   autoReplaceManual: false,
   providers: ['lrclib'],
+  store: [],
   minConfidence: 0.85,
 }
 const providers = [
@@ -89,6 +90,8 @@ const providers = [
     karaokeVerified: false,
     wordSync: true,
     storable: false,
+    storeOptIn: true,
+    storeAllowed: false,
     formats: ['krc', 'lrc'],
     lastError: 'KuGou answered 503',
     lastFailure: '2026-10-25T12:00:00Z',
@@ -256,6 +259,50 @@ describe('<LyricsSettings />', () => {
       expect(await screen.findByRole('alert')).toHaveTextContent(
         'could not be checked',
       )
+    })
+
+    it('lets the administrator allow saving for a provider that grants no permission itself', async () => {
+      await load()
+      const kugou = card('kugou')
+      expect(kugou.getByText('Preview only')).toBeInTheDocument()
+      fireEvent.click(
+        kugou.getByRole('checkbox', {
+          name: 'Save lyrics from KuGou Music next to my audio',
+        }),
+      )
+      await waitFor(() =>
+        expect(api.saveSettings).toHaveBeenCalledWith({
+          ...settings,
+          store: ['kugou'],
+        }),
+      )
+    })
+
+    it('takes the permission back, and offers none for a provider that may already save', async () => {
+      api.settings.mockResolvedValue({
+        settings: { ...settings, store: ['kugou'] },
+        providers: providers.map((p) =>
+          p.id === 'kugou' ? { ...p, storeAllowed: true, storable: true } : p,
+        ),
+      })
+      await load()
+      expect(card('kugou').getByText('Lyrics can be saved')).toBeInTheDocument()
+      fireEvent.click(
+        card('kugou').getByRole('checkbox', {
+          name: 'Save lyrics from KuGou Music next to my audio',
+        }),
+      )
+      await waitFor(() =>
+        expect(api.saveSettings).toHaveBeenCalledWith({
+          ...settings,
+          store: [],
+        }),
+      )
+      expect(
+        within(screen.getByTestId('provider-lrclib')).queryByRole('checkbox', {
+          name: /Save lyrics from/,
+        }),
+      ).toBeNull()
     })
 
     it('switches a ready provider off and on', async () => {

@@ -128,11 +128,15 @@ A clean "nothing found" is remembered for a week. An outage, a timeout or a rate
 | Provider | Access | What it reads | Saves lyrics |
 | --- | --- | --- | --- |
 | **LRCLIB** | Public API, no key | Exact lookup then search; plain, synced and word-synced (Lyricsfile, when `hasWordSync`) | Yes |
-| **KuGou Music** | Open web endpoints, no account (unofficial) | Song search, lyric entries, `krc` (word-timed), `lrc` fallback, translation and romanization | Only if `Lyrics.KuGou.Store` is on |
-| **NetEase Cloud Music** | Open web endpoints, no account (unofficial) | Song search, `lrc`, `tlyric`, `romalrc`, and `yrc` (word-timed) for the songs that have it | Only if `Lyrics.NetEase.Store` is on |
-| **QQ Music** | Open web endpoints, no account (unofficial) + Better Lyrics community cache | Line-timed lyrics and translation; word-timed **QRC** when the cache has the song (an optional Better Lyrics key makes any song available) | Only if `Lyrics.QQ.Store` is on |
-| **Musixmatch** | Official API, **your own key** (no authorized keyless route exists) | `matcher.track.get`, `track.richsync.get`, `track.subtitle.get`, `track.lyrics.get` | Only if `Lyrics.Musixmatch.Store` is on |
+| **KuGou Music** | Open web endpoints, no account (unofficial) | Song search, lyric entries, `krc` (word-timed), `lrc` fallback, translation and romanization | Only if you allow it (Settings → Lyrics → provider, or `Lyrics.KuGou.Store`) |
+| **NetEase Cloud Music** | Open web endpoints, no account (unofficial) | Song search, `lrc`, `tlyric`, `romalrc`, and `yrc` (word-timed) for the songs that have it | Only if you allow it (Settings, or `Lyrics.NetEase.Store`) |
+| **QQ Music** | Open web endpoints, no account (unofficial) + Better Lyrics community cache | Line-timed lyrics and translation; word-timed **QRC** when the cache has the song (an optional Better Lyrics key makes any song available) | Only if you allow it (Settings, or `Lyrics.QQ.Store`) |
+| **Musixmatch** | Official API, **your own key** (no authorized keyless route exists) | `matcher.track.get`, `track.richsync.get`, `track.subtitle.get`, `track.lyrics.get` | Only if you allow it (Settings, or `Lyrics.Musixmatch.Store`) |
 | **Apple Music** | None | Not implemented: the timed-lyrics endpoint is private | — |
+
+### Allowing a provider to save
+
+A provider whose terms grant no permission to keep its lyrics (KuGou, NetEase, QQ, Musixmatch) shows its results as *Preview only* and a chosen version is refused with "Saving is off for this provider". Administrators can allow saving **per provider** in *Settings → Lyrics → Providers* ("Save its lyrics next to my audio"). It is stored in the database (`store` in the settings), is off by default, and can be taken back; lyrics already saved stay. The `Lyrics.<Provider>.Store` options in the configuration file do the same for the whole server.
 
 ### What the provider list shows
 

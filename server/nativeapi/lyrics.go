@@ -96,7 +96,7 @@ func failLyrics(w http.ResponseWriter, r *http.Request, err error) {
 	case errors.Is(err, lyrics.ErrConfirmRequired):
 		lyricsError(w, http.StatusConflict, "confirm-required", "This replaces lyrics that were supplied or chosen on purpose. Confirm to continue.")
 	case errors.Is(err, lyrics.ErrNotStorable):
-		lyricsError(w, http.StatusUnprocessableEntity, "not-storable", "This provider does not allow its lyrics to be saved.")
+		lyricsError(w, http.StatusUnprocessableEntity, "not-storable", "Saving is off for this provider. An administrator can allow it in Settings, under Lyrics.")
 	case errors.Is(err, lyrics.ErrNoCandidate):
 		lyricsError(w, http.StatusNotFound, "no-candidate", "That result is no longer available. Search again.")
 	case errors.Is(err, lyrics.ErrEmptyLyrics), errors.Is(err, lyrics.ErrInvalidEnvelope):

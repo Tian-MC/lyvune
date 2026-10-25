@@ -142,3 +142,10 @@
   font-weight: 600;
   text-transform: uppercase;
 }
+
+.store {
+  margin: var(--space-2) 0;
+  padding: var(--space-2) var(--space-3);
+  border-left: 2px solid var(--nd-blue);
+  background: var(--surface-2);
+}

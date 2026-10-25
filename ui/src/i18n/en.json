@@ -879,7 +879,7 @@
         "notFound": "There is nothing to restore or delete.",
         "notLocal": "Lyrics can only be saved for libraries on a local disk.",
         "notManaged": "A file with that name exists that Navidrome did not write, so it was left alone.",
-        "notStorable": "This provider does not allow its lyrics to be saved.",
+        "notStorable": "Saving is off for this provider. An administrator can allow it in Settings, under Lyrics and Providers.",
         "readOnly": "The library folder cannot be written to.",
         "unreadable": "That file could not be read.",
         "unsafePath": "That location is not safe to write to."
@@ -887,6 +887,7 @@
       "manage": "Manage",
       "manager": {
         "actions": "Change lyrics",
+        "allProviders": "All",
         "applied": "Lyrics updated.",
         "confirm": "Confirm",
         "confirmEmbedded": "The lyrics inside the audio file are not changed, but the version you chose is shown instead.",
@@ -898,6 +899,7 @@
         "delete": "Delete saved lyrics",
         "deleted": "Saved lyrics deleted.",
         "embeddedHint": "Embedded lyrics stay in the audio file as they are. Choosing one saves a preferred copy next to it.",
+        "filterProvider": "Show results from",
         "find": "Find lyrics",
         "findBetter": "Search for better lyrics",
         "hidePreview": "Hide preview",
@@ -917,9 +919,7 @@
         "noResults": "No matching lyrics were found.",
         "noneBefore": "Before any lyrics were saved",
         "notStorable": "Cannot be saved",
-        "notStorableHint": "Saving is off for this provider. An administrator can turn it on in the server configuration, if its terms allow it.",
-        "filterProvider": "Show results from",
-        "allProviders": "All",
+        "notStorableHint": "Saving is off for this provider. Turn it on in Settings, under Lyrics and Providers.",
         "offset": "Timing offset",
         "outcome": {
           "disabled": "not set up",
@@ -985,6 +985,9 @@
         "notStoredShort": "Preview only",
         "off": "Off",
         "rateLimited": "Rate limited",
+        "saveHint": "Its terms grant no permission to keep the lyrics, so this is your decision. Off by default; without it you can still preview and choose a version for now.",
+        "saveSwitch": "Save lyrics from %{name} next to my audio",
+        "saveSwitchLabel": "Save its lyrics next to my audio",
         "seenWorking": "Seen working",
         "temporarily": "Temporarily unavailable",
         "unknown": "Unknown"
