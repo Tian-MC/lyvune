@@ -143,7 +143,10 @@ export const ProviderCard = ({ p, onToggle, onStore }) => {
         )}
         {p.verified && (
           <Tag on>
-            {t('ui.lyrics.provider.devChecked', 'Checked in development')}
+            {t(
+              'ui.lyrics.provider.devChecked',
+              'Checked by the developers once (not a live status)',
+            )}
           </Tag>
         )}
         <Tag on={p.storable} warn={!p.storable && p.implemented}>

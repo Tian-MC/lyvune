@@ -264,7 +264,7 @@ export const LyricsSettings = () => {
         <p className={styles.hint}>
           {t(
             'ui.lyrics.provider.checkHint',
-            'Asks each provider that is turned on for one well-known song, so the status shows whether it answers now.',
+            'Asks each provider that is turned on for one well-known song, so the status shows whether it answers now. "Seen working" and "karaoke seen" are measured since the server started and start empty after a restart.',
           )}
         </p>
       </div>
