@@ -2,6 +2,7 @@ package lyrics_test
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"time"
@@ -107,6 +108,30 @@ var _ = Describe("Saving lyrics: defaults and local files", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(res.Result).To(Equal(lyrics.ResolveFound))
 			Expect(sidecar()).To(BeAnExistingFile())
+		})
+	})
+
+	Describe("a credits-only sidecar saved by an earlier version", func() {
+		const junk = `{"format":"navidrome-lyrics","version":1,"origin":"%s","provider":"netease","providerId":"1","quality":"plain","confidence":1,` +
+			`"retrievedAt":"2026-10-25T12:00:00Z","attribution":"x","recording":{"title":"Song","artist":"Band","album":"Album","duration":200},` +
+			`"lyrics":[{"lang":"xxx","line":[{"value":"[00:00.00-1] 作曲 : Someone"}],"synced":false}]}`
+
+		It("is not shown, and a retrieval replaces it while keeping it in the history", func() {
+			write("01 - Song.lyrics.json", fmt.Sprintf(junk, "managed"))
+			Expect(mustLyrics(svc.GetLyrics(ctx, mf))).To(BeEmpty(), "the junk line is not served as lyrics")
+
+			fake.set(remote("fake", "1", syncedOf("a real line"), 0.99))
+			_, err := engine.SaveSettings(ctx, lyrics.Settings{Providers: []string{"fake"}, MinConfidence: 0.85, AutoRetrieve: true})
+			Expect(err).ToNot(HaveOccurred())
+			res, err := engine.Resolve(ctx, mf, lyrics.ResolveOptions{})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(res.Result).To(Equal(lyrics.ResolveFound))
+			Expect(firstLine(mustLyrics(svc.GetLyrics(ctx, mf)))).To(Equal("a real line"))
+		})
+
+		It("is never ignored when the user chose it", func() {
+			write("01 - Song.lyrics.json", fmt.Sprintf(junk, "user"))
+			Expect(firstLine(mustLyrics(svc.GetLyrics(ctx, mf)))).To(ContainSubstring("作曲"))
 		})
 	})
 

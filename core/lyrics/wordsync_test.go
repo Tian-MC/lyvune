@@ -222,6 +222,7 @@ var _ = Describe("credit-only lyrics", func() {
 		Expect(lyrics.CreditsOnly(lines("作词 : A", "作曲 : B", "编曲 : C", ""))).To(BeTrue())
 		Expect(lyrics.CreditsOnly(lines("Composer: A", "Lyrics by: B"))).To(BeTrue())
 		Expect(lyrics.CreditsOnly(lines("Song - Artist", "作曲：A"))).To(BeTrue(), "a title and credits is still a header")
+		Expect(lyrics.CreditsOnly(lines("[00:00.00-1] 作曲 : Someone"))).To(BeTrue(), "a stray timestamp left in the text does not hide the credit")
 	})
 
 	It("is a lyric once there are real lines, whatever credits come first", func() {

@@ -203,7 +203,7 @@ func evenlySplit(line model.Line) bool {
 // creditLine matches a line that only credits someone ("作曲 : Name",
 // "Composer: Name", "Lyrics by: Name"), which services put at the top of their
 // lyrics and which is metadata, not something sung.
-var creditLine = regexp.MustCompile(`(?i)^\s*(?:作词|作詞|作曲|编曲|編曲|制作人|製作人|监制|词|詞|曲|演唱|lyrics?|lyricist|composer|composed|written|music|arranged|arrangement|producer|produced|vocals?|words)(?:\s+by)?\s*[:：]`)
+var creditLine = regexp.MustCompile(`(?i)^\s*(?:\[[^\]]*\]\s*)*(?:作词|作詞|作曲|编曲|編曲|制作人|製作人|监制|词|詞|曲|演唱|lyrics?|lyricist|composer|composed|written|music|arranged|arrangement|producer|produced|vocals?|words)(?:\s+by)?\s*[:：]`)
 
 // creditsOnly reports whether the main lyric has no real content: every line is
 // a credit or blank, or the only other line is a title ("Song - Artist") sitting
