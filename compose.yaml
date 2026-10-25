@@ -1,0 +1,49 @@
+# Lyvune with Docker Compose. The guide is docs/DOCKER.md.
+#
+#   cp .env.example .env        # then set LYVUNE_MUSIC_DIR to your music folder
+#   docker compose up -d --build
+#   open http://localhost:4533
+#
+# This builds the image from this repository. Once an image is published, LYVUNE_IMAGE can name it
+# (ghcr.io/tian-mc/lyvune is where it will be) and `docker compose pull` fetches it.
+name: lyvune
+
+services:
+  lyvune:
+    image: ${LYVUNE_IMAGE:-lyvune:local}
+    build:
+      context: .
+    restart: unless-stopped
+    # The user the server runs as, 1000:1000 unless you say otherwise. The default data volume below
+    # belongs to it; if you change the user, point LYVUNE_DATA at a folder that user owns
+    user: "${LYVUNE_USER:-1000:1000}"
+    init: true
+    stop_grace_period: 30s
+    ports:
+      - "${LYVUNE_PORT:-4533}:4533"
+    environment:
+      TZ: ${TZ:-UTC}
+      ND_LOGLEVEL: ${LYVUNE_LOGLEVEL:-info}
+      # More settings are ND_ variables, as in Navidrome, or lyvune.toml in the data folder, for example:
+      # ND_BASEURL: /lyvune                 # behind a reverse proxy under a path
+      # ND_SCANNER_SCHEDULE: "@every 1h"    # how often to look for new music
+      # ND_ENABLEEXTERNALSERVICES: "false"  # no artist info or lyrics lookups at all
+    volumes:
+      # Everything Lyvune keeps: database, cache, history of replaced lyrics, backups. A named volume by
+      # default; LYVUNE_DATA=/path/you/own uses a folder instead
+      - ${LYVUNE_DATA:-lyvune-data}:/data
+      # Your music, read-only: Lyvune cannot change it, and so cannot save lyrics next to the files.
+      # compose.sidecars.yaml turns that on
+      - ${LYVUNE_MUSIC_DIR:?Set LYVUNE_MUSIC_DIR in .env to the folder with your music}:/music:ro
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+volumes:
+  lyvune-data:

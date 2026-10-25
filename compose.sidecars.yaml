@@ -1,0 +1,10 @@
+# Lets Lyvune save lyrics next to your music files (.lyrics.json). It changes one thing: /music is writable.
+#
+#   docker compose -f compose.yaml -f compose.sidecars.yaml up -d
+#
+# Lyvune only ever writes <song>.lyrics.json files there and never touches audio files or tags. The folder
+# has to be writable by the user the container runs as (LYVUNE_USER); see docs/DOCKER.md, "Permissions".
+services:
+  lyvune:
+    volumes:
+      - ${LYVUNE_MUSIC_DIR:?Set LYVUNE_MUSIC_DIR in .env to the folder with your music}:/music
