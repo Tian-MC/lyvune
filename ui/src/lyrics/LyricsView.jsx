@@ -7,6 +7,7 @@ import { LyricsIcon, TranslateIcon, QuoteIcon } from '../design/icons'
 import engine from '../playback/engine'
 import { useMedia } from '../playback/hooks'
 import { activeLineIndex } from './parse'
+import { LyricsSourceBar } from './LyricsSourceBar'
 import { useLyrics } from './useLyrics'
 import styles from './LyricsView.module.css'
 
@@ -223,9 +224,9 @@ const PlainLyrics = ({ lyrics, showTranslation, showPronunciation }) => {
 }
 
 /** Lyrics for the given track: synced, unsynced, or a quiet fallback. */
-export const LyricsView = ({ trackId, isRadio, className }) => {
+export const LyricsView = ({ trackId, title, isRadio, className }) => {
   const t = useT()
-  const { status, lyrics } = useLyrics(trackId, !isRadio)
+  const { status, lyrics, searching } = useLyrics(trackId, !isRadio)
   const [showTranslation, setShowTranslation] = useState(true)
   const [showPronunciation, setShowPronunciation] = useState(false)
 
@@ -243,6 +244,14 @@ export const LyricsView = ({ trackId, isRadio, className }) => {
     )
   } else if (status === 'loading' || status === 'idle') {
     body = <div className={styles.loading} aria-busy="true" />
+  } else if (searching) {
+    body = (
+      <EmptyState
+        icon={LyricsIcon}
+        title={t('ui.lyrics.searching', 'Looking for lyrics…')}
+        compact
+      />
+    )
   } else if (status === 'error' || !lyrics || lyrics.lines.length === 0) {
     body = (
       <EmptyState
@@ -305,6 +314,13 @@ export const LyricsView = ({ trackId, isRadio, className }) => {
         </div>
       )}
       {body}
+      {!isRadio && trackId && (
+        <LyricsSourceBar
+          trackId={trackId}
+          title={title}
+          searching={searching}
+        />
+      )}
     </div>
   )
 }

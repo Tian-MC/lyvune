@@ -193,7 +193,11 @@ const NowPlaying = ({ closing = false }) => {
             }
           >
             {panel === 'lyrics' ? (
-              <LyricsView trackId={item.trackId} isRadio={isRadio} />
+              <LyricsView
+                trackId={item.trackId}
+                title={title}
+                isRadio={isRadio}
+              />
             ) : (
               <QueueList variant="immersive" />
             )}

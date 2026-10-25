@@ -13,6 +13,11 @@ vi.mock('react-admin', () => ({
   useTranslate: () => (key, opts) => opts?._ ?? key,
 }))
 vi.mock('./useLyrics', () => ({ useLyrics: () => mocks.lyrics }))
+vi.mock('./LyricsSourceBar', () => ({
+  LyricsSourceBar: ({ searching }) => (
+    <div data-testid="source-bar" data-searching={String(!!searching)} />
+  ),
+}))
 vi.mock('../playback/engine', () => ({
   default: {
     seek: mocks.seek,
@@ -49,6 +54,29 @@ describe('<LyricsView /> (fixtures)', () => {
     Element.prototype.scrollTo = vi.fn()
     mocks.paused = true
     mocks.lyrics = { status: 'ready', lyrics: null }
+  })
+
+  it('shows where the lyrics come from, for a track', () => {
+    show(null)
+    expect(screen.getByTestId('source-bar')).toBeInTheDocument()
+  })
+
+  it('has no source line for a radio stream', () => {
+    show(null, { isRadio: true })
+    expect(screen.queryByTestId('source-bar')).not.toBeInTheDocument()
+  })
+
+  it('says it is looking while the server searches online', () => {
+    mocks.lyrics = { status: 'ready', lyrics: null, searching: true }
+    render(<LyricsView trackId="t1" />)
+    expect(screen.getByText('Looking for lyrics…')).toBeInTheDocument()
+    expect(
+      screen.queryByText('No lyrics for this song'),
+    ).not.toBeInTheDocument()
+    expect(screen.getByTestId('source-bar')).toHaveAttribute(
+      'data-searching',
+      'true',
+    )
   })
 
   it('explains that streams have no lyrics', () => {
