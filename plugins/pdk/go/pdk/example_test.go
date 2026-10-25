@@ -8,8 +8,8 @@ package pdk_test
 import (
 	"testing"
 
-	"github.com/navidrome/navidrome/plugins/pdk/go/host"
-	"github.com/navidrome/navidrome/plugins/pdk/go/pdk"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/host"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/pdk"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -138,7 +138,7 @@ func TestProcessJSONRequest(t *testing.T) {
 
 // =============================================================================
 // HTTP requests go through the host HTTP service (host.HTTPSend), not
-// pdk.NewHTTPRequest, which Navidrome does not enable.
+// pdk.NewHTTPRequest, which Lyvune does not enable.
 // =============================================================================
 
 // FetchData demonstrates a plugin function that makes an HTTP request.

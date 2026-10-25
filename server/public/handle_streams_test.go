@@ -7,11 +7,11 @@ import (
 	"net/http/httptest"
 	"time"
 
+	"github.com/Tian-MC/lyvune/core/auth"
+	"github.com/Tian-MC/lyvune/core/stream"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/tests"
 	"github.com/go-chi/jwtauth/v5"
-	"github.com/navidrome/navidrome/core/auth"
-	"github.com/navidrome/navidrome/core/stream"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/tests"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

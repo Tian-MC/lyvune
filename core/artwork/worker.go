@@ -12,14 +12,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/core/agents"
-	"github.com/navidrome/navidrome/core/auth"
-	"github.com/navidrome/navidrome/core/ffmpeg"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/server/events"
-	"github.com/navidrome/navidrome/utils/cache"
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/core/agents"
+	"github.com/Tian-MC/lyvune/core/auth"
+	"github.com/Tian-MC/lyvune/core/ffmpeg"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/server/events"
+	"github.com/Tian-MC/lyvune/utils/cache"
 )
 
 const (

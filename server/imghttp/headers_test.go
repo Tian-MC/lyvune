@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/navidrome/navidrome/core/artwork"
-	"github.com/navidrome/navidrome/server/imghttp"
+	"github.com/Tian-MC/lyvune/core/artwork"
+	"github.com/Tian-MC/lyvune/server/imghttp"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

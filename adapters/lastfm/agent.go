@@ -10,15 +10,15 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/consts"
+	"github.com/Tian-MC/lyvune/core/agents"
+	"github.com/Tian-MC/lyvune/core/scrobbler"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/utils/cache"
+	"github.com/Tian-MC/lyvune/utils/httpclient"
 	"github.com/andybalholm/cascadia"
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/consts"
-	"github.com/navidrome/navidrome/core/agents"
-	"github.com/navidrome/navidrome/core/scrobbler"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/utils/cache"
-	"github.com/navidrome/navidrome/utils/httpclient"
 	"golang.org/x/net/html"
 )
 

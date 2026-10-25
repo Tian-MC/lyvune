@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/navidrome/navidrome/utils/jsoncommentstrip"
+	"github.com/Tian-MC/lyvune/utils/jsoncommentstrip"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

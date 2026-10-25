@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/navidrome/navidrome/db"
+	"github.com/Tian-MC/lyvune/db"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -59,7 +59,7 @@ var _ = Describe("doctor", func() {
 		Expect(err).ToNot(HaveOccurred())
 
 		Expect(doctor(ctx, database, out)).To(BeFalse())
-		Expect(out.String()).To(ContainSubstring("navidrome search rebuild"))
+		Expect(out.String()).To(ContainSubstring("lyvune search rebuild"))
 	})
 
 	It("points to a backup restore when corruption is not limited to the search index", func() {
@@ -94,7 +94,7 @@ var _ = Describe("doctor", func() {
 		Expect(doctor(ctx, database, out)).To(BeFalse())
 		Expect(out.String()).To(ContainSubstring("Foreign key check reported"))
 		Expect(out.String()).To(ContainSubstring("media_file"))
-		Expect(out.String()).To(ContainSubstring("navidrome scan -f"))
+		Expect(out.String()).To(ContainSubstring("lyvune scan -f"))
 		// GC never touches player, share or playqueue, so don't promise a full cleanup.
 		Expect(out.String()).To(ContainSubstring("removed by hand"))
 	})

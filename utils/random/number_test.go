@@ -3,7 +3,7 @@ package random_test
 import (
 	"testing"
 
-	"github.com/navidrome/navidrome/utils/random"
+	"github.com/Tian-MC/lyvune/utils/random"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

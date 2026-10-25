@@ -5,9 +5,9 @@ import (
 	"errors"
 	"time"
 
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/model/id"
 	"github.com/deluan/rest"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/model/id"
 )
 
 func CreateMockPlaylistRepo() *MockPlaylistRepo {

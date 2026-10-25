@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/navidrome/navidrome/model"
+	"github.com/Tian-MC/lyvune/model"
 )
 
 type MockPlayQueueRepo struct {

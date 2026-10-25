@@ -5,12 +5,12 @@ import (
 	"errors"
 	"net/http/httptest"
 
-	"github.com/navidrome/navidrome/core/auth"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/model/request"
-	"github.com/navidrome/navidrome/server/subsonic/responses"
-	"github.com/navidrome/navidrome/tests"
-	"github.com/navidrome/navidrome/utils/req"
+	"github.com/Tian-MC/lyvune/core/auth"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/model/request"
+	"github.com/Tian-MC/lyvune/server/subsonic/responses"
+	"github.com/Tian-MC/lyvune/tests"
+	"github.com/Tian-MC/lyvune/utils/req"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

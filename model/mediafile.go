@@ -12,15 +12,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/consts"
+	"github.com/Tian-MC/lyvune/model/criteria"
+	"github.com/Tian-MC/lyvune/utils"
+	"github.com/Tian-MC/lyvune/utils/gg"
+	"github.com/Tian-MC/lyvune/utils/number"
+	"github.com/Tian-MC/lyvune/utils/slice"
 	"github.com/deluan/rest"
 	"github.com/gohugoio/hashstructure"
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/consts"
-	"github.com/navidrome/navidrome/model/criteria"
-	"github.com/navidrome/navidrome/utils"
-	"github.com/navidrome/navidrome/utils/gg"
-	"github.com/navidrome/navidrome/utils/number"
-	"github.com/navidrome/navidrome/utils/slice"
 	"github.com/zeebo/xxh3"
 )
 

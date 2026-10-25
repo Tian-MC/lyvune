@@ -1,4 +1,4 @@
-# Build example plugins for Navidrome
+# Build example plugins for Lyvune
 # Auto-discover all plugin folders (folders containing go.mod)
 PLUGINS := $(patsubst %/go.mod,%,$(wildcard */go.mod))
 

@@ -1,4 +1,4 @@
-// Package e2e provides end-to-end integration tests for the Navidrome Jellyfin API.
+// Package e2e provides end-to-end integration tests for the Lyvune Jellyfin API.
 //
 // These tests exercise the full HTTP request/response cycle through the Jellyfin API router,
 // using a real SQLite database and real repository implementations while stubbing out external
@@ -34,32 +34,32 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/conf/configtest"
-	"github.com/navidrome/navidrome/core"
-	"github.com/navidrome/navidrome/core/agents"
-	"github.com/navidrome/navidrome/core/artwork"
-	"github.com/navidrome/navidrome/core/auth"
-	"github.com/navidrome/navidrome/core/external"
-	"github.com/navidrome/navidrome/core/lyrics"
-	"github.com/navidrome/navidrome/core/matcher"
-	"github.com/navidrome/navidrome/core/playlists"
-	"github.com/navidrome/navidrome/core/quickconnect"
-	"github.com/navidrome/navidrome/core/scrobbler"
-	"github.com/navidrome/navidrome/core/sonic"
-	"github.com/navidrome/navidrome/core/storage/storagetest"
-	"github.com/navidrome/navidrome/core/stream"
-	"github.com/navidrome/navidrome/db"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/model/id"
-	"github.com/navidrome/navidrome/model/request"
-	"github.com/navidrome/navidrome/persistence"
-	"github.com/navidrome/navidrome/server/events"
-	"github.com/navidrome/navidrome/server/jellyfin"
-	"github.com/navidrome/navidrome/server/jellyfin/dto"
-	"github.com/navidrome/navidrome/tests"
-	"github.com/navidrome/navidrome/tests/harness"
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/conf/configtest"
+	"github.com/Tian-MC/lyvune/core"
+	"github.com/Tian-MC/lyvune/core/agents"
+	"github.com/Tian-MC/lyvune/core/artwork"
+	"github.com/Tian-MC/lyvune/core/auth"
+	"github.com/Tian-MC/lyvune/core/external"
+	"github.com/Tian-MC/lyvune/core/lyrics"
+	"github.com/Tian-MC/lyvune/core/matcher"
+	"github.com/Tian-MC/lyvune/core/playlists"
+	"github.com/Tian-MC/lyvune/core/quickconnect"
+	"github.com/Tian-MC/lyvune/core/scrobbler"
+	"github.com/Tian-MC/lyvune/core/sonic"
+	"github.com/Tian-MC/lyvune/core/storage/storagetest"
+	"github.com/Tian-MC/lyvune/core/stream"
+	"github.com/Tian-MC/lyvune/db"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/model/id"
+	"github.com/Tian-MC/lyvune/model/request"
+	"github.com/Tian-MC/lyvune/persistence"
+	"github.com/Tian-MC/lyvune/server/events"
+	"github.com/Tian-MC/lyvune/server/jellyfin"
+	"github.com/Tian-MC/lyvune/server/jellyfin/dto"
+	"github.com/Tian-MC/lyvune/tests"
+	"github.com/Tian-MC/lyvune/tests/harness"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -210,7 +210,7 @@ func queryResult(w *httptest.ResponseRecorder) dto.QueryResult {
 }
 
 // createPlaylist creates a playlist as admin (encodedIds are the Jellyfin-encoded item ids a
-// client would send) and returns its decoded Navidrome id.
+// client would send) and returns its decoded Lyvune id.
 func createPlaylist(name string, encodedIds []string) string {
 	return createPlaylistAs(adminUser, name, encodedIds...)
 }
@@ -236,7 +236,7 @@ func createPlaylistBodyAs(user model.User, body string) string {
 	return id
 }
 
-// --- Seeded-id lookup helpers (return Navidrome ids; wrap with enc() for URLs) ---
+// --- Seeded-id lookup helpers (return Lyvune ids; wrap with enc() for URLs) ---
 
 func enc(id string) string { return dto.EncodeID(id) }
 

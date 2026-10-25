@@ -3,7 +3,7 @@ package plugins
 import (
 	"context"
 
-	"github.com/navidrome/navidrome/log"
+	"github.com/Tian-MC/lyvune/log"
 )
 
 // CapabilityLifecycle indicates the plugin has lifecycle callback functions.

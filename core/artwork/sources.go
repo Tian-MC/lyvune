@@ -14,11 +14,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/navidrome/navidrome/core/ffmpeg"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/utils/httpclient"
-	"github.com/navidrome/navidrome/utils/netguard"
+	"github.com/Tian-MC/lyvune/core/ffmpeg"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/utils/httpclient"
+	"github.com/Tian-MC/lyvune/utils/netguard"
 	"go.senan.xyz/taglib"
 )
 

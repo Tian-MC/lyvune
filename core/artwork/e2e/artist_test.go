@@ -6,10 +6,10 @@ import (
 	"testing/fstest"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/consts"
-	"github.com/navidrome/navidrome/core/artwork"
-	"github.com/navidrome/navidrome/model"
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/consts"
+	"github.com/Tian-MC/lyvune/core/artwork"
+	"github.com/Tian-MC/lyvune/model"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

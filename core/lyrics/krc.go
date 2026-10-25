@@ -11,7 +11,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/navidrome/navidrome/model"
+	"github.com/Tian-MC/lyvune/model"
 )
 
 // KRC is KuGou's karaoke lyrics format. A file is either plain text or the

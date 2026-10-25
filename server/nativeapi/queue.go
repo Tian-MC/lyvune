@@ -6,11 +6,11 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/model/request"
-	. "github.com/navidrome/navidrome/utils/gg"
-	"github.com/navidrome/navidrome/utils/slice"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/model/request"
+	. "github.com/Tian-MC/lyvune/utils/gg"
+	"github.com/Tian-MC/lyvune/utils/slice"
 )
 
 type updateQueuePayload struct {

@@ -1,6 +1,6 @@
-# Wikimedia Plugin for Navidrome
+# Wikimedia Plugin for Lyvune
 
-A Navidrome plugin that fetches artist metadata from Wikidata, DBpedia, and Wikipedia.
+A Lyvune plugin that fetches artist metadata from Wikidata, DBpedia, and Wikipedia.
 
 ## Generating the Plugin
 
@@ -46,7 +46,7 @@ zip -j wikimedia.ndp manifest.json dist/plugin.wasm
 
 ## Installation
 
-Copy the `.ndp` file to your Navidrome plugins folder:
+Copy the `.ndp` file to your Lyvune plugins folder:
 
 ```bash
 cp wikimedia.ndp /path/to/navidrome/plugins/

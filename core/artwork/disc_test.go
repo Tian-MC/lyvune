@@ -5,9 +5,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/tests"
-	"github.com/navidrome/navidrome/utils/slice"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/tests"
+	"github.com/Tian-MC/lyvune/utils/slice"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

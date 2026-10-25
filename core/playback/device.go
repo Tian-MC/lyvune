@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/navidrome/navidrome/core/playback/mpv"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
+	"github.com/Tian-MC/lyvune/core/playback/mpv"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
 )
 
 type Track interface {

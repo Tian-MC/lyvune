@@ -2,8 +2,8 @@
 name = "library-inspector-rs"
 version = "1.0.0"
 edition = "2021"
-description = "Navidrome plugin that periodically logs library details and finds largest files"
-authors = ["Navidrome Team"]
+description = "Lyvune plugin that periodically logs library details and finds largest files"
+authors = ["Lyvune Team"]
 license = "GPL-3.0"
 
 [lib]

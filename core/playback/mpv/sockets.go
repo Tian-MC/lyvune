@@ -5,8 +5,8 @@ package mpv
 import (
 	"os"
 
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/utils"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/utils"
 )
 
 func socketName(prefix, suffix string) string {

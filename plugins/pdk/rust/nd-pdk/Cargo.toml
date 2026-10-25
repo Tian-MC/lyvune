@@ -2,8 +2,8 @@
 name = "nd-pdk"
 version = "0.1.0"
 edition = "2021"
-description = "Navidrome Plugin Development Kit for Rust"
-authors = ["Navidrome Team"]
+description = "Lyvune Plugin Development Kit for Rust"
+authors = ["Lyvune Team"]
 license = "GPL-3.0"
 readme = "../README.md"
 

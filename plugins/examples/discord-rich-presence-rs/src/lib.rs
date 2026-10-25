@@ -1,6 +1,6 @@
-//! Discord Rich Presence Plugin for Navidrome - Rust Implementation
+//! Discord Rich Presence Plugin for Lyvune - Rust Implementation
 //!
-//! This plugin integrates Navidrome with Discord Rich Presence. It demonstrates how to:
+//! This plugin integrates Lyvune with Discord Rich Presence. It demonstrates how to:
 //! - Use the nd-pdk crate for host service calls
 //! - Implement the Scrobbler capability for now-playing updates
 //! - Implement SchedulerCallback for heartbeat and activity clearing
@@ -8,9 +8,9 @@
 //!
 //! ## Configuration
 //!
-//! Configure this plugin through the Navidrome UI with:
+//! Configure this plugin through the Lyvune UI with:
 //! - Discord Application Client ID
-//! - User tokens array mapping Navidrome usernames to Discord tokens
+//! - User tokens array mapping Lyvune usernames to Discord tokens
 //!
 //! **WARNING**: This plugin is for demonstration purposes only. Storing Discord tokens
 //! in configuration files is not secure and may violate Discord's terms of service.
@@ -171,7 +171,7 @@ impl Scrobbler for DiscordPlugin {
             &user_token,
             rpc::Activity {
                 application: client_id.clone(),
-                name: "Navidrome".to_string(),
+                name: "Lyvune".to_string(),
                 activity_type: 2, // Listening
                 details: req.track.title.clone(),
                 state: req.track.artist.clone(),

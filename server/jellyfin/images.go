@@ -12,18 +12,18 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/core/artwork"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/model/request"
+	"github.com/Tian-MC/lyvune/server/imghttp"
+	"github.com/Tian-MC/lyvune/utils/req"
 	"github.com/dustin/go-humanize"
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/core/artwork"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/model/request"
-	"github.com/navidrome/navidrome/server/imghttp"
-	"github.com/navidrome/navidrome/utils/req"
 	_ "golang.org/x/image/webp"
 )
 
-// imageSize reduces Jellyfin's size params to Navidrome's single bound. Width/Height/Max* are
+// imageSize reduces Jellyfin's size params to Lyvune's single bound. Width/Height/Max* are
 // bounds, so the tightest wins; Fill* must cover its box, so its larger side is the bound.
 func imageSize(p *req.Values) int {
 	fill := max(p.IntOr("fillwidth", 0), p.IntOr("fillheight", 0))
@@ -79,7 +79,7 @@ func hashFromTag(r *http.Request) string {
 	return tag
 }
 
-// resolveArtworkID maps a Jellyfin item id to a Navidrome ArtworkID, probing
+// resolveArtworkID maps a Jellyfin item id to a Lyvune ArtworkID, probing
 // album -> artist -> media file -> playlist.
 func (api *Router) resolveArtworkID(ctx context.Context, itemId string) string {
 	if al, err := api.ds.Album().Get(ctx, itemId); err == nil {

@@ -13,13 +13,13 @@ import (
 
 	"github.com/go-chi/chi/v5/middleware"
 
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/conf/configtest"
-	"github.com/navidrome/navidrome/core/stream"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/model/request"
-	"github.com/navidrome/navidrome/tests"
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/conf/configtest"
+	"github.com/Tian-MC/lyvune/core/stream"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/model/request"
+	"github.com/Tian-MC/lyvune/tests"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

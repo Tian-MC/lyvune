@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://navidrome.org/schemas/Manifest.json",
   "title": "Manifest",
-  "description": "Plugin manifest for Navidrome plugins",
+  "description": "Plugin manifest for Lyvune plugins",
   "type": "object",
   "additionalProperties": false,
   "required": ["name", "author", "version"],

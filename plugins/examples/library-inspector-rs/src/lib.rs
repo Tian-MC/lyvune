@@ -1,6 +1,6 @@
-//! Library Inspector Plugin for Navidrome
+//! Library Inspector Plugin for Lyvune
 //!
-//! This plugin demonstrates how to use the nd-pdk crate for accessing Navidrome
+//! This plugin demonstrates how to use the nd-pdk crate for accessing Lyvune
 //! host services and implementing capabilities in Rust. It periodically logs details
 //! about all music libraries and finds the largest file in the root of each library.
 //!

@@ -8,7 +8,7 @@
 
 package lyrics
 
-import "github.com/navidrome/navidrome/plugins/pdk/go/types"
+import "github.com/Tian-MC/lyvune/plugins/pdk/go/types"
 
 // Deprecated: use types.ArtistRef.
 type ArtistRef = types.ArtistRef
@@ -24,7 +24,7 @@ type GetLyricsResponse struct {
 }
 
 // LyricsText represents a single set of lyrics in raw text format.
-// Text can be plain text or LRC format — Navidrome will parse it.
+// Text can be plain text or LRC format — Lyvune will parse it.
 type LyricsText struct {
 	Lang string `json:"lang,omitempty"`
 	Text string `json:"text"`
@@ -32,7 +32,7 @@ type LyricsText struct {
 
 // TrackInfo contains track metadata.
 type TrackInfo struct {
-	// ID is the internal Navidrome track ID.
+	// ID is the internal Lyvune track ID.
 	ID string `json:"id"`
 	// Title is the track title.
 	Title string `json:"title"`

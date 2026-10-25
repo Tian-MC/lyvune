@@ -11,8 +11,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/navidrome/navidrome/conf/configtest"
-	"github.com/navidrome/navidrome/tests"
+	"github.com/Tian-MC/lyvune/conf/configtest"
+	"github.com/Tian-MC/lyvune/tests"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

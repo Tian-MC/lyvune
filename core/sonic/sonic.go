@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/navidrome/navidrome/core/agents"
-	"github.com/navidrome/navidrome/core/matcher"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
+	"github.com/Tian-MC/lyvune/core/agents"
+	"github.com/Tian-MC/lyvune/core/matcher"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
 )
 
 const capabilitySonicSimilarity = "SonicSimilarity"

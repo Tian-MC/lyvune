@@ -2,7 +2,7 @@ package host
 
 import "context"
 
-// SubsonicAPIService provides access to Navidrome's Subsonic API from plugins.
+// SubsonicAPIService provides access to Lyvune's Subsonic API from plugins.
 //
 // This service allows plugins to make Subsonic API requests on behalf of the plugin's user,
 // enabling access to library data, user preferences, and other Subsonic-compatible operations.

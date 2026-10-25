@@ -6,7 +6,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/navidrome/navidrome/model"
+	"github.com/Tian-MC/lyvune/model"
 	"golang.org/x/text/runes"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/norm"

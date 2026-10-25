@@ -1,6 +1,6 @@
 # ndpgen
 
-Navidrome Plugin Development Kit (PDK) code generator. It reads Go interface definitions with special annotations and generates client wrappers for WASM plugins.
+Lyvune Plugin Development Kit (PDK) code generator. It reads Go interface definitions with special annotations and generates client wrappers for WASM plugins.
 
 This tool is the unified code generator that handle both host function wrappers and capability wrappers.
 
@@ -77,7 +77,7 @@ package host
 
 import "context"
 
-// SubsonicAPIService provides access to Navidrome's Subsonic API.
+// SubsonicAPIService provides access to Lyvune's Subsonic API.
 // This documentation becomes part of the generated code.
 //nd:hostservice name=SubsonicAPI permission=subsonicapi
 type SubsonicAPIService interface {
@@ -91,7 +91,7 @@ type SubsonicAPIService interface {
 
 ### Go Client Library (Go/TinyGo WASM)
 
-Generated files are named `nd_host_<servicename>.go` (lowercase) and placed in `$output/go/host/`. The `$output/go/` directory becomes a complete Go module (`github.com/navidrome/navidrome/plugins/pdk/go`) with package name `host`, intended for import by Navidrome plugins built with TinyGo.
+Generated files are named `nd_host_<servicename>.go` (lowercase) and placed in `$output/go/host/`. The `$output/go/` directory becomes a complete Go module (`github.com/Tian-MC/lyvune/plugins/pdk/go`) with package name `host`, intended for import by Lyvune plugins built with TinyGo.
 
 The generator creates:
 - `nd_host_<servicename>.go` - Client wrapper code (WASM build)
@@ -124,7 +124,7 @@ package myplugin
 import (
     "testing"
     
-    "github.com/navidrome/navidrome/plugins/pdk/go/host"
+    "github.com/Tian-MC/lyvune/plugins/pdk/go/host"
 )
 
 func TestMyPluginFunction(t *testing.T) {

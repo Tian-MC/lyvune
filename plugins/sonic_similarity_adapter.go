@@ -3,10 +3,10 @@ package plugins
 import (
 	"context"
 
-	"github.com/navidrome/navidrome/core/sonic"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/plugins/capabilities"
-	"github.com/navidrome/navidrome/plugins/types"
+	"github.com/Tian-MC/lyvune/core/sonic"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/plugins/capabilities"
+	"github.com/Tian-MC/lyvune/plugins/types"
 )
 
 const CapabilitySonicSimilarity Capability = "SonicSimilarity"

@@ -9,6 +9,8 @@ data
 testDB
 navidrome
 navidrome.toml
+lyvune
+lyvune.toml
 tmp
 !tmp/taglib
 dist

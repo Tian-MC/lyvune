@@ -10,11 +10,11 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/core/storage"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/utils"
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/core/storage"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/utils"
 )
 
 // walkDirTree recursively walks the directory tree starting from the given targetFolders.

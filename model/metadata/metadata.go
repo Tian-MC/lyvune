@@ -11,11 +11,11 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/Tian-MC/lyvune/consts"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/utils/slice"
 	"github.com/google/uuid"
-	"github.com/navidrome/navidrome/consts"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/utils/slice"
 )
 
 type Info struct {

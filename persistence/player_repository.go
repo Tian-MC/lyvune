@@ -8,10 +8,10 @@ import (
 	"strings"
 
 	. "github.com/Masterminds/squirrel"
+	"github.com/Tian-MC/lyvune/consts"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/model/id"
 	"github.com/deluan/rest"
-	"github.com/navidrome/navidrome/consts"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/model/id"
 	"github.com/pocketbase/dbx"
 )
 

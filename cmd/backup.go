@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/db"
-	"github.com/navidrome/navidrome/log"
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/db"
+	"github.com/Tian-MC/lyvune/log"
 	"github.com/spf13/cobra"
 )
 
@@ -24,7 +24,7 @@ func init() {
 	backupCmd.Flags().StringVarP(&backupDir, "backup-dir", "d", "", "directory to manually make backup")
 	backupRoot.AddCommand(backupCmd)
 
-	pruneCmd.Flags().StringVarP(&backupDir, "backup-dir", "d", "", "directory holding Navidrome backups")
+	pruneCmd.Flags().StringVarP(&backupDir, "backup-dir", "d", "", "directory holding Lyvune backups")
 	pruneCmd.Flags().IntVarP(&backupCount, "keep-count", "k", -1, "specify the number of backups to keep. 0 remove ALL backups, and negative values mean to use the default from configuration")
 	pruneCmd.Flags().BoolVarP(&force, "force", "f", false, "bypass warning when backup count is zero")
 	backupRoot.AddCommand(pruneCmd)
@@ -46,7 +46,7 @@ var (
 	backupCmd = &cobra.Command{
 		Use:   "create",
 		Short: "Create a backup database",
-		Long:  "Manually backup Navidrome database. This will ignore BackupCount",
+		Long:  "Manually backup Lyvune database. This will ignore BackupCount",
 		Run: func(cmd *cobra.Command, _ []string) {
 			runBackup(cmd.Context())
 		},
@@ -63,8 +63,8 @@ var (
 
 	restoreCommand = &cobra.Command{
 		Use:   "restore",
-		Short: "Restore Navidrome database",
-		Long:  "Restore Navidrome database from a backup. This must be done offline",
+		Short: "Restore Lyvune database",
+		Long:  "Restore Lyvune database from a backup. This must be done offline",
 		Run: func(cmd *cobra.Command, _ []string) {
 			runRestore(cmd.Context())
 		},
@@ -130,7 +130,7 @@ func runRestore(ctx context.Context) {
 		restorePath = filepath.Join(backupPath, restorePath)
 	}
 
-	if !force && !confirmYES("Warning: restoring the Navidrome database should only be done offline, especially if your backup is very old.") {
+	if !force && !confirmYES("Warning: restoring the Lyvune database should only be done offline, especially if your backup is very old.") {
 		log.Warn("Restore cancelled")
 		return
 	}

@@ -10,10 +10,10 @@ import (
 	"time"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/utils/natural"
-	"github.com/navidrome/navidrome/utils/slice"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/utils/natural"
+	"github.com/Tian-MC/lyvune/utils/slice"
 )
 
 func loadAlbumFoldersPaths(ctx context.Context, ds model.DataStore, album model.Album) ([]string, []string, *time.Time, error) {

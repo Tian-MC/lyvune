@@ -9,11 +9,11 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/model/request"
+	"github.com/Tian-MC/lyvune/server/jellyfin/dto"
+	"github.com/Tian-MC/lyvune/tests"
 	"github.com/go-chi/chi/v5"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/model/request"
-	"github.com/navidrome/navidrome/server/jellyfin/dto"
-	"github.com/navidrome/navidrome/tests"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -369,7 +369,7 @@ var _ = Describe("Items", func() {
 			// Jellyfin builds the query from the standalone params, then applies Filters over the top.
 			Entry("Filters wins over the standalone param", "isFavorite=false&Filters=IsFavorite",
 				[]string{"starred = "}, nil),
-			// No Navidrome equivalent: these must be dropped, not half-applied.
+			// No Lyvune equivalent: these must be dropped, not half-applied.
 			Entry("Likes is ignored", "Filters=Likes", nil, []string{"starred", "play_count"}),
 			Entry("IsResumable is ignored", "Filters=IsResumable", nil, []string{"starred", "play_count"}),
 			// The artist-parent branch gets notMissing from filter.AlbumsByArtistID, not the default
@@ -1144,7 +1144,7 @@ var _ = Describe("Items", func() {
 			Expect(parseTypes("musicalbum, AUDIO")).To(Equal([]string{"MusicAlbum", "Audio"}))
 		})
 
-		It("returns no types for real Jellyfin kinds Navidrome has none of", func() {
+		It("returns no types for real Jellyfin kinds Lyvune has none of", func() {
 			Expect(parseTypes("Boxset")).To(BeEmpty())
 			Expect(parseTypes("BoxSet,Movie")).To(BeEmpty())
 		})

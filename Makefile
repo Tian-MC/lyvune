@@ -18,7 +18,7 @@ endif
 SUPPORTED_PLATFORMS ?= linux/amd64,linux/arm64,linux/arm/v5,linux/arm/v6,linux/arm/v7,linux/386,linux/riscv64,darwin/amd64,darwin/arm64,windows/amd64,windows/386
 IMAGE_PLATFORMS ?= $(shell echo $(SUPPORTED_PLATFORMS) | tr ',' '\n' | grep "linux" | grep -v "arm/v5" | tr '\n' ',' | sed 's/,$$//')
 PLATFORMS ?= $(SUPPORTED_PLATFORMS)
-DOCKER_TAG ?= navidrome/navidrome:develop
+DOCKER_TAG ?= lyvune:develop
 
 GOLANGCI_LINT_VERSION ?= v2.14.0
 VACUUM_VERSION ?= v0.30.6
@@ -33,7 +33,7 @@ setup: check_env download-deps install-golangci-lint setup-git ##@1_Run_First In
 	@(cd ./ui && npm ci)
 .PHONY: setup
 
-dev: check_env   ##@Development Start Navidrome in development mode, with hot-reload for both frontend and backend
+dev: check_env   ##@Development Start Lyvune in development mode, with hot-reload for both frontend and backend
 	npx foreman -j Procfile.dev -p 4533 start
 .PHONY: dev
 
@@ -188,14 +188,14 @@ setup-git: ##@Development Setup Git hooks (pre-commit and pre-push)
 .PHONY: setup-git
 
 build: check_go_env buildjs ##@Build Build the project
-	go build -ldflags="-X github.com/navidrome/navidrome/consts.gitSha=$(GIT_SHA) -X github.com/navidrome/navidrome/consts.gitTag=$(GIT_TAG)" -tags=$(GO_BUILD_TAGS)
+	go build -ldflags="-X github.com/Tian-MC/lyvune/consts.gitSha=$(GIT_SHA) -X github.com/Tian-MC/lyvune/consts.gitTag=$(GIT_TAG)" -tags=$(GO_BUILD_TAGS)
 .PHONY: build
 
 buildall: deprecated build
 .PHONY: buildall
 
 debug-build: check_go_env buildjs ##@Build Build the project (with remote debug on)
-	go build -gcflags="all=-N -l" -ldflags="-X github.com/navidrome/navidrome/consts.gitSha=$(GIT_SHA) -X github.com/navidrome/navidrome/consts.gitTag=$(GIT_TAG)" -tags=$(GO_BUILD_TAGS)
+	go build -gcflags="all=-N -l" -ldflags="-X github.com/Tian-MC/lyvune/consts.gitSha=$(GIT_SHA) -X github.com/Tian-MC/lyvune/consts.gitTag=$(GIT_TAG)" -tags=$(GO_BUILD_TAGS)
 .PHONY: debug-build
 
 buildjs: check_node_env ui/build/index.html ##@Build Build only frontend
@@ -223,7 +223,7 @@ docker-build: ##@Cross_Compilation Cross-compile for any supported platform (che
 		--output "./binaries" --target binary .
 .PHONY: docker-build
 
-docker-image: ##@Cross_Compilation Build Docker image, tagged as `navidrome/navidrome:develop`, override with DOCKER_TAG var. Use IMAGE_PLATFORMS to specify target platforms
+docker-image: ##@Cross_Compilation Build Docker image, tagged as `lyvune:develop`, override with DOCKER_TAG var. Use IMAGE_PLATFORMS to specify target platforms
 	@echo $(IMAGE_PLATFORMS) | grep -q "windows" && echo "ERROR: Windows is not supported for Docker builds" && exit 1 || true
 	@echo $(IMAGE_PLATFORMS) | grep -q "darwin" && echo "ERROR: macOS is not supported for Docker builds" && exit 1 || true
 	@echo $(IMAGE_PLATFORMS) | grep -q "arm/v5" && echo "ERROR: Linux ARMv5 is not supported for Docker builds" && exit 1 || true
@@ -243,7 +243,7 @@ docker-msi: ##@Cross_Compilation Build MSI installer for Windows
 	@du -h binaries/msi/*.msi
 .PHONY: docker-msi
 
-docker-run: ##@Development Run a Navidrome Docker image. Usage: make docker-run tag=<tag>
+docker-run: ##@Development Run a Lyvune Docker image. Usage: make docker-run tag=<tag>
 	@if [ -z "$(tag)" ]; then echo "Usage: make docker-run tag=<tag>"; exit 1; fi
 	@TAG_DIR="tmp/$$(echo '$(tag)' | tr '/:' '_')"; mkdir -p "$$TAG_DIR"; \
     VOLUMES="-v $(PWD)/$$TAG_DIR:/data"; \
@@ -262,7 +262,7 @@ package: docker-build ##@Cross_Compilation Create binaries and packages for ALL 
 	goreleaser release -f release/goreleaser.yml --clean --skip=publish --snapshot
 .PHONY: package
 
-get-music: ##@Development Download some free music from Navidrome's demo instance
+get-music: ##@Development Download some free music from Lyvune's demo instance
 	mkdir -p music
 	( cd music; \
 	curl "https://demo.navidrome.org/rest/download?u=demo&p=demo&f=json&v=1.8.0&c=dev_download&id=2Y3qQA6zJC3ObbBrF9ZBoV" > brock.zip; \

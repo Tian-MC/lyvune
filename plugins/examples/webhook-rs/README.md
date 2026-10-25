@@ -1,6 +1,6 @@
 # Webhook Scrobbler Plugin (Rust)
 
-A Navidrome plugin written in Rust that sends HTTP webhook notifications when tracks are scrobbled. This is useful for integrating with external services like home automation systems, Discord bots, monitoring tools, or any service that can receive HTTP requests.
+A Lyvune plugin written in Rust that sends HTTP webhook notifications when tracks are scrobbled. This is useful for integrating with external services like home automation systems, Discord bots, monitoring tools, or any service that can receive HTTP requests.
 
 ## Features
 
@@ -33,11 +33,11 @@ zip -j webhook-rs.ndp manifest.json target/wasm32-unknown-unknown/release/webhoo
 
 ## Installation
 
-Copy `webhook-rs.ndp` to your Navidrome plugins folder (configured via `Plugins.Folder` in your config).
+Copy `webhook-rs.ndp` to your Lyvune plugins folder (configured via `Plugins.Folder` in your config).
 
 ## Configuration
 
-Configure in the Navidrome UI (Settings → Plugins → webhook-rs):
+Configure in the Lyvune UI (Settings → Plugins → webhook-rs):
 
 | Key    | Description                          | Example                                                   |
 |--------|--------------------------------------|-----------------------------------------------------------|

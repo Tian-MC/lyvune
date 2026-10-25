@@ -9,13 +9,13 @@ import (
 	"testing"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/conf/configtest"
-	"github.com/navidrome/navidrome/db"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/model/criteria"
-	"github.com/navidrome/navidrome/model/request"
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/conf/configtest"
+	"github.com/Tian-MC/lyvune/db"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/model/criteria"
+	"github.com/Tian-MC/lyvune/model/request"
 	"github.com/pocketbase/dbx"
 )
 

@@ -6,10 +6,10 @@ import (
 	"strings"
 
 	. "github.com/Masterminds/squirrel"
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/utils/str"
 	"github.com/google/uuid"
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/utils/str"
 )
 
 func formatFullText(text ...string) string {

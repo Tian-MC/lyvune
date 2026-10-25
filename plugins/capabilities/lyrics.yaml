@@ -28,7 +28,7 @@ components:
         LyricsText:
             description: |-
                 LyricsText represents a single set of lyrics in raw text format.
-                Text can be plain text or LRC format — Navidrome will parse it.
+                Text can be plain text or LRC format — Lyvune will parse it.
             properties:
                 lang:
                     type: string
@@ -41,7 +41,7 @@ components:
             properties:
                 id:
                     type: string
-                    description: ID is the internal Navidrome track ID.
+                    description: ID is the internal Lyvune track ID.
                 title:
                     type: string
                     description: Title is the track title.
@@ -112,7 +112,7 @@ components:
                 - discNumber
         ArtistRef:
             description: |-
-                ArtistRef is the minimal information a plugin returns for Navidrome to match an
+                ArtistRef is the minimal information a plugin returns for Lyvune to match an
                 artist against the library. It is a reference, not a full artist entity: it
                 carries only matching keys (name and optional internal/MusicBrainz IDs) plus a
                 few projection fields used when describing a track's participants, never
@@ -120,7 +120,7 @@ components:
             properties:
                 id:
                     type: string
-                    description: ID is the internal Navidrome artist ID (if known).
+                    description: ID is the internal Lyvune artist ID (if known).
                 name:
                     type: string
                     description: Name is the artist name.

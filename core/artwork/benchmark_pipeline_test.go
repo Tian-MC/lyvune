@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/conf/configtest"
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/conf/configtest"
 )
 
 func BenchmarkResizeFullPipeline(b *testing.B) {

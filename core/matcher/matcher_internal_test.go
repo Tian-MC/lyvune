@@ -1,9 +1,9 @@
 package matcher
 
 import (
-	"github.com/navidrome/navidrome/core/agents"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/tests"
+	"github.com/Tian-MC/lyvune/core/agents"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/tests"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -105,7 +105,7 @@ var _ = Describe("matcher internals", func() {
 	})
 
 	It("treats an ID-only artist (no name/MBID) as an identity match, unlocking album tiers", func() {
-		// A plugin that supplies only a Navidrome artist ID: name and mbid are empty. The ID is the
+		// A plugin that supplies only a Lyvune artist ID: name and mbid are empty. The ID is the
 		// strongest identity signal, so the track's album still elevates specificity above 0.
 		q := songQuery{
 			title:     "song",

@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"encoding/json"
 
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/consts"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/consts"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

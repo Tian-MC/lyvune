@@ -1,4 +1,4 @@
-// Test plugin for Navidrome sonic similarity integration tests.
+// Test plugin for Lyvune sonic similarity integration tests.
 // Build with: tinygo build -o ../test-sonic-similarity.wasm -target wasip1 -buildmode=c-shared .
 package main
 
@@ -6,9 +6,9 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/navidrome/navidrome/plugins/pdk/go/pdk"
-	"github.com/navidrome/navidrome/plugins/pdk/go/sonicsimilarity"
-	"github.com/navidrome/navidrome/plugins/pdk/go/types"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/pdk"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/sonicsimilarity"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/types"
 )
 
 func init() {

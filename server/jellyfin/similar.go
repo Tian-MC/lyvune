@@ -7,12 +7,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/model/request"
-	"github.com/navidrome/navidrome/server/jellyfin/dto"
-	"github.com/navidrome/navidrome/utils/req"
-	"github.com/navidrome/navidrome/utils/slice"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/model/request"
+	"github.com/Tian-MC/lyvune/server/jellyfin/dto"
+	"github.com/Tian-MC/lyvune/utils/req"
+	"github.com/Tian-MC/lyvune/utils/slice"
 )
 
 // similarWait bounds how long a Similar request waits for the provider fetch. Returning the real

@@ -3,6 +3,7 @@
 .vscode
 .envrc
 /navidrome
+/lyvune
 /iTunes*.xml
 /tmp
 /bin
@@ -12,6 +13,7 @@ wiki
 TODO.md
 var
 navidrome.toml
+lyvune.toml
 !release/linux/navidrome.toml
 master.zip
 testDB
@@ -27,6 +29,7 @@ docker-compose.yml
 !contrib/docker-compose.yml
 binaries
 navidrome-*
+lyvune-*
 /ndpgen
 AGENTS.md
 .github/prompts

@@ -1,6 +1,6 @@
 # Library Inspector Plugin
 
-A Navidrome plugin written in Rust that demonstrates the Library host service. It periodically logs details about all configured music libraries and finds the largest file in the root of each library directory.
+A Lyvune plugin written in Rust that demonstrates the Library host service. It periodically logs details about all configured music libraries and finds the largest file in the root of each library directory.
 
 ## Features
 
@@ -12,7 +12,7 @@ A Navidrome plugin written in Rust that demonstrates the Library host service. I
 ## Requirements
 
 - Rust toolchain with `wasm32-wasip1` target
-- Navidrome with plugins enabled
+- Lyvune with plugins enabled
 
 ## Building
 
@@ -36,8 +36,8 @@ make library-inspector.ndp
 
 ## Installation
 
-1. Copy the `.ndp` file to your Navidrome plugins folder
-2. Enable plugins in your Navidrome configuration:
+1. Copy the `.ndp` file to your Lyvune plugins folder
+2. Enable plugins in your Lyvune configuration:
 
 ```toml
 [Plugins]
@@ -45,11 +45,11 @@ Enabled = true
 Folder = "/path/to/plugins"
 ```
 
-3. Restart Navidrome and enable the plugin in the UI
+3. Restart Lyvune and enable the plugin in the UI
 
 ## Configuration
 
-Configure the inspection interval in the Navidrome UI (Settings → Plugins → library-inspector):
+Configure the inspection interval in the Lyvune UI (Settings → Plugins → library-inspector):
 
 | Key    | Description                              | Default      |
 |--------|------------------------------------------|--------------|
@@ -90,4 +90,4 @@ Library: Podcasts (ID: 2)
 
 ## License
 
-GPL-3.0 - Same as Navidrome
+GPL-3.0 - Same as Lyvune

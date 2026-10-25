@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/navidrome/navidrome/db"
-	"github.com/navidrome/navidrome/log"
+	"github.com/Tian-MC/lyvune/db"
+	"github.com/Tian-MC/lyvune/log"
 	"github.com/spf13/cobra"
 )
 
@@ -28,7 +28,7 @@ var (
 		Use:   "rebuild",
 		Short: "Rebuild the full-text search index",
 		Long: "Drop and rebuild the full-text search index from the library data. Fixes a corrupted " +
-			"or desynced search index without any data loss. Note that 'navidrome doctor' detects a " +
+			"or desynced search index without any data loss. Note that 'lyvune doctor' detects a " +
 			"corrupted index, but cannot tell when the index has merely drifted out of sync with the " +
 			"library. This must be done offline",
 		Run: func(cmd *cobra.Command, _ []string) {
@@ -40,7 +40,7 @@ var (
 func runSearchRebuild(ctx context.Context) {
 	requireExistingDB()
 
-	if !searchRebuildForce && !confirmYES("This will rebuild the search index. Make sure Navidrome is not running.") {
+	if !searchRebuildForce && !confirmYES("This will rebuild the search index. Make sure Lyvune is not running.") {
 		log.Warn("Rebuild cancelled")
 		return
 	}

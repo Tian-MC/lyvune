@@ -16,7 +16,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/navidrome/navidrome/model"
+	"github.com/Tian-MC/lyvune/model"
 )
 
 // Errors returned by the sidecar store.
@@ -27,8 +27,8 @@ var (
 	ErrUnsafePath = errors.New("refusing to write outside the library or through a symlink")
 	// ErrReadOnly means the folder cannot be written to.
 	ErrReadOnly = errors.New("the library folder is read-only")
-	// ErrNotManaged means the file at the target was not written by Navidrome.
-	ErrNotManaged = errors.New("the existing file was not written by Navidrome")
+	// ErrNotManaged means the file at the target was not written by Lyvune.
+	ErrNotManaged = errors.New("the existing file was not written by Lyvune")
 	// ErrNoVersion means the requested history entry does not exist.
 	ErrNoVersion = errors.New("no such lyrics version")
 	// ErrVerifyFailed means the file read back after writing was not what was written.
@@ -41,7 +41,7 @@ const DefaultHistoryKeep = 10
 // Store writes lyrics sidecars next to the audio files, safely.
 //
 // It only ever creates, replaces or removes `.lyrics.json` files that carry the
-// Navidrome envelope. Files other tools or the user wrote (`.lrc`, `.ttml`, …)
+// Lyvune envelope. Files other tools or the user wrote (`.lrc`, `.ttml`, …)
 // and the audio itself are never touched. Every change first saves the previous
 // content to a bounded history kept outside the library.
 type Store struct {
@@ -240,8 +240,8 @@ func (s *Store) Read(t Target) (Envelope, string, error) {
 	return env, r.name, err
 }
 
-// Save writes env as the track's sidecar. A previous Navidrome sidecar is kept
-// in the history first. A file at the target that is not a Navidrome envelope
+// Save writes env as the track's sidecar. A previous Lyvune sidecar is kept
+// in the history first. A file at the target that is not a Lyvune envelope
 // is never overwritten.
 func (s *Store) Save(t Target, env Envelope) (Version, error) {
 	data, err := env.Marshal()
@@ -269,7 +269,7 @@ func (s *Store) Save(t Target, env Envelope) (Version, error) {
 	return prev, nil
 }
 
-// Delete removes the track's Navidrome sidecar, keeping it in the history.
+// Delete removes the track's Lyvune sidecar, keeping it in the history.
 func (s *Store) Delete(t Target) (Version, error) {
 	r, err := s.resolve(t)
 	if err != nil {
@@ -298,7 +298,7 @@ func (s *Store) Delete(t Target) (Version, error) {
 
 // snapshot saves the current sidecar to the history before it changes. A
 // missing file is recorded too, so the first write can be undone. A file that
-// is not a Navidrome envelope stops the operation: it belongs to someone else.
+// is not a Lyvune envelope stops the operation: it belongs to someone else.
 func (s *Store) snapshot(t Target, r resolved) (Version, error) {
 	exists, err := checkTarget(r.path)
 	if err != nil {
@@ -479,7 +479,7 @@ func mapWriteErr(err error) error {
 	return err
 }
 
-// Update changes the metadata of the track's Navidrome sidecar in place, such as
+// Update changes the metadata of the track's Lyvune sidecar in place, such as
 // the lock or the sync offset. It is atomic like Save but does not add a history
 // entry: these are small, trivially reversible settings and must not push real
 // lyrics versions out of the bounded history. The lyrics are never touched.

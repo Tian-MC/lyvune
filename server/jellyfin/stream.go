@@ -11,13 +11,13 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Tian-MC/lyvune/core/stream"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/model/request"
+	"github.com/Tian-MC/lyvune/server/jellyfin/dto"
+	"github.com/Tian-MC/lyvune/utils/req"
 	"github.com/go-chi/chi/v5"
-	"github.com/navidrome/navidrome/core/stream"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/model/request"
-	"github.com/navidrome/navidrome/server/jellyfin/dto"
-	"github.com/navidrome/navidrome/utils/req"
 )
 
 // mediaFileForRequest resolves {itemId} to a MediaFile and verifies the user has access to its

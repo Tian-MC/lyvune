@@ -11,14 +11,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/conf/mime"
-	"github.com/navidrome/navidrome/consts"
-	"github.com/navidrome/navidrome/core/quickconnect"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/utils/slice"
-	"github.com/navidrome/navidrome/utils/str"
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/conf/mime"
+	"github.com/Tian-MC/lyvune/consts"
+	"github.com/Tian-MC/lyvune/core/quickconnect"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/utils/slice"
+	"github.com/Tian-MC/lyvune/utils/str"
 )
 
 func Index(ds model.DataStore, fs fs.FS) http.HandlerFunc {

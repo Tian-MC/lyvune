@@ -12,11 +12,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/navidrome/navidrome/core/scrobbler"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/model/request"
-	"github.com/navidrome/navidrome/server/events"
+	"github.com/Tian-MC/lyvune/core/scrobbler"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/model/request"
+	"github.com/Tian-MC/lyvune/server/events"
 )
 
 // PluginMetadata holds the extracted information from a plugin file

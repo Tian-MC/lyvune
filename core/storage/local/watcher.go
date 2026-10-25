@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/navidrome/navidrome/log"
+	"github.com/Tian-MC/lyvune/log"
 	"github.com/rjeczalik/notify"
 )
 

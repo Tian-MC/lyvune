@@ -2,8 +2,8 @@
 name = "discord-rich-presence-rs"
 version = "1.0.0"
 edition = "2021"
-description = "Discord Rich Presence plugin for Navidrome - Rust implementation"
-authors = ["Navidrome Team"]
+description = "Discord Rich Presence plugin for Lyvune - Rust implementation"
+authors = ["Lyvune Team"]
 license = "GPL-3.0"
 
 [lib]

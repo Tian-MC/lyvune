@@ -1,6 +1,6 @@
 // Package host provides host services that can be called by plugins via Extism host functions.
 //
-// Host services allow plugins to access Navidrome functionality like the Subsonic API,
+// Host services allow plugins to access Lyvune functionality like the Subsonic API,
 // scheduler, and other internal services. Services are defined as Go interfaces with
 // special annotations that enable automatic code generation of Extism host function wrappers.
 //

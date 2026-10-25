@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/db"
 	"github.com/fatih/structs"
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/db"
 )
 
 type PostMapper interface {

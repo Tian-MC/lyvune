@@ -10,14 +10,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/navidrome/navidrome/consts"
-	"github.com/navidrome/navidrome/log"
+	"github.com/Tian-MC/lyvune/consts"
+	"github.com/Tian-MC/lyvune/log"
 )
 
 var analyzeMux sync.Mutex
 
 // Optimize refreshes the query-planner statistics with a full ANALYZE. PRAGMA optimize is avoided
-// because its limited analysis misestimates Navidrome's low-cardinality indexes.
+// because its limited analysis misestimates Lyvune's low-cardinality indexes.
 func Optimize(ctx context.Context) error {
 	analyzeMux.Lock()
 	defer analyzeMux.Unlock()

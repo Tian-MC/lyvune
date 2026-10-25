@@ -93,7 +93,7 @@ func (j *LibraryPermission) UnmarshalJSON(value []byte) error {
 	return nil
 }
 
-// Plugin manifest for Navidrome plugins
+// Plugin manifest for Lyvune plugins
 type Manifest struct {
 	// The author of the plugin
 	Author string `json:"author" yaml:"author" mapstructure:"author"`

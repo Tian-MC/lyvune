@@ -12,23 +12,23 @@ import (
 	"strings"
 	"time"
 
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/consts"
-	"github.com/navidrome/navidrome/core/publicurl"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/model/request"
-	"github.com/navidrome/navidrome/server/subsonic/responses"
-	"github.com/navidrome/navidrome/utils/gg"
-	"github.com/navidrome/navidrome/utils/number"
-	"github.com/navidrome/navidrome/utils/req"
-	"github.com/navidrome/navidrome/utils/slice"
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/consts"
+	"github.com/Tian-MC/lyvune/core/publicurl"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/model/request"
+	"github.com/Tian-MC/lyvune/server/subsonic/responses"
+	"github.com/Tian-MC/lyvune/utils/gg"
+	"github.com/Tian-MC/lyvune/utils/number"
+	"github.com/Tian-MC/lyvune/utils/req"
+	"github.com/Tian-MC/lyvune/utils/slice"
 )
 
 func newResponse() *responses.Subsonic {
 	return &responses.Subsonic{
 		Status:        responses.StatusOK,
 		Version:       Version,
-		Type:          consts.AppName,
+		Type:          consts.SubsonicServerType,
 		ServerVersion: consts.Version,
 		OpenSubsonic:  true,
 	}

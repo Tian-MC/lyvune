@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/Tian-MC/lyvune/consts"
 	"github.com/deluan/rest"
-	"github.com/navidrome/navidrome/consts"
 )
 
 type Radio struct {

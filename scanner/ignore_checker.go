@@ -7,8 +7,8 @@ import (
 	"path"
 	"strings"
 
-	"github.com/navidrome/navidrome/consts"
-	"github.com/navidrome/navidrome/log"
+	"github.com/Tian-MC/lyvune/consts"
+	"github.com/Tian-MC/lyvune/log"
 	ignore "github.com/sabhiram/go-gitignore"
 )
 

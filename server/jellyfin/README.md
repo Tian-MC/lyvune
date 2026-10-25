@@ -1,9 +1,9 @@
 # Jellyfin API
 
 This package implements a subset of the [Jellyfin](https://jellyfin.org/) REST API on top of
-Navidrome's existing library, users, playlists and scrobbling infrastructure. It lets
+Lyvune's existing library, users, playlists and scrobbling infrastructure. It lets
 Jellyfin-compatible clients (e.g. [Finamp](https://github.com/jmshrv/finamp),
-[jftui](https://github.com/Aanok/jftui)) browse and stream a Navidrome library without
+[jftui](https://github.com/Aanok/jftui)) browse and stream a Lyvune library without
 requiring a real Jellyfin server.
 
 It is **not** a full Jellyfin server implementation: only the endpoints needed to browse a music
@@ -18,7 +18,7 @@ The Jellyfin API is disabled by default. Enable it via `navidrome.toml`:
 ```toml
 [Jellyfin]
 Enabled = true
-# Optional: override the server name reported to clients (defaults to "Navidrome <version>")
+# Optional: override the server name reported to clients (defaults to "Lyvune <version>")
 ServerName = "My Music Server"
 # Optional: usernames to show in the client login user-picker (default: none). See "Public user list".
 ExposedPublicUsers = "alice, bob"
@@ -55,10 +55,10 @@ since real Jellyfin clients (and `jellyfin-apiclient-python`) send mixed-case pa
 
 ## Auto discovery
 
-With `AutoDiscovery = true`, Navidrome answers the Jellyfin LAN discovery broadcast
+With `AutoDiscovery = true`, Lyvune answers the Jellyfin LAN discovery broadcast
 (`who is JellyfinServer?` on UDP port 7359), so clients list the server without a typed URL.
 It is off by default because a real Jellyfin server on the same host owns that port. If the port
-is taken, Navidrome logs a warning and keeps running without discovery.
+is taken, Lyvune logs a warning and keeps running without discovery.
 
 The advertised address is `BaseURL` when it includes a host. Otherwise it is the bind `Address`
 when that is a specific IP, or else the local IP that faces the requesting client, plus `Port`. With a
@@ -75,8 +75,8 @@ networking is not an option, leave discovery off. Keep UDP 7359 on the LAN: neve
 
 ## Authentication
 
-Jellyfin clients authenticate with `POST /Users/AuthenticateByName` using the user's Navidrome
-username/password, and get back an `AccessToken` (a Navidrome JWT). That token is then sent on
+Jellyfin clients authenticate with `POST /Users/AuthenticateByName` using the user's Lyvune
+username/password, and get back an `AccessToken` (a Lyvune JWT). That token is then sent on
 every subsequent request as the `X-Emby-Token` header (or embedded in the
 `X-Emby-Authorization`/`Authorization` header's `Token="..."` field, or as an `api_key`/`ApiKey`
 query param — all forms are accepted, matching what different clients do).
@@ -96,7 +96,7 @@ Quick Connect call returns 401.
 
 1. `POST QuickConnect/Initiate` (public; needs `Client`, `Device`, `DeviceId` and `Version` in the
    auth header) returns the `Code` and a `Secret`.
-2. The user approves the code, either in the Navidrome web UI (user menu → **Quick Connect**, which
+2. The user approves the code, either in the Lyvune web UI (user menu → **Quick Connect**, which
    shows the app and device before approving) or from a signed-in Jellyfin client with
    `POST QuickConnect/Authorize?Code=`. Admins may pass `UserId` to approve for another user.
 3. The client polls `GET QuickConnect/Connect?Secret=` until `Authenticated` is `true`.
@@ -122,11 +122,11 @@ ExposedPublicUsers = "alice, bob"
 Only the named users are listed (never the full user table), resolved live per request; a configured
 name that doesn't exist is skipped and logged at `Warn`. Each entry is a minimal DTO (`Name`, `Id`)
 with no `Policy`/`Configuration`, so admin status isn't leaked to unauthenticated callers, and no
-avatar (`PrimaryImageTag` omitted — Navidrome has no per-user profile images).
+avatar (`PrimaryImageTag` omitted — Lyvune has no per-user profile images).
 
 ## Players and sessions
 
-Every authenticated request registers (or refreshes) the calling device as a Navidrome player,
+Every authenticated request registers (or refreshes) the calling device as a Lyvune player,
 mirroring Subsonic's `getPlayer` — so a Jellyfin client shows up in the players list (and scrobbling
 has a player) as soon as it makes any authenticated call, not only when it reports playback. The
 player id is the device id from `X-Emby-Authorization` (`DeviceId="..."`); the player name is
@@ -137,8 +137,8 @@ skipped, so it doesn't create a nameless player.
 
 ## Multi-library behavior
 
-Jellyfin has no native concept of multiple music libraries the way Navidrome does, so each
-Navidrome library the current user can access is exposed as its own top-level Jellyfin
+Jellyfin has no native concept of multiple music libraries the way Lyvune does, so each
+Lyvune library the current user can access is exposed as its own top-level Jellyfin
 "CollectionFolder" view (`GET /UserViews`), instead of merging every library into a single view.
 Browsing (`/Items`), artists, and the "Latest" list are all scoped to the libraries the
 authenticated user has access to. Fetching an item the user cannot access returns `404`, never
@@ -159,7 +159,7 @@ and `MusicArtist` queries accept it too, matching artists credited on an album o
 `Filters` (`IsFavorite`, `IsFavoriteOrLikes`, `IsPlayed`, `IsUnplayed`) and the standalone
 `isFavorite`/`isPlayed` booleans it can also be expressed as — `Filters` wins when both are sent, as
 in Jellyfin; `Likes` and `Dislikes` are not supported, and `IsFolder`, `IsNotFolder` and
-`IsResumable` have no Navidrome equivalent, so all five are ignored; `SortBy`/`SortOrder` (every recognized key is applied in order, so secondary keys break ties;
+`IsResumable` have no Lyvune equivalent, so all five are ignored; `SortBy`/`SortOrder` (every recognized key is applied in order, so secondary keys break ties;
 unrecognized keys are skipped, and `Random` always sorts alone);
 `StartIndex`/`Limit`; and `Ids` (batch fetch by id). `Recursive=false` with a library `ParentId`
 returns direct children only (no tracks — no track is a library's direct child).
@@ -204,7 +204,7 @@ Playlists are the main writable surface of this API:
 - **Update** (`POST Playlists/{id}`): with `Ids` present, the track list is **replaced** (Finamp
   uses this for reordering) — an explicit empty `Ids` (`[]`) **clears** the playlist, while an
   omitted `Ids` leaves the tracks untouched and only updates `Name`/`IsPublic`. `IsPublic` maps to
-  Navidrome's `Public` flag, surfaced to clients as `OpenAccess` on `GET Playlists/{id}`.
+  Lyvune's `Public` flag, surfaced to clients as `OpenAccess` on `GET Playlists/{id}`.
 - **Cover art**: `POST Items/{id}/Images/Primary` uploads a playlist cover (raw or base64 body,
   JPEG/PNG/WebP/GIF detected by magic number, extension from `Content-Type`); `DELETE` removes it.
   Only playlists are writable through this API — album/artist covers come from tag/sidecar scanning,
@@ -226,12 +226,12 @@ matching Jellyfin's lenient image handling), so it carries no authenticated user
 therefore resolved under an **elevated admin context** — the same approach `core/artwork`'s cache
 warmer uses — so user-scoped items like private playlists still resolve their cover instead of
 falling back to the placeholder. Album, artist, media-file and playlist ids are all resolved to
-their Navidrome `ArtworkID`.
+their Lyvune `ArtworkID`.
 
 ## Item ids are GUIDs
 
 Jellyfin item ids are GUIDs, serialized as 32 lowercase hex chars with no dashes
-(`Guid.ToString("N")`). Navidrome ids are canonical 22-char base62 encodings of a 128-bit value,
+(`Guid.ToString("N")`). Lyvune ids are canonical 22-char base62 encodings of a 128-bit value,
 so `dto.EncodeID`/`dto.DecodeID` map between the two via `model/id` — losslessly except for the
 ~2⁻⁹⁶ chance an id's 128-bit value falls in the reserved space below (leading 12 bytes all zero).
 
@@ -291,7 +291,7 @@ per track, so sidecar and plugin lyrics show up there. Feishin also requires ser
 Compatibility shim for Jellyfin front-ends that integrate [AudioMuse-AI](https://github.com/NeptuneHub/audiomuse-ai-plugin)
 — e.g. [Symfonium](https://symfonium.app/) can use these endpoints for sonic mixes when
 connected as a Jellyfin client.
-Backed natively by Navidrome's `core/sonic` engine (the `SonicSimilarity` plugin capability) — no
+Backed natively by Lyvune's `core/sonic` engine (the `SonicSimilarity` plugin capability) — no
 external AudioMuse-AI backend or proxy is involved. The endpoints are gated on a `SonicSimilarity`
 plugin being loaded, like the Subsonic `sonicSimilarity` OpenSubsonic extension.
 
@@ -305,7 +305,7 @@ plugin being loaded, like the Subsonic `sonicSimilarity` OpenSubsonic extension.
   loaded; otherwise `{"path": [{author, item_id, title, tempo?}], "total_distance": <float>}` (200), or 400
   with `start_song_id and end_song_id are required.` when either id is missing.
 
-`item_id`/`start_song_id`/`end_song_id` are the GUID-form ids Navidrome hands Jellyfin clients.
+`item_id`/`start_song_id`/`end_song_id` are the GUID-form ids Lyvune hands Jellyfin clients.
 `tempo` comes from the track's BPM when known; the richer AudioMuse per-track features
 (`energy`, `key`, `mood_vector`, `scale`, `other_features`) are not provided. In multi-library
 setups, `find_path`'s `path` and `total_distance` only reflect hops through tracks in libraries
@@ -405,7 +405,7 @@ make test PKG=./server/jellyfin/...
 - **Ratings are stored as 0-5 stars.** Jellyfin's 0-10 `Rating` is rounded to the nearest star
   (any nonzero value keeps at least one), so it reads back as an even number. `likes=true` stores
   5 stars and `likes=false` 1 star, like Jellyfin's 10 and 1. A rating of 0 clears the rating.
-- **`POST .../Rating` needs a value.** Jellyfin clears the rating when `likes` is missing; Navidrome
+- **`POST .../Rating` needs a value.** Jellyfin clears the rating when `likes` is missing; Lyvune
   answers `400` and keeps it, as it does for a malformed or out-of-range value. Use
   `DELETE .../Rating` to clear. A numeric `rating` param (0-10) is also accepted when `likes` is
   absent.

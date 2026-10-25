@@ -144,7 +144,7 @@ type UserDto struct {
 }
 
 // UserPolicy mirrors real Jellyfin's User.Policy. Finamp reads it right after login and crashes if
-// it's absent, so every field must be present even though Navidrome lacks most of these concepts.
+// it's absent, so every field must be present even though Lyvune lacks most of these concepts.
 type UserPolicy struct {
 	IsAdministrator                  bool     `json:"IsAdministrator"`
 	IsHidden                         bool     `json:"IsHidden"`
@@ -191,7 +191,7 @@ type UserPolicy struct {
 }
 
 // UserConfiguration mirrors real Jellyfin's User.Configuration. Like UserPolicy, clients expect it
-// always present, even though most settings don't apply to Navidrome's audio-only library.
+// always present, even though most settings don't apply to Lyvune's audio-only library.
 type UserConfiguration struct {
 	PlayDefaultAudioTrack      bool     `json:"PlayDefaultAudioTrack"`
 	SubtitleLanguagePreference string   `json:"SubtitleLanguagePreference"`

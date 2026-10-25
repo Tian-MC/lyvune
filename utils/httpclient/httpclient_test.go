@@ -6,9 +6,9 @@ import (
 	"net/netip"
 	"time"
 
-	"github.com/navidrome/navidrome/consts"
-	"github.com/navidrome/navidrome/utils/httpclient"
-	"github.com/navidrome/navidrome/utils/netguard"
+	"github.com/Tian-MC/lyvune/consts"
+	"github.com/Tian-MC/lyvune/utils/httpclient"
+	"github.com/Tian-MC/lyvune/utils/netguard"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -26,7 +26,7 @@ var _ = Describe("httpclient", func() {
 	})
 
 	Describe("New", func() {
-		It("sets the Navidrome User-Agent when the request has none", func() {
+		It("sets the Lyvune User-Agent when the request has none", func() {
 			c := httpclient.New(time.Second)
 			resp, err := c.Get(server.URL)
 			Expect(err).ToNot(HaveOccurred())
@@ -100,8 +100,8 @@ var _ = Describe("httpclient", func() {
 	})
 
 	Describe("HTTPUserAgent", func() {
-		It("identifies Navidrome with version and project URL", func() {
-			Expect(consts.HTTPUserAgent).To(Equal("Navidrome/" + consts.Version + " - https://github.com/navidrome"))
+		It("identifies Lyvune with version and project URL", func() {
+			Expect(consts.HTTPUserAgent).To(Equal("Lyvune/" + consts.Version + " - https://github.com/Tian-MC/lyvune"))
 		})
 	})
 })

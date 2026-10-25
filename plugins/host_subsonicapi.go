@@ -9,10 +9,10 @@ import (
 	"net/url"
 	"path"
 
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/model/request"
-	"github.com/navidrome/navidrome/plugins/host"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/model/request"
+	"github.com/Tian-MC/lyvune/plugins/host"
 )
 
 // subsonicAPIVersion is the Subsonic API version used for plugin calls.
@@ -20,7 +20,7 @@ import (
 const subsonicAPIVersion = "1.16.1"
 
 // subsonicAPIServiceImpl implements host.SubsonicAPIService.
-// It provides plugins with access to Navidrome's Subsonic API.
+// It provides plugins with access to Lyvune's Subsonic API.
 //
 // Authentication: The plugin must provide a valid 'u' (username) parameter in the URL.
 // URL Format: Only the path and query parameters are used - host/protocol are ignored.

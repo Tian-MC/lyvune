@@ -7,11 +7,11 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/model/request"
+	"github.com/Tian-MC/lyvune/server/events"
+	"github.com/Tian-MC/lyvune/server/jellyfin/dto"
 	"github.com/go-chi/chi/v5"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/model/request"
-	"github.com/navidrome/navidrome/server/events"
-	"github.com/navidrome/navidrome/server/jellyfin/dto"
 )
 
 type annotatedItem struct {
@@ -72,7 +72,7 @@ func (api *Router) getUserItemData(w http.ResponseWriter, r *http.Request) {
 
 // userDataChange holds already-validated writes; a nil field leaves that annotation untouched.
 type userDataChange struct {
-	rating   *int // Navidrome stars; 0 clears
+	rating   *int // Lyvune stars; 0 clears
 	favorite *bool
 }
 

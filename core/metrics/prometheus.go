@@ -6,13 +6,13 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/consts"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/utils/singleton"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/consts"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/utils/singleton"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -132,7 +132,7 @@ var getPrometheusMetrics = sync.OnceValue(func() *prometheusMetrics {
 		versionInfo: prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Name: "navidrome_info",
-				Help: "Information about Navidrome version",
+				Help: "Information about Lyvune version",
 			},
 			[]string{"version"},
 		),

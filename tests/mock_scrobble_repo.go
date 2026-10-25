@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/model/request"
 	"github.com/deluan/rest"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/model/request"
 )
 
 type MockScrobbleRepo struct {

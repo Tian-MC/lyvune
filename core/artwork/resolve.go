@@ -12,11 +12,11 @@ import (
 	"path"
 	"strings"
 
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/core/agents"
-	"github.com/navidrome/navidrome/core/ffmpeg"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/persistence"
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/core/agents"
+	"github.com/Tian-MC/lyvune/core/ffmpeg"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/persistence"
 )
 
 // resolution is one attempted acquisition outcome for an entity.

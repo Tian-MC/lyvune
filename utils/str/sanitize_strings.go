@@ -6,9 +6,9 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Tian-MC/lyvune/conf"
 	"github.com/deluan/sanitize"
 	"github.com/microcosm-cc/bluemonday"
-	"github.com/navidrome/navidrome/conf"
 )
 
 var ignoredCharsRegex = regexp.MustCompile("[“”‘’'\"\\[({\\])},]")

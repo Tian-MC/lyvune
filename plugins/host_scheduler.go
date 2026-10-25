@@ -7,11 +7,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model/id"
-	"github.com/navidrome/navidrome/plugins/capabilities"
-	"github.com/navidrome/navidrome/plugins/host"
-	"github.com/navidrome/navidrome/scheduler"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model/id"
+	"github.com/Tian-MC/lyvune/plugins/capabilities"
+	"github.com/Tian-MC/lyvune/plugins/host"
+	"github.com/Tian-MC/lyvune/scheduler"
 )
 
 // CapabilityScheduler indicates the plugin can receive scheduled event callbacks.

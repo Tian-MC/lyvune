@@ -11,11 +11,11 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/conf/configtest"
-	"github.com/navidrome/navidrome/core/lyrics"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/tests"
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/conf/configtest"
+	"github.com/Tian-MC/lyvune/core/lyrics"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/tests"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -249,7 +249,7 @@ var _ = Describe("Lyrics engine", func() {
 			Expect(firstLine(get())).To(Equal("sidecar text"))
 		})
 
-		It("ignores a .lyrics.json that is not a Navidrome envelope", func() {
+		It("ignores a .lyrics.json that is not a Lyvune envelope", func() {
 			write("01 - Song.lyrics.json", `{"someone":"else"}`)
 			write("01 - Song.lrc", "[00:01.00]sidecar text")
 			Expect(firstLine(get())).To(Equal("sidecar text"))
@@ -690,7 +690,7 @@ var _ = Describe("Lyrics engine", func() {
 			Expect(err).To(MatchError(lyrics.ErrConfirmRequired))
 		})
 
-		It("imports a Navidrome lyrics.json", func() {
+		It("imports a Lyvune lyrics.json", func() {
 			saveManaged(ctx, engine, mf, fake, "m", karaokeOf("karaoke text"))
 			raw, _ := os.ReadFile(envFile())
 			Expect(os.Remove(envFile())).To(Succeed())
@@ -701,7 +701,7 @@ var _ = Describe("Lyrics engine", func() {
 	})
 
 	Describe("lock and offset", func() {
-		It("keeps the lock and offset of a sidecar that is not Navidrome's, in the database", func() {
+		It("keeps the lock and offset of a sidecar that is not Lyvune's, in the database", func() {
 			write("01 - Song.lrc", "[00:01.00]sidecar text")
 			Expect(engine.SetLocked(ctx, mf, true)).To(Succeed())
 			Expect(engine.SetOffset(ctx, mf, 250)).To(Succeed())
@@ -712,7 +712,7 @@ var _ = Describe("Lyrics engine", func() {
 			Expect(*get()[0].Offset).To(Equal(int64(250)))
 		})
 
-		It("keeps them inside the Navidrome sidecar when there is one", func() {
+		It("keeps them inside the Lyvune sidecar when there is one", func() {
 			saveManaged(ctx, engine, mf, fake, "m", syncedOf("synced"))
 			Expect(engine.SetOffset(ctx, mf, -400)).To(Succeed())
 			Expect(engine.SetLocked(ctx, mf, true)).To(Succeed())
@@ -755,7 +755,7 @@ var _ = Describe("Lyrics engine", func() {
 	})
 
 	Describe("deleting downloaded lyrics", func() {
-		It("removes the Navidrome sidecar and nothing else, and can be undone", func() {
+		It("removes the Lyvune sidecar and nothing else, and can be undone", func() {
 			lrc := write("01 - Song.lrc", "[00:01.00]sidecar text")
 			writeManaged(hist, mf, syncedOf("downloaded"))
 			res, err := engine.DeleteManaged(ctx, mf)

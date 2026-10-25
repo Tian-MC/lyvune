@@ -8,11 +8,11 @@ import (
 	"slices"
 	"time"
 
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/plugins/host"
+	"github.com/Tian-MC/lyvune/scheduler"
 	extism "github.com/extism/go-sdk"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/plugins/host"
-	"github.com/navidrome/navidrome/scheduler"
 	"github.com/tetratelabs/wazero"
 	"golang.org/x/sync/errgroup"
 )

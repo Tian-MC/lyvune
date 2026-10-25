@@ -5,16 +5,16 @@ import (
 	"net/http"
 	"path"
 
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/consts"
+	"github.com/Tian-MC/lyvune/core"
+	"github.com/Tian-MC/lyvune/core/artwork"
+	"github.com/Tian-MC/lyvune/core/publicurl"
+	"github.com/Tian-MC/lyvune/core/stream"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/server"
+	"github.com/Tian-MC/lyvune/ui"
 	"github.com/go-chi/chi/v5"
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/consts"
-	"github.com/navidrome/navidrome/core"
-	"github.com/navidrome/navidrome/core/artwork"
-	"github.com/navidrome/navidrome/core/publicurl"
-	"github.com/navidrome/navidrome/core/stream"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/server"
-	"github.com/navidrome/navidrome/ui"
 )
 
 type Router struct {

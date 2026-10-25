@@ -5,8 +5,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
 )
 
 const problemContentType = "application/problem+json"

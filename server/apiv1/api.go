@@ -7,10 +7,10 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Tian-MC/lyvune/api"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
 	"github.com/go-chi/chi/v5"
-	"github.com/navidrome/navidrome/api"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
 )
 
 type Router struct {

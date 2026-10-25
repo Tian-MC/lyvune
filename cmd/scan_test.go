@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/scanner"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/scanner"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

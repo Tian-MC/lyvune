@@ -158,7 +158,7 @@ components:
             properties:
                 id:
                     type: string
-                    description: ID is the internal Navidrome artist ID.
+                    description: ID is the internal Lyvune artist ID.
                 name:
                     type: string
                     description: Name is the artist name.
@@ -178,7 +178,7 @@ components:
             properties:
                 id:
                     type: string
-                    description: ID is the internal Navidrome artist ID.
+                    description: ID is the internal Lyvune artist ID.
                 name:
                     type: string
                     description: Name is the artist name.
@@ -214,7 +214,7 @@ components:
             properties:
                 id:
                     type: string
-                    description: ID is the internal Navidrome artist ID.
+                    description: ID is the internal Lyvune artist ID.
                 name:
                     type: string
                     description: Name is the artist name.
@@ -244,7 +244,7 @@ components:
             properties:
                 id:
                     type: string
-                    description: ID is the internal Navidrome album ID.
+                    description: ID is the internal Lyvune album ID.
                 name:
                     type: string
                     description: Name is the album name.
@@ -268,7 +268,7 @@ components:
             properties:
                 id:
                     type: string
-                    description: ID is the internal Navidrome artist ID.
+                    description: ID is the internal Lyvune artist ID.
                 name:
                     type: string
                     description: Name is the artist name.
@@ -288,7 +288,7 @@ components:
             properties:
                 id:
                     type: string
-                    description: ID is the internal Navidrome mediafile ID.
+                    description: ID is the internal Lyvune mediafile ID.
                 name:
                     type: string
                     description: Name is the track title.
@@ -322,7 +322,7 @@ components:
             properties:
                 id:
                     type: string
-                    description: ID is the internal Navidrome artist ID.
+                    description: ID is the internal Lyvune artist ID.
                 name:
                     type: string
                     description: Name is the artist name.
@@ -349,7 +349,7 @@ components:
                 - songs
         ArtistRef:
             description: |-
-                ArtistRef is the minimal information a plugin returns for Navidrome to match an
+                ArtistRef is the minimal information a plugin returns for Lyvune to match an
                 artist against the library. It is a reference, not a full artist entity: it
                 carries only matching keys (name and optional internal/MusicBrainz IDs) plus a
                 few projection fields used when describing a track's participants, never
@@ -357,7 +357,7 @@ components:
             properties:
                 id:
                     type: string
-                    description: ID is the internal Navidrome artist ID (if known).
+                    description: ID is the internal Lyvune artist ID (if known).
                 name:
                     type: string
                     description: Name is the artist name.
@@ -377,15 +377,15 @@ components:
                 - name
         SongRef:
             description: |-
-                SongRef is the minimal information exchanged between a plugin and Navidrome to
-                match a song. It is used both as input (a song Navidrome already has) and as
+                SongRef is the minimal information exchanged between a plugin and Lyvune to
+                match a song. It is used both as input (a song Lyvune already has) and as
                 output (a song a plugin suggests, which may not be in the library yet). Unlike
                 Track, it is an abstract recording reference carrying only matching keys (IDs,
-                ISRC, and title/artist/album/duration) that Navidrome resolves to a library track.
+                ISRC, and title/artist/album/duration) that Lyvune resolves to a library track.
             properties:
                 id:
                     type: string
-                    description: ID is the internal Navidrome mediafile ID (if known).
+                    description: ID is the internal Lyvune mediafile ID (if known).
                 name:
                     type: string
                     description: Name is the song name.

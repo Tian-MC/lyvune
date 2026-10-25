@@ -1,6 +1,6 @@
 {
   "name": "Test SubsonicAPI Plugin",
-  "author": "Navidrome Test",
+  "author": "Lyvune Test",
   "version": "1.0.0",
   "description": "Test plugin for SubsonicAPI host function",
   "permissions": {

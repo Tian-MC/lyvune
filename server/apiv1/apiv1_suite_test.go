@@ -8,14 +8,14 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/Tian-MC/lyvune/api"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/tests"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/getkin/kin-openapi/routers"
 	"github.com/getkin/kin-openapi/routers/gorillamux"
 	"github.com/go-chi/chi/v5"
-	"github.com/navidrome/navidrome/api"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/tests"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

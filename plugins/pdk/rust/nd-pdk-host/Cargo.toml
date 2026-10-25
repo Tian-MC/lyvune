@@ -2,8 +2,8 @@
 name = "nd-pdk-host"
 version = "0.1.0"
 edition = "2021"
-description = "Navidrome host function wrappers for Rust plugins"
-authors = ["Navidrome Team"]
+description = "Lyvune host function wrappers for Rust plugins"
+authors = ["Lyvune Team"]
 license = "GPL-3.0"
 readme = "README.md"
 

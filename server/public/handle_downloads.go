@@ -4,9 +4,9 @@ import (
 	"cmp"
 	"net/http"
 
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/utils/req"
-	"github.com/navidrome/navidrome/utils/str"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/utils/req"
+	"github.com/Tian-MC/lyvune/utils/str"
 )
 
 func (pub *Router) handleDownloads(w http.ResponseWriter, r *http.Request) {

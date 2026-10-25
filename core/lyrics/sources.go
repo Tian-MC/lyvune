@@ -10,10 +10,10 @@ import (
 	"path"
 	"strings"
 
-	"github.com/navidrome/navidrome/core/storage"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/utils/ioutils"
+	"github.com/Tian-MC/lyvune/core/storage"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/utils/ioutils"
 )
 
 func fromEmbedded(ctx context.Context, mf *model.MediaFile) (model.LyricList, error) {
@@ -107,7 +107,7 @@ func (l *lyricsService) fromPlugin(ctx context.Context, mf *model.MediaFile, plu
 // maxSidecarBytes bounds how much of a sidecar file is read.
 const maxSidecarBytes = 16 << 20
 
-// parseWordTimedSidecar reads the word-timed formats Navidrome's own parsers do
+// parseWordTimedSidecar reads the word-timed formats Lyvune's own parsers do
 // not know: KuGou KRC (plain or as distributed), NetEase YRC and QQ QRC (decrypted). handled is
 // false for every other suffix.
 func parseWordTimedSidecar(suffix string, raw []byte) (list model.LyricList, handled bool, err error) {

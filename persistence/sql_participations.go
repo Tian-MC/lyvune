@@ -6,8 +6,8 @@ import (
 	"fmt"
 
 	. "github.com/Masterminds/squirrel"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/utils/slice"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/utils/slice"
 )
 
 type participant struct {

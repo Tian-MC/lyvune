@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/plugins/host"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/plugins/host"
 )
 
 type libraryServiceImpl struct {

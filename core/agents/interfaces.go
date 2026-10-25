@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/Tian-MC/lyvune/model"
 	"github.com/gohugoio/hashstructure"
-	"github.com/navidrome/navidrome/model"
 )
 
 type Constructor func(ds model.DataStore) Interface

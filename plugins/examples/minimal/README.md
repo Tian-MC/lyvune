@@ -1,6 +1,6 @@
-# Minimal Navidrome Plugin Example
+# Minimal Lyvune Plugin Example
 
-This is a minimal example demonstrating how to create a Navidrome plugin using Go and the Navidrome PDK.
+This is a minimal example demonstrating how to create a Lyvune plugin using Go and the Lyvune PDK.
 
 ## Building
 
@@ -20,7 +20,7 @@ Or using the examples Makefile:
 
 ## Installing
 
-Copy `minimal.ndp` to your Navidrome plugins folder (default: `<data-folder>/plugins/`).
+Copy `minimal.ndp` to your Lyvune plugins folder (default: `<data-folder>/plugins/`).
 
 ## Configuration
 
@@ -37,14 +37,14 @@ Agents = "lastfm,spotify,minimal"
 ## What This Example Demonstrates
 
 - Plugin package structure (`.ndp` = zip with `manifest.json` + `plugin.wasm`)
-- Using the Navidrome PDK `metadata` subpackage
+- Using the Lyvune PDK `metadata` subpackage
 - Implementing the `ArtistBiographyProvider` interface
 - Registration pattern with `metadata.Register()`
 
 ## PDK Usage
 
 ```go
-import "github.com/navidrome/navidrome/plugins/pdk/go/metadata"
+import "github.com/Tian-MC/lyvune/plugins/pdk/go/metadata"
 
 type myPlugin struct{}
 

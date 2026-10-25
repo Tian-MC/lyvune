@@ -36,3 +36,7 @@ func SetLogFatal(f func(...any)) func() {
 var UnknownConfigKeys = unknownConfigKeys
 
 var SuggestOptions = suggestOptions
+
+var DefaultDbName = defaultDbName
+
+var GetConfigFile = getConfigFile

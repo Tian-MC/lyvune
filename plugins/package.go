@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	// PackageExtension is the file extension for Navidrome plugin packages.
+	// PackageExtension is the file extension for Lyvune plugin packages.
 	PackageExtension = ".ndp"
 
 	// manifestFileName is the name of the manifest file inside the package.

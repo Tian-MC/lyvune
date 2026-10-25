@@ -7,10 +7,10 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/navidrome/navidrome/api"
-	"github.com/navidrome/navidrome/consts"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/tests"
+	"github.com/Tian-MC/lyvune/api"
+	"github.com/Tian-MC/lyvune/consts"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/tests"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -39,7 +39,7 @@ var _ = Describe("GET /server", func() {
 		w, info := get()
 		Expect(w.Code).To(Equal(http.StatusOK))
 		Expect(w.Header().Get("Content-Type")).To(HavePrefix("application/json"))
-		Expect(info.Name).To(Equal("Navidrome"))
+		Expect(info.Name).To(Equal("Lyvune"))
 		Expect(info.ServerVersion).To(Equal(consts.Version))
 		Expect(info.SpecVersion).To(Equal(api.SpecVersion()))
 		Expect(info.SetupRequired).To(BeTrue())

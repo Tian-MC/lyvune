@@ -12,10 +12,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/core/ffmpeg"
+	"github.com/Tian-MC/lyvune/log"
 	"github.com/gen2brain/webp"
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/core/ffmpeg"
-	"github.com/navidrome/navidrome/log"
 	xdraw "golang.org/x/image/draw"
 )
 

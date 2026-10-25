@@ -4,7 +4,7 @@ import (
 	"net"
 	"net/netip"
 
-	"github.com/navidrome/navidrome/utils/netguard"
+	"github.com/Tian-MC/lyvune/utils/netguard"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

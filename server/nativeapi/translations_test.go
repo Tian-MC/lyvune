@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"testing/fstest"
 
-	"github.com/navidrome/navidrome/consts"
-	"github.com/navidrome/navidrome/resources"
+	"github.com/Tian-MC/lyvune/consts"
+	"github.com/Tian-MC/lyvune/resources"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

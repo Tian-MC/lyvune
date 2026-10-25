@@ -12,12 +12,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/plugins/host"
+	"github.com/Tian-MC/lyvune/utils/slice"
 	"github.com/dustin/go-humanize"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/plugins/host"
-	"github.com/navidrome/navidrome/utils/slice"
 )
 
 const (

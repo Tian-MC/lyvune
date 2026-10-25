@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Tian-MC/lyvune/log"
 	extism "github.com/extism/go-sdk"
-	"github.com/navidrome/navidrome/log"
 )
 
 var errFunctionNotFound = errors.New("function not found")
@@ -105,7 +105,7 @@ func extismLogger(pluginName string) func(level extism.LogLevel, msg string) {
 	}
 }
 
-// toExtismLogLevel converts a Navidrome log level to an extism LogLevel
+// toExtismLogLevel converts a Lyvune log level to an extism LogLevel
 func toExtismLogLevel(level log.Level) extism.LogLevel {
 	switch level {
 	case log.LevelTrace:

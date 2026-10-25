@@ -13,14 +13,14 @@ import (
 	"strings"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/navidrome/navidrome/core/artwork"
-	"github.com/navidrome/navidrome/core/playlists"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/model/request"
-	"github.com/navidrome/navidrome/utils/ioutils"
-	"github.com/navidrome/navidrome/utils/slice"
-	"github.com/navidrome/navidrome/utils/str"
+	"github.com/Tian-MC/lyvune/core/artwork"
+	"github.com/Tian-MC/lyvune/core/playlists"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/model/request"
+	"github.com/Tian-MC/lyvune/utils/ioutils"
+	"github.com/Tian-MC/lyvune/utils/slice"
+	"github.com/Tian-MC/lyvune/utils/str"
 	"github.com/spf13/cobra"
 )
 
@@ -66,7 +66,7 @@ var (
 	plsCmd = &cobra.Command{
 		Use:   "pls",
 		Short: "Export playlists",
-		Long:  "Export Navidrome playlists to M3U files",
+		Long:  "Export Lyvune playlists to M3U files",
 		Run: func(cmd *cobra.Command, args []string) {
 			runExporter(cmd.Context())
 		},
@@ -83,7 +83,7 @@ var (
 	exportCommand = &cobra.Command{
 		Use:   "export",
 		Short: "Export playlists to M3U files",
-		Long:  "Export one or more Navidrome playlists to M3U files",
+		Long:  "Export one or more Lyvune playlists to M3U files",
 		Run: func(cmd *cobra.Command, args []string) {
 			runExport(cmd.Context())
 		},
@@ -92,7 +92,7 @@ var (
 	importCommand = &cobra.Command{
 		Use:   "import [files...]",
 		Short: "Import M3U playlists",
-		Long:  "Import one or more M3U files as Navidrome playlists",
+		Long:  "Import one or more M3U files as Lyvune playlists",
 		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			runImport(cmd.Context(), args)

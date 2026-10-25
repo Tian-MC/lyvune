@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/navidrome/navidrome/utils/str"
+	"github.com/Tian-MC/lyvune/utils/str"
 	"gopkg.in/yaml.v3"
 )
 

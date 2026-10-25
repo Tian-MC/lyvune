@@ -5,8 +5,8 @@ import (
 	"maps"
 	"slices"
 
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/model/id"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/model/id"
 )
 
 func CreateMockPlayerRepo() *MockPlayerRepo {

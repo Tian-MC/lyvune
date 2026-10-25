@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/navidrome/navidrome/model"
+	"github.com/Tian-MC/lyvune/model"
 )
 
 func CreateMockUserRepo() *MockedUserRepo {

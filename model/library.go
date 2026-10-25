@@ -6,9 +6,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/utils/slice"
 	"github.com/deluan/rest"
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/utils/slice"
 )
 
 type Library struct {

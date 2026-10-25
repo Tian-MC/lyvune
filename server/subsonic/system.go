@@ -3,8 +3,8 @@ package subsonic
 import (
 	"net/http"
 
-	"github.com/navidrome/navidrome/model/request"
-	"github.com/navidrome/navidrome/server/subsonic/responses"
+	"github.com/Tian-MC/lyvune/model/request"
+	"github.com/Tian-MC/lyvune/server/subsonic/responses"
 )
 
 func (api *Router) Ping(_ *http.Request) (*responses.Subsonic, error) {

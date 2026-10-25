@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Setup a git worktree for Navidrome development.
+# Setup a git worktree for Lyvune development.
 # This script is called automatically by `make worktree` and by Claude Code's
 # worktree isolation, but can also be run standalone:
 #

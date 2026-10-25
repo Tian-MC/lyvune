@@ -8,11 +8,11 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/conf/configtest"
-	. "github.com/navidrome/navidrome/db"
-	"github.com/navidrome/navidrome/tests"
-	"github.com/navidrome/navidrome/utils/singleton"
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/conf/configtest"
+	. "github.com/Tian-MC/lyvune/db"
+	"github.com/Tian-MC/lyvune/tests"
+	"github.com/Tian-MC/lyvune/utils/singleton"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -235,6 +235,43 @@ var _ = Describe("database backups", func() {
 			Expect(userName).To(Equal("keepme"))
 			_, statErr := os.Stat(missingPath)
 			Expect(statErr).To(MatchError(os.ErrNotExist))
+		})
+	})
+
+	Describe("backups made before the project was renamed", func() {
+		var dir string
+
+		BeforeEach(func() {
+			DeferCleanup(configtest.SetupConfig())
+			dir = GinkgoT().TempDir()
+			conf.Server.Backup.Path = conf.NewDir(dir)
+		})
+
+		It("names new backups lyvune_backup", func() {
+			Expect(filepath.Base(BackupPath(time.Now()))).To(HavePrefix("lyvune_backup_"))
+		})
+
+		It("still prunes navidrome_backup files, oldest first, next to new ones", func() {
+			names := []string{
+				"navidrome_backup_2026.01.01_10.00.00.db",
+				"navidrome_backup_2026.01.02_10.00.00.db",
+				"lyvune_backup_2026.01.03_10.00.00.db",
+				"lyvune_backup_2026.01.04_10.00.00.db",
+			}
+			for _, n := range names {
+				Expect(os.WriteFile(filepath.Join(dir, n), nil, 0600)).To(Succeed())
+			}
+			conf.Server.Backup.Count = 2
+
+			pruned, err := Prune(context.Background())
+			Expect(err).ToNot(HaveOccurred())
+			Expect(pruned).To(Equal(2))
+			for _, n := range names[:2] {
+				Expect(filepath.Join(dir, n)).ToNot(BeAnExistingFile())
+			}
+			for _, n := range names[2:] {
+				Expect(filepath.Join(dir, n)).To(BeAnExistingFile())
+			}
 		})
 	})
 })

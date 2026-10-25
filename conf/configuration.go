@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"encoding"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"net/url"
@@ -17,16 +18,16 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Tian-MC/lyvune/consts"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/scheduler"
+	"github.com/Tian-MC/lyvune/utils/run"
+	"github.com/Tian-MC/lyvune/utils/slice"
 	"github.com/bmatcuk/doublestar/v4"
 	"github.com/dustin/go-humanize"
 	"github.com/go-viper/encoding/ini"
 	"github.com/go-viper/mapstructure/v2"
 	"github.com/kr/pretty"
-	"github.com/navidrome/navidrome/consts"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/scheduler"
-	"github.com/navidrome/navidrome/utils/run"
-	"github.com/navidrome/navidrome/utils/slice"
 	"github.com/spf13/viper"
 )
 
@@ -426,7 +427,7 @@ func Load(noConfigDump bool) {
 
 	Server.ConfigFile = viper.GetViper().ConfigFileUsed()
 	if Server.DbPath == "" {
-		Server.DbPath = filepath.Join(Server.DataFolder.String(), consts.DefaultDbPath)
+		Server.DbPath = filepath.Join(Server.DataFolder.String(), defaultDbName(Server.DataFolder.String()))
 	}
 
 	out := os.Stderr
@@ -899,7 +900,7 @@ func validateEnforceNonRootUser() error {
 	}
 
 	if getEUID() == 0 {
-		return fmt.Errorf("EnforceNonRootUser is enabled but Navidrome is running as root")
+		return fmt.Errorf("EnforceNonRootUser is enabled but Lyvune is running as root")
 	}
 
 	return nil
@@ -1202,9 +1203,10 @@ func InitConfig(cfgFile string, loadEnvVars bool) {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
 	} else {
-		// Search config in local directory with name "navidrome" (without extension).
+		// Search config in local directory with name "lyvune" (without extension),
+		// then with the name it had before the project was renamed.
 		viper.AddConfigPath(".")
-		viper.SetConfigName("navidrome")
+		viper.SetConfigName("lyvune")
 	}
 
 	_ = viper.BindEnv("port")
@@ -1216,8 +1218,15 @@ func InitConfig(cfgFile string, loadEnvVars bool) {
 	}
 
 	err := viper.ReadInConfig()
+	if cfgFile == "" {
+		var notFound viper.ConfigFileNotFoundError
+		if errors.As(err, &notFound) {
+			viper.SetConfigName("navidrome")
+			err = viper.ReadInConfig()
+		}
+	}
 	if viper.ConfigFileUsed() != "" && err != nil {
-		logFatal("Navidrome could not open config file:", err)
+		logFatal("Lyvune could not open config file:", err)
 	}
 }
 
@@ -1232,8 +1241,27 @@ func getConfigFile(cfgFile string) string {
 		if _, err := os.Stat(cfgFile); err == nil { //nolint:gosec
 			return cfgFile
 		}
+		// A lyvune.toml that is not there: the navidrome.toml next to it is the same file under its old name
+		if dir, name := filepath.Split(cfgFile); name == "lyvune.toml" {
+			legacy := filepath.Join(dir, "navidrome.toml")
+			if _, err := os.Stat(legacy); err == nil { //nolint:gosec
+				return legacy
+			}
+		}
 	}
 	return ""
+}
+
+// defaultDbName is the database file inside the data folder. A server that already has
+// a navidrome.db keeps using it, so renaming the project does not orphan its data.
+func defaultDbName(dataFolder string) string {
+	if _, err := os.Stat(filepath.Join(dataFolder, "lyvune.db")); err == nil { //nolint:gosec
+		return consts.DefaultDbPath
+	}
+	if _, err := os.Stat(filepath.Join(dataFolder, "navidrome.db")); err == nil { //nolint:gosec
+		return consts.LegacyDbPath
+	}
+	return consts.DefaultDbPath
 }
 
 // MaxOpenConns is the size of the shared SQLite connection pool, used by every subsystem (scanner,

@@ -1,4 +1,4 @@
-module github.com/navidrome/navidrome
+module github.com/Tian-MC/lyvune
 
 go 1.27
 

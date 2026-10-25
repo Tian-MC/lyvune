@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/navidrome/navidrome/db"
+	"github.com/Tian-MC/lyvune/db"
 	"github.com/pressly/goose/v3"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -109,7 +109,7 @@ var _ = Describe("RebuildFTS schema guard", func() {
 		empty.SetMaxOpenConns(1)
 		DeferCleanup(func() { _ = empty.Close() })
 
-		Expect(db.RebuildFTS(ctx, empty)).To(MatchError(ContainSubstring("start Navidrome once")))
+		Expect(db.RebuildFTS(ctx, empty)).To(MatchError(ContainSubstring("start Lyvune once")))
 	})
 
 	It("runs on a post-FTS schema even when newer migrations are pending", func() {

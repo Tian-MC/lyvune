@@ -7,9 +7,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Tian-MC/lyvune/conf"
 	"github.com/deluan/rest"
 	"github.com/gohugoio/hashstructure"
-	"github.com/navidrome/navidrome/conf"
 )
 
 type Album struct {

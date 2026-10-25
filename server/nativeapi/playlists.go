@@ -10,13 +10,13 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Tian-MC/lyvune/core/playlists"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/utils/req"
+	"github.com/Tian-MC/lyvune/utils/str"
 	"github.com/deluan/rest"
 	"github.com/go-chi/chi/v5"
-	"github.com/navidrome/navidrome/core/playlists"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/utils/req"
-	"github.com/navidrome/navidrome/utils/str"
 )
 
 // writePlaylistError maps a playlist service error to an HTTP status, or defaultStatus if unknown.

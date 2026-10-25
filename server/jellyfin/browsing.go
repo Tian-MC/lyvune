@@ -3,10 +3,10 @@ package jellyfin
 import (
 	"net/http"
 
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/server/jellyfin/dto"
-	"github.com/navidrome/navidrome/utils/req"
-	"github.com/navidrome/navidrome/utils/slice"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/server/jellyfin/dto"
+	"github.com/Tian-MC/lyvune/utils/req"
+	"github.com/Tian-MC/lyvune/utils/slice"
 )
 
 // getArtists handles GET /Artists (performing artists, Finamp's "Artists" tab); getAlbumArtists

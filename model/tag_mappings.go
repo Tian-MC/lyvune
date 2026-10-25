@@ -11,10 +11,10 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model/criteria"
-	"github.com/navidrome/navidrome/resources"
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model/criteria"
+	"github.com/Tian-MC/lyvune/resources"
 	"gopkg.in/yaml.v3"
 )
 

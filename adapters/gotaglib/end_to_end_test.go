@@ -5,9 +5,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/model/metadata"
 	"github.com/djherbis/times"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/model/metadata"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

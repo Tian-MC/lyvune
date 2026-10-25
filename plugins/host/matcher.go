@@ -3,7 +3,7 @@ package host
 import (
 	"context"
 
-	"github.com/navidrome/navidrome/plugins/types"
+	"github.com/Tian-MC/lyvune/plugins/types"
 )
 
 // MatchOptions carries optional parameters for a match request.
@@ -14,7 +14,7 @@ type MatchOptions struct {
 }
 
 // MatcherService resolves externally-obtained songs to local library tracks,
-// reusing Navidrome's matching algorithm (ID > MBID > ISRC > fuzzy title).
+// reusing Lyvune's matching algorithm (ID > MBID > ISRC > fuzzy title).
 //
 //nd:hostservice name=Matcher permission=matcher
 type MatcherService interface {

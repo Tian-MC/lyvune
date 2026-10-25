@@ -10,12 +10,12 @@ import (
 	"testing"
 	"time"
 
-	_ "github.com/navidrome/navidrome/adapters/gotaglib" // registers the "taglib" local-storage extractor
-	"github.com/navidrome/navidrome/core/artwork"
-	_ "github.com/navidrome/navidrome/core/storage/local"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/tests"
+	_ "github.com/Tian-MC/lyvune/adapters/gotaglib" // registers the "taglib" local-storage extractor
+	"github.com/Tian-MC/lyvune/core/artwork"
+	_ "github.com/Tian-MC/lyvune/core/storage/local"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/tests"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

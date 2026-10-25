@@ -1,7 +1,7 @@
 package scheduler
 
 import (
-	"github.com/navidrome/navidrome/log"
+	"github.com/Tian-MC/lyvune/log"
 )
 
 type logger struct{}

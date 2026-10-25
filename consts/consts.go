@@ -5,13 +5,19 @@ import (
 	"strings"
 	"time"
 
-	"github.com/navidrome/navidrome/model/id"
+	"github.com/Tian-MC/lyvune/model/id"
 )
 
 const (
-	AppName = "navidrome"
+	AppName = "lyvune"
 
-	DefaultDbPath                 = "navidrome.db?cache=shared&_busy_timeout=15000&_journal_mode=WAL&_foreign_keys=on&synchronous=normal"
+	// SubsonicServerType is the server type reported to Subsonic clients. It stays
+	// "navidrome": clients recognise the server, and the features it has, by it.
+	SubsonicServerType = "navidrome"
+
+	DefaultDbPath = "lyvune.db?cache=shared&_busy_timeout=15000&_journal_mode=WAL&_foreign_keys=on&synchronous=normal"
+	// LegacyDbPath is the database name used before the project was renamed.
+	LegacyDbPath                  = "navidrome.db?cache=shared&_busy_timeout=15000&_journal_mode=WAL&_foreign_keys=on&synchronous=normal"
 	InitialSetupFlagKey           = "InitialSetup"
 	FullScanAfterMigrationFlagKey = "FullScanAfterMigration"
 	// PlaylistsImportPendingFlagKey marks that playlist import was deferred because
@@ -45,7 +51,7 @@ const (
 	ArtworkPruneSchedule          = "@daily"
 
 	// DefaultEncryptionKey This is the encryption key used if none is specified in the `PasswordEncryptionKey` option
-	// Never ever change this! Or it will break all Navidrome installations that don't set the config option
+	// Never ever change this! Or it will break all Lyvune installations that don't set the config option
 	DefaultEncryptionKey  = "just for obfuscation"
 	PasswordsEncryptedKey = "PasswordsEncryptedKey"
 	PasswordAutogenPrefix = "__NAVIDROME_AUTOGEN__" //nolint:gosec
@@ -66,7 +72,7 @@ const (
 	// Jellyfin API. Jellyfin clients cache this value, so it must survive process restarts.
 	JellyfinServerIDKey = "JellyfinServerID"
 
-	// DefaultUILoginBackgroundURL uses Navidrome curated background images collection,
+	// DefaultUILoginBackgroundURL uses Lyvune curated background images collection,
 	// available at https://unsplash.com/collections/20072696/navidrome
 	DefaultUILoginBackgroundURL = "/backgrounds"
 
@@ -206,7 +212,7 @@ var (
 	}
 )
 
-var HTTPUserAgent = "Navidrome/" + Version + " - https://github.com/navidrome"
+var HTTPUserAgent = "Lyvune/" + Version + " - https://github.com/Tian-MC/lyvune"
 
 var (
 	VariousArtists = "Various Artists"

@@ -54,7 +54,7 @@ var _ = Describe("idColumns inventory", func() {
 			"album.discs":                    "disc number -> title map",
 			"media_file.lyrics":              "synced lyrics, no ids",
 			"folder.image_files":             "image file names, no ids",
-			"plugin.manifest":                "plugin-authored manifest, no Navidrome ids",
+			"plugin.manifest":                "plugin-authored manifest, no Lyvune ids",
 			"plugin.config":                  "free-form plugin config, must not be rewritten",
 			"plugin.libraries":               "integer library ids",
 		}
@@ -85,7 +85,7 @@ var _ = Describe("idColumns inventory", func() {
 					continue // INTEGER ids (rowid PKs, library.id) are not canonical ids
 				}
 				if strings.HasPrefix(lname, "mbz_") {
-					continue // MusicBrainz UUIDs, not Navidrome ids
+					continue // MusicBrainz UUIDs, not Lyvune ids
 				}
 				key := table + "." + name
 				if covered[key] || exempt[key] != "" {

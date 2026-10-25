@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/persistence"
-	"github.com/navidrome/navidrome/utils/slice"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/persistence"
+	"github.com/Tian-MC/lyvune/utils/slice"
 )
 
 const LocalAgentName = "local"

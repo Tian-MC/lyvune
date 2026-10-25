@@ -11,9 +11,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
 	"github.com/dexterlb/mpvipc"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
 )
 
 type MpvTrack struct {

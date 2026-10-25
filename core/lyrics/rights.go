@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/navidrome/navidrome/log"
+	"github.com/Tian-MC/lyvune/log"
 )
 
 // A provider's results can be handled in four separate ways:

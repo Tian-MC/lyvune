@@ -7,7 +7,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/navidrome/navidrome/db"
+	"github.com/Tian-MC/lyvune/db"
 	"github.com/spf13/cobra"
 )
 
@@ -17,9 +17,9 @@ func init() {
 
 var doctorCmd = &cobra.Command{
 	Use:   "doctor",
-	Short: "Check your Navidrome installation for problems",
+	Short: "Check your Lyvune installation for problems",
 	Long: "Run read-only health checks and report what was found. Checks the database for " +
-		"corruption and foreign key violations, and reports whether 'navidrome search rebuild' " +
+		"corruption and foreign key violations, and reports whether 'lyvune search rebuild' " +
 		"can fix what it finds. This command never alters your data",
 	Run: func(cmd *cobra.Command, _ []string) {
 		runDoctor(cmd.Context())
@@ -36,7 +36,7 @@ func runDoctor(ctx context.Context) {
 	}
 }
 
-const recoveryAdvice = "Restore a backup (navidrome backup restore), or try SQLite's '.recover' command."
+const recoveryAdvice = "Restore a backup (lyvune backup restore), or try SQLite's '.recover' command."
 
 func printFindings(out io.Writer, check, noun string, items []string) {
 	fmt.Fprintf(out, "%s reported %d %s:\n", check, len(items), noun)
@@ -65,7 +65,7 @@ func doctor(ctx context.Context, database *sql.DB, out io.Writer) bool {
 			fmt.Fprintln(out, "The integrity check stopped at its limit, so the damage may reach further than listed.")
 			fmt.Fprintln(out, recoveryAdvice)
 		case db.IsFTSCorruptionOnly(issues):
-			fmt.Fprintln(out, "Corruption is limited to the search index. Run 'navidrome search rebuild' to fix it.")
+			fmt.Fprintln(out, "Corruption is limited to the search index. Run 'lyvune search rebuild' to fix it.")
 		default:
 			fmt.Fprintln(out, "Corruption is not limited to the search index, and cannot be repaired automatically.")
 			fmt.Fprintln(out, recoveryAdvice)
@@ -88,7 +88,7 @@ func doctor(ctx context.Context, database *sql.DB, out io.Writer) bool {
 				fmt.Sprintf("%s: %d row(s) reference missing rows in %s", v.Table, v.Count, v.Parent))
 		}
 		printFindings(out, "Foreign key check", "violation(s)", lines)
-		fmt.Fprintln(out, "These are orphaned rows, not corruption. 'navidrome scan -f' clears some of them "+
+		fmt.Fprintln(out, "These are orphaned rows, not corruption. 'lyvune scan -f' clears some of them "+
 			"in library data; the rest have to be removed by hand.")
 	}
 

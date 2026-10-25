@@ -1,6 +1,6 @@
 {
   "name": "Test Scheduler",
-  "author": "Navidrome Test",
+  "author": "Lyvune Test",
   "version": "1.0.0",
   "description": "A test scheduler plugin for integration testing",
   "permissions": {

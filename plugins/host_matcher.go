@@ -8,12 +8,12 @@ import (
 	"slices"
 	"time"
 
-	"github.com/navidrome/navidrome/core/matcher"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/model/request"
-	"github.com/navidrome/navidrome/plugins/host"
-	"github.com/navidrome/navidrome/plugins/types"
-	"github.com/navidrome/navidrome/utils/slice"
+	"github.com/Tian-MC/lyvune/core/matcher"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/model/request"
+	"github.com/Tian-MC/lyvune/plugins/host"
+	"github.com/Tian-MC/lyvune/plugins/types"
+	"github.com/Tian-MC/lyvune/utils/slice"
 )
 
 type matcherServiceImpl struct {

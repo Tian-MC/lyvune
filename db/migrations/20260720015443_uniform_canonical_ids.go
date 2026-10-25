@@ -10,13 +10,13 @@ import (
 	"math/big"
 	"strings"
 
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/consts"
-	"github.com/navidrome/navidrome/model/id"
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/consts"
+	"github.com/Tian-MC/lyvune/model/id"
 	"github.com/pressly/goose/v3"
 )
 
-// canonicalID maps any historical Navidrome id shape to the canonical 22-char base62 encoding
+// canonicalID maps any historical Lyvune id shape to the canonical 22-char base62 encoding
 // of a 128-bit value; unrecognized shapes (including empty and share ids) pass through unchanged.
 func canonicalID(s string) string {
 	switch len(s) {
@@ -50,7 +50,7 @@ func init() {
 	goose.AddMigrationContext(upUniformCanonicalIds, downUniformCanonicalIds)
 }
 
-// idColumns is the exhaustive list of Navidrome-id-bearing columns; anything absent is deliberately exempt.
+// idColumns is the exhaustive list of Lyvune-id-bearing columns; anything absent is deliberately exempt.
 var idColumns = []struct{ table, col string }{
 	{"media_file", "id"}, {"media_file", "pid"}, {"media_file", "artist_id"},
 	{"media_file", "album_id"}, {"media_file", "album_artist_id"}, {"media_file", "folder_id"},

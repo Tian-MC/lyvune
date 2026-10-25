@@ -2,7 +2,7 @@ package lyrics
 
 import "context"
 
-// unavailable is a provider Navidrome knows about but cannot use legitimately.
+// unavailable is a provider Lyvune knows about but cannot use legitimately.
 // It exists so the interface can say so honestly. It never makes a request.
 type unavailable struct {
 	info ProviderInfo

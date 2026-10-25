@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/navidrome/navidrome/core/lyrics"
-	"github.com/navidrome/navidrome/log"
+	"github.com/Tian-MC/lyvune/core/lyrics"
+	"github.com/Tian-MC/lyvune/log"
 )
 
 // TestLiveProviders queries the real NetEase, KuGou and QQ Music services. It is opt-in

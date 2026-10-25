@@ -8,15 +8,15 @@ import (
 	"path/filepath"
 	"sync"
 
+	_ "github.com/Tian-MC/lyvune/adapters/gotaglib" // Register taglib extractor
+	"github.com/Tian-MC/lyvune/conf/configtest"
+	"github.com/Tian-MC/lyvune/core"
+	_ "github.com/Tian-MC/lyvune/core/storage/local" // Register local storage
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/model/request"
+	"github.com/Tian-MC/lyvune/server/events"
+	"github.com/Tian-MC/lyvune/tests"
 	"github.com/deluan/rest"
-	_ "github.com/navidrome/navidrome/adapters/gotaglib" // Register taglib extractor
-	"github.com/navidrome/navidrome/conf/configtest"
-	"github.com/navidrome/navidrome/core"
-	_ "github.com/navidrome/navidrome/core/storage/local" // Register local storage
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/model/request"
-	"github.com/navidrome/navidrome/server/events"
-	"github.com/navidrome/navidrome/tests"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

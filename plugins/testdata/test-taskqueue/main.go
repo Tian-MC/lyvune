@@ -1,13 +1,13 @@
-// Test TaskQueue plugin for Navidrome plugin system integration tests.
+// Test TaskQueue plugin for Lyvune plugin system integration tests.
 // Build with: tinygo build -o ../test-taskqueue.wasm -target wasip1 -buildmode=c-shared .
 package main
 
 import (
 	"fmt"
 
-	"github.com/navidrome/navidrome/plugins/pdk/go/host"
-	"github.com/navidrome/navidrome/plugins/pdk/go/pdk"
-	"github.com/navidrome/navidrome/plugins/pdk/go/taskworker"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/host"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/pdk"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/taskworker"
 )
 
 func init() {

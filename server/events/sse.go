@@ -8,12 +8,12 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/navidrome/navidrome/consts"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model/id"
-	"github.com/navidrome/navidrome/model/request"
-	"github.com/navidrome/navidrome/utils/pl"
-	"github.com/navidrome/navidrome/utils/singleton"
+	"github.com/Tian-MC/lyvune/consts"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model/id"
+	"github.com/Tian-MC/lyvune/model/request"
+	"github.com/Tian-MC/lyvune/utils/pl"
+	"github.com/Tian-MC/lyvune/utils/singleton"
 )
 
 type Broker interface {

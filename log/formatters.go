@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/navidrome/navidrome/utils/slice"
+	"github.com/Tian-MC/lyvune/utils/slice"
 )
 
 func ShortDur(d time.Duration) string {

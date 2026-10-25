@@ -10,8 +10,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Tian-MC/lyvune/log"
 	"github.com/lestrrat-go/jwx/v3/jwt"
-	"github.com/navidrome/navidrome/log"
 )
 
 type jwtToken struct {

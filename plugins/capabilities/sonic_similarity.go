@@ -1,6 +1,6 @@
 package capabilities
 
-import "github.com/navidrome/navidrome/plugins/types"
+import "github.com/Tian-MC/lyvune/plugins/types"
 
 // SonicSimilarity provides audio-similarity based track discovery.
 //

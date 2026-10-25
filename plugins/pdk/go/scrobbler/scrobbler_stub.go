@@ -8,7 +8,7 @@
 
 package scrobbler
 
-import "github.com/navidrome/navidrome/plugins/pdk/go/types"
+import "github.com/Tian-MC/lyvune/plugins/pdk/go/types"
 
 // Deprecated: use types.ArtistRef.
 type ArtistRef = types.ArtistRef
@@ -76,7 +76,7 @@ type ScrobbleRequest struct {
 
 // TrackInfo contains track metadata.
 type TrackInfo struct {
-	// ID is the internal Navidrome track ID.
+	// ID is the internal Lyvune track ID.
 	ID string `json:"id"`
 	// Title is the track title.
 	Title string `json:"title"`

@@ -12,9 +12,9 @@ import (
 	"path"
 	"slices"
 
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/core/agents"
-	"github.com/navidrome/navidrome/log"
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/core/agents"
+	"github.com/Tian-MC/lyvune/log"
 )
 
 const (

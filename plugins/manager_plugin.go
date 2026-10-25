@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/Tian-MC/lyvune/model"
 	extism "github.com/extism/go-sdk"
-	"github.com/navidrome/navidrome/model"
 	"github.com/tetratelabs/wazero"
 )
 

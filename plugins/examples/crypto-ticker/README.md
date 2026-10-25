@@ -1,6 +1,6 @@
 # Crypto Ticker Plugin
 
-This is a WebSocket-based WASM plugin for Navidrome that displays real-time cryptocurrency prices from Coinbase.
+This is a WebSocket-based WASM plugin for Lyvune that displays real-time cryptocurrency prices from Coinbase.
 
 ## Features
 
@@ -12,7 +12,7 @@ This is a WebSocket-based WASM plugin for Navidrome that displays real-time cryp
 
 ## Configuration
 
-Configure in the Navidrome UI (Settings → Plugins → crypto-ticker):
+Configure in the Lyvune UI (Settings → Plugins → crypto-ticker):
 
 | Key       | Description                                                          | Default   |
 |-----------|----------------------------------------------------------------------|-----------|
@@ -46,7 +46,7 @@ make crypto-ticker.ndp
 
 ## Installation
 
-Copy the resulting `crypto-ticker.ndp` to your Navidrome plugins folder.
+Copy the resulting `crypto-ticker.ndp` to your Lyvune plugins folder.
 
 ## Example Output
 
@@ -73,14 +73,14 @@ Copy the resulting `crypto-ticker.ndp` to your Navidrome plugins folder.
 
 ## PDK
 
-This plugin imports the Navidrome PDK subpackages directly:
+This plugin imports the Lyvune PDK subpackages directly:
 
 ```go
 import (
-    "github.com/navidrome/navidrome/plugins/pdk/go/host"
-    "github.com/navidrome/navidrome/plugins/pdk/go/lifecycle"
-    "github.com/navidrome/navidrome/plugins/pdk/go/scheduler"
-    "github.com/navidrome/navidrome/plugins/pdk/go/websocket"
+    "github.com/Tian-MC/lyvune/plugins/pdk/go/host"
+    "github.com/Tian-MC/lyvune/plugins/pdk/go/lifecycle"
+    "github.com/Tian-MC/lyvune/plugins/pdk/go/scheduler"
+    "github.com/Tian-MC/lyvune/plugins/pdk/go/websocket"
 )
 ```
 

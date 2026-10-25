@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/navidrome/navidrome/log"
+	"github.com/Tian-MC/lyvune/log"
 )
 
 type Values struct {

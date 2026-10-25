@@ -1,6 +1,6 @@
 {
   "name": "Test Scrobble Retriever",
-  "author": "Navidrome Test",
+  "author": "Lyvune Test",
   "version": "1.0.0",
   "description": "A test plugin for scrobble retriever integration settings",
   "permissions": {

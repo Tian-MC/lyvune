@@ -1,9 +1,9 @@
 {
   "name": "Discord Rich Presence (Rust)",
-  "author": "Navidrome Team",
+  "author": "Lyvune Team",
   "version": "1.0.0",
-  "description": "Discord Rich Presence integration for Navidrome - Rust implementation",
-  "website": "https://github.com/navidrome/navidrome/tree/master/plugins/examples/discord-rich-presence-rs",
+  "description": "Discord Rich Presence integration for Lyvune - Rust implementation",
+  "website": "https://github.com/Tian-MC/lyvune/tree/master/plugins/examples/discord-rich-presence-rs",
   "permissions": {
     "users": {
       "reason": "To process scrobbles on behalf of users"
@@ -41,15 +41,15 @@
         "users": {
           "type": "array",
           "title": "User Tokens",
-          "description": "Discord tokens for each Navidrome user. WARNING: Store tokens securely!",
+          "description": "Discord tokens for each Lyvune user. WARNING: Store tokens securely!",
           "minItems": 1,
           "items": {
             "type": "object",
             "properties": {
               "username": {
                 "type": "string",
-                "title": "Navidrome Username",
-                "description": "The Navidrome username to associate with this Discord token",
+                "title": "Lyvune Username",
+                "description": "The Lyvune username to associate with this Discord token",
                 "minLength": 1
               },
               "token": {

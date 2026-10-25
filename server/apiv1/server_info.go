@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/navidrome/navidrome/api"
-	"github.com/navidrome/navidrome/consts"
+	"github.com/Tian-MC/lyvune/api"
+	"github.com/Tian-MC/lyvune/consts"
 )
 
 func (rt *Router) GetServerInfo(ctx context.Context, _ GetServerInfoRequestObject) (GetServerInfoResponseObject, error) {
@@ -14,7 +14,7 @@ func (rt *Router) GetServerInfo(ctx context.Context, _ GetServerInfoRequestObjec
 		return nil, fmt.Errorf("counting users: %w", err)
 	}
 	return GetServerInfo200JSONResponse{
-		Name:          "Navidrome",
+		Name:          "Lyvune",
 		ServerVersion: consts.Version,
 		SpecVersion:   api.SpecVersion(),
 		SetupRequired: count == 0,

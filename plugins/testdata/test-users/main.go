@@ -1,11 +1,11 @@
-// Test Users plugin for Navidrome plugin system integration tests.
+// Test Users plugin for Lyvune plugin system integration tests.
 // This plugin tests user metadata access via the Users host service.
 // Build with: tinygo build -o ../test-users.wasm -target wasip1 -buildmode=c-shared .
 package main
 
 import (
-	"github.com/navidrome/navidrome/plugins/pdk/go/host"
-	"github.com/navidrome/navidrome/plugins/pdk/go/pdk"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/host"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/pdk"
 )
 
 // TestUsersInput is the input for nd_test_users callback.

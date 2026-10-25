@@ -13,7 +13,7 @@ import (
 )
 
 // User represents the User data structure.
-// User represents a Navidrome user with minimal information exposed to plugins.
+// User represents a Lyvune user with minimal information exposed to plugins.
 // Sensitive fields like password, email, and internal IDs are intentionally excluded.
 type User struct {
 	UserName string `json:"userName"`

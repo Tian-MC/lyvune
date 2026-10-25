@@ -1,4 +1,4 @@
-// Test scrobbler plugin for Navidrome plugin system integration tests.
+// Test scrobbler plugin for Lyvune plugin system integration tests.
 // Build with: tinygo build -o ../test-scrobbler.wasm -target wasip1 -buildmode=c-shared ./main.go
 package main
 
@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/navidrome/navidrome/plugins/pdk/go/pdk"
-	"github.com/navidrome/navidrome/plugins/pdk/go/scrobbler"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/pdk"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/scrobbler"
 )
 
 func init() {

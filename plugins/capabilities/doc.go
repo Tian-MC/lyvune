@@ -1,4 +1,4 @@
-// Package capabilities defines Go interfaces for Navidrome plugin capabilities.
+// Package capabilities defines Go interfaces for Lyvune plugin capabilities.
 //
 // These interfaces serve as the source of truth for capability definitions.
 // The ndpgen tool generates:

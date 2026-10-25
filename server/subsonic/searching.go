@@ -9,13 +9,13 @@ import (
 	"time"
 
 	. "github.com/Masterminds/squirrel"
+	"github.com/Tian-MC/lyvune/core/publicurl"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/server/subsonic/responses"
+	"github.com/Tian-MC/lyvune/utils/req"
+	"github.com/Tian-MC/lyvune/utils/slice"
 	"github.com/deluan/sanitize"
-	"github.com/navidrome/navidrome/core/publicurl"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/server/subsonic/responses"
-	"github.com/navidrome/navidrome/utils/req"
-	"github.com/navidrome/navidrome/utils/slice"
 	"golang.org/x/sync/errgroup"
 )
 

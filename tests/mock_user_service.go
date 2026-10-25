@@ -1,8 +1,8 @@
 package tests
 
 import (
+	"github.com/Tian-MC/lyvune/model"
 	"github.com/deluan/rest"
-	"github.com/navidrome/navidrome/model"
 )
 
 // MockUserService provides a simple wrapper around MockedUserRepo

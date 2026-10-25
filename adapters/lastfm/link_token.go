@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/navidrome/navidrome/core/auth"
+	"github.com/Tian-MC/lyvune/core/auth"
 )
 
 const (

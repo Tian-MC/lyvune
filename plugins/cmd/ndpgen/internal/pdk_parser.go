@@ -53,9 +53,9 @@ type PDKFunc struct {
 	Deprecated string // Rendered as a "Deprecated:" paragraph when set
 }
 
-// deprecatedPDKFuncs marks extism functions that do not work inside Navidrome, with what to use instead.
+// deprecatedPDKFuncs marks extism functions that do not work inside Lyvune, with what to use instead.
 var deprecatedPDKFuncs = map[string]string{
-	"NewHTTPRequest": "Navidrome does not enable extism's http_request host function, so every request sent this way fails. Use host.HTTPSend instead.",
+	"NewHTTPRequest": "Lyvune does not enable extism's http_request host function, so every request sent this way fails. Use host.HTTPSend instead.",
 }
 
 // PDKParam represents a function parameter.

@@ -1,10 +1,10 @@
-// Test KVStore plugin for Navidrome plugin system integration tests.
+// Test KVStore plugin for Lyvune plugin system integration tests.
 // Build with: tinygo build -o ../test-kvstore.wasm -target wasip1 -buildmode=c-shared .
 package main
 
 import (
-	"github.com/navidrome/navidrome/plugins/pdk/go/host"
-	"github.com/navidrome/navidrome/plugins/pdk/go/pdk"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/host"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/pdk"
 )
 
 // TestKVStoreInput is the input for nd_test_kvstore callback.

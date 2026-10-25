@@ -13,8 +13,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/log"
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/log"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

@@ -10,9 +10,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/utils/str"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/utils/str"
 )
 
 func (md Metadata) ToMediaFile(lib model.Library, folderID string) model.MediaFile {

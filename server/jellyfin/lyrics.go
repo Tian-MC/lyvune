@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/server/jellyfin/dto"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/server/jellyfin/dto"
 )
 
 const lyricsLoadTimeout = time.Minute

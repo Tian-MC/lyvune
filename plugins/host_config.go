@@ -6,12 +6,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/plugins/host"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/plugins/host"
 )
 
 // configServiceImpl implements the host.ConfigService interface.
-// It provides access to plugin configuration values set in the Navidrome config file.
+// It provides access to plugin configuration values set in the Lyvune config file.
 type configServiceImpl struct {
 	pluginName string
 	config     map[string]string

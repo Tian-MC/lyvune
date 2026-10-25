@@ -5,9 +5,9 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/plugins/host"
 	"github.com/jellydator/ttlcache/v3"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/plugins/host"
 )
 
 const (

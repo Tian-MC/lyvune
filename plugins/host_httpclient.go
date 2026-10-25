@@ -13,10 +13,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/plugins/host"
-	"github.com/navidrome/navidrome/utils/httpclient"
-	"github.com/navidrome/navidrome/utils/netguard"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/plugins/host"
+	"github.com/Tian-MC/lyvune/utils/httpclient"
+	"github.com/Tian-MC/lyvune/utils/netguard"
 )
 
 const (

@@ -5,11 +5,11 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/navidrome/navidrome/core/scrobbler"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/model/request"
-	"github.com/navidrome/navidrome/plugins/capabilities"
-	"github.com/navidrome/navidrome/plugins/types"
+	"github.com/Tian-MC/lyvune/core/scrobbler"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/model/request"
+	"github.com/Tian-MC/lyvune/plugins/capabilities"
+	"github.com/Tian-MC/lyvune/plugins/types"
 )
 
 // CapabilityScrobbler indicates the plugin can receive scrobble events.

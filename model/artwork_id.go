@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/navidrome/navidrome/utils/slice"
+	"github.com/Tian-MC/lyvune/utils/slice"
 )
 
 type Kind struct {

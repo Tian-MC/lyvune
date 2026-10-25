@@ -1,14 +1,14 @@
-// Minimal example Navidrome plugin demonstrating the MetadataAgent capability.
+// Minimal example Lyvune plugin demonstrating the MetadataAgent capability.
 //
 // Build with:
 //
 //	tinygo build -o minimal.wasm -target wasip1 -buildmode=c-shared .
 //
-// Install by copying minimal.ndp to your Navidrome plugins folder.
+// Install by copying minimal.ndp to your Lyvune plugins folder.
 package main
 
 import (
-	"github.com/navidrome/navidrome/plugins/pdk/go/metadata"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/metadata"
 )
 
 // minimalPlugin implements the metadata provider interfaces.

@@ -1,7 +1,7 @@
 package lyrics
 
 import (
-	"github.com/navidrome/navidrome/model"
+	"github.com/Tian-MC/lyvune/model"
 )
 
 // Quality ranks lyrics by how precisely they are synchronized. A higher value
@@ -98,11 +98,11 @@ type Source int
 const (
 	// SourceUser is lyrics the user selected, imported or locked.
 	SourceUser Source = iota + 1
-	// SourceSidecar is a lyrics file next to the audio that Navidrome did not write.
+	// SourceSidecar is a lyrics file next to the audio that Lyvune did not write.
 	SourceSidecar
 	// SourceEmbedded is lyrics stored in the audio file's tags.
 	SourceEmbedded
-	// SourceManaged is lyrics Navidrome downloaded and stored.
+	// SourceManaged is lyrics Lyvune downloaded and stored.
 	SourceManaged
 	// SourceRemote is a result from an online provider, not stored yet.
 	SourceRemote

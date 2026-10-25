@@ -6,12 +6,12 @@ import (
 	"strings"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/conf/configtest"
-	"github.com/navidrome/navidrome/core/agents"
-	"github.com/navidrome/navidrome/core/matcher"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/tests"
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/conf/configtest"
+	"github.com/Tian-MC/lyvune/core/agents"
+	"github.com/Tian-MC/lyvune/core/matcher"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/tests"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/stretchr/testify/mock"
@@ -517,7 +517,7 @@ var _ = Describe("Matcher", func() {
 				Expect(result[0].ID).To(Equal("multi"))
 			})
 
-			It("matches by a directly-supplied Navidrome artist ID (fast-path)", func() {
+			It("matches by a directly-supplied Lyvune artist ID (fast-path)", func() {
 				conf.Server.Matcher.FuzzyThreshold = 85
 				songs := []agents.Song{
 					{Name: "Song A", Artists: []agents.Artist{{ID: "ar-x"}}},

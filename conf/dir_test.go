@@ -4,8 +4,8 @@ import (
 	"os"
 	"sync"
 
+	"github.com/Tian-MC/lyvune/conf"
 	"github.com/kr/pretty"
-	"github.com/navidrome/navidrome/conf"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

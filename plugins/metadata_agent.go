@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 
-	"github.com/navidrome/navidrome/core/agents"
-	"github.com/navidrome/navidrome/plugins/capabilities"
-	"github.com/navidrome/navidrome/plugins/types"
-	"github.com/navidrome/navidrome/utils/slice"
+	"github.com/Tian-MC/lyvune/core/agents"
+	"github.com/Tian-MC/lyvune/plugins/capabilities"
+	"github.com/Tian-MC/lyvune/plugins/types"
+	"github.com/Tian-MC/lyvune/utils/slice"
 )
 
 // CapabilityMetadataAgent indicates the plugin can provide artist/album metadata.

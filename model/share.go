@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Tian-MC/lyvune/utils/random"
 	"github.com/deluan/rest"
-	"github.com/navidrome/navidrome/utils/random"
 )
 
 type Share struct {

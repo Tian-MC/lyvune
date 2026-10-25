@@ -9,11 +9,11 @@ import (
 	"net/http/httptest"
 	"sync"
 
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/conf/configtest"
-	"github.com/navidrome/navidrome/consts"
-	"github.com/navidrome/navidrome/server/jellyfin/dto"
-	"github.com/navidrome/navidrome/tests"
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/conf/configtest"
+	"github.com/Tian-MC/lyvune/consts"
+	"github.com/Tian-MC/lyvune/server/jellyfin/dto"
+	"github.com/Tian-MC/lyvune/tests"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -37,7 +37,7 @@ var _ = Describe("System", func() {
 		Expect(info.Id).ToNot(BeEmpty())
 		Expect(info.Version).To(Equal(jellyfinVersion))
 		Expect(info.ProductName).To(Equal("Jellyfin Server"))
-		Expect(info.ServerName).To(HavePrefix("Navidrome"))
+		Expect(info.ServerName).To(HavePrefix("Lyvune"))
 	})
 
 	It("returns authenticated system info with the public fields plus library monitor support", func() {
@@ -55,7 +55,7 @@ var _ = Describe("System", func() {
 		Expect(info.Id).ToNot(BeEmpty())
 		Expect(info.Version).To(Equal(jellyfinVersion))
 		Expect(info.ProductName).To(Equal("Jellyfin Server"))
-		Expect(info.ServerName).To(HavePrefix("Navidrome"))
+		Expect(info.ServerName).To(HavePrefix("Lyvune"))
 		Expect(info.SupportsLibraryMonitor).To(BeTrue())
 		Expect(info.HasPendingRestart).To(BeFalse())
 		Expect(info.IsShuttingDown).To(BeFalse())
@@ -87,7 +87,7 @@ var _ = Describe("System", func() {
 		Expect(w.Code).To(Equal(http.StatusOK))
 		Expect(w.Header().Get("Content-Type")).To(ContainSubstring("text/plain"))
 		// Plain text, not a JSON-quoted string: Jellyfin clients expect the bare server name.
-		Expect(w.Body.String()).To(HavePrefix("Navidrome"))
+		Expect(w.Body.String()).To(HavePrefix("Lyvune"))
 	})
 
 	DescribeTable("reports the caller's network location on /System/Endpoint",

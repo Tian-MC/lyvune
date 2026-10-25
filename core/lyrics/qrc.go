@@ -6,7 +6,7 @@ import (
 	"html"
 	"strings"
 
-	"github.com/navidrome/navidrome/model"
+	"github.com/Tian-MC/lyvune/model"
 )
 
 // QRC is QQ Music's word-timed lyrics format. It is XML around an LRC-like

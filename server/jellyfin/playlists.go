@@ -9,14 +9,14 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/model/request"
+	"github.com/Tian-MC/lyvune/server/filter"
+	"github.com/Tian-MC/lyvune/server/jellyfin/dto"
+	"github.com/Tian-MC/lyvune/utils/req"
+	"github.com/Tian-MC/lyvune/utils/slice"
 	"github.com/go-chi/chi/v5"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/model/request"
-	"github.com/navidrome/navidrome/server/filter"
-	"github.com/navidrome/navidrome/server/jellyfin/dto"
-	"github.com/navidrome/navidrome/utils/req"
-	"github.com/navidrome/navidrome/utils/slice"
 )
 
 // playlistsFolder is the item returned for a ManualPlaylistsFolder query. CollectionType must be
@@ -370,7 +370,7 @@ func (api *Router) movePlaylistItem(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// Clients probe these before offering edits. Navidrome has no per-playlist ACL, so CanEdit carries
+// Clients probe these before offering edits. Lyvune has no per-playlist ACL, so CanEdit carries
 // only editability; ownership is enforced on write, and a lookup error 404s to prevent probing.
 func (api *Router) getPlaylistUsers(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()

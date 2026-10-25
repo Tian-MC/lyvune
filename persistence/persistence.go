@@ -7,10 +7,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/navidrome/navidrome/db"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/utils/run"
+	"github.com/Tian-MC/lyvune/db"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/utils/run"
 	"github.com/pocketbase/dbx"
 )
 

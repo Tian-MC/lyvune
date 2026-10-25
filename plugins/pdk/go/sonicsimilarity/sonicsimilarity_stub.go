@@ -8,7 +8,7 @@
 
 package sonicsimilarity
 
-import "github.com/navidrome/navidrome/plugins/pdk/go/types"
+import "github.com/Tian-MC/lyvune/plugins/pdk/go/types"
 
 // Deprecated: use types.ArtistRef.
 type ArtistRef = types.ArtistRef

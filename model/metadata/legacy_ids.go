@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/consts"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/model/id"
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/consts"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/model/id"
 )
 
-// These legacy ID functions hash the same inputs as the original Navidrome ID generation,
+// These legacy ID functions hash the same inputs as the original Lyvune ID generation,
 // now emitted in the canonical base62 encoding (matching what the uniform-ids migration stores).
 
 func legacyTrackID(mf model.MediaFile, prependLibId bool) string {

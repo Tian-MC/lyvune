@@ -1,4 +1,4 @@
-module github.com/navidrome/navidrome/plugins/pdk/go
+module github.com/Tian-MC/lyvune/plugins/pdk/go
 
 go 1.25
 

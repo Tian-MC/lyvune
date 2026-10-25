@@ -1,6 +1,6 @@
 # Now Playing Logger Plugin (Python)
 
-A Python example plugin that demonstrates the **Scheduler** and **SubsonicAPI** host services by periodically logging what is currently playing in Navidrome.
+A Python example plugin that demonstrates the **Scheduler** and **SubsonicAPI** host services by periodically logging what is currently playing in Lyvune.
 
 ## Features
 
@@ -35,7 +35,7 @@ zip -j nowplaying-py.ndp manifest.json plugin.wasm
 
 ## Installation
 
-1. Copy `nowplaying-py.ndp` to your Navidrome plugins folder
+1. Copy `nowplaying-py.ndp` to your Lyvune plugins folder
 
 2. Enable plugins in `navidrome.toml`:
    ```toml
@@ -51,7 +51,7 @@ zip -j nowplaying-py.ndp manifest.json plugin.wasm
 | Key    | Description                         | Default       |
 |--------|-------------------------------------|---------------|
 | `cron` | Cron expression for check frequency | `*/1 * * * *` |
-| `user` | Navidrome user for SubsonicAPI      | `admin`       |
+| `user` | Lyvune user for SubsonicAPI      | `admin`       |
 
 ## Testing
 
@@ -84,7 +84,7 @@ Or when no one is playing:
 
 ## Host Function Usage (Python)
 
-This plugin demonstrates how to call Navidrome host functions from Python:
+This plugin demonstrates how to call Lyvune host functions from Python:
 
 ```python
 import extism

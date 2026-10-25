@@ -1,7 +1,7 @@
 // Crypto Ticker Plugin - Demonstrates WebSocket host service capabilities.
 //
 // This plugin connects to Coinbase's WebSocket API to receive real-time
-// cryptocurrency price updates and logs them to the Navidrome console.
+// cryptocurrency price updates and logs them to the Lyvune console.
 package main
 
 import (
@@ -9,11 +9,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/navidrome/navidrome/plugins/pdk/go/host"
-	"github.com/navidrome/navidrome/plugins/pdk/go/lifecycle"
-	"github.com/navidrome/navidrome/plugins/pdk/go/pdk"
-	"github.com/navidrome/navidrome/plugins/pdk/go/scheduler"
-	"github.com/navidrome/navidrome/plugins/pdk/go/websocket"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/host"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/lifecycle"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/pdk"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/scheduler"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/websocket"
 )
 
 const (

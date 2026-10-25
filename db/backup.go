@@ -12,14 +12,17 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/log"
 	"github.com/mattn/go-sqlite3"
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/log"
 )
 
 const (
-	backupPrefix      = "navidrome_backup"
-	backupRegexString = "^" + backupPrefix + "_(.+)\\.db$"
+	backupPrefix = "lyvune_backup"
+	// legacyBackupPrefix is what backups were called before the project was
+	// renamed. They are still found, listed and pruned.
+	legacyBackupPrefix = "navidrome_backup"
+	backupRegexString  = "^(?:" + backupPrefix + "|" + legacyBackupPrefix + ")_(.+)\\.db$"
 )
 
 var backupRegex = regexp.MustCompile(backupRegexString)
@@ -139,7 +142,11 @@ func Prune(ctx context.Context) (int, error) {
 		return 0, fmt.Errorf("unable to read database backup entries: %w", err)
 	}
 
-	var backupTimes []time.Time
+	type backupFile struct {
+		time time.Time
+		name string
+	}
+	var backups []backupFile
 
 	for _, file := range files {
 		if !file.IsDir() {
@@ -147,27 +154,26 @@ func Prune(ctx context.Context) (int, error) {
 			if len(submatch) == 2 {
 				timestamp, err := time.Parse(backupSuffixLayout, submatch[1])
 				if err == nil {
-					backupTimes = append(backupTimes, timestamp)
+					backups = append(backups, backupFile{time: timestamp, name: file.Name()})
 				}
 			}
 		}
 	}
 
-	if len(backupTimes) <= conf.Server.Backup.Count {
+	if len(backups) <= conf.Server.Backup.Count {
 		return 0, nil
 	}
 
-	slices.SortFunc(backupTimes, func(a, b time.Time) int {
-		return b.Compare(a)
+	slices.SortFunc(backups, func(a, b backupFile) int {
+		return b.time.Compare(a.time)
 	})
 
 	pruneCount := 0
 	var errs []error
 
-	for _, timeToPrune := range backupTimes[conf.Server.Backup.Count:] {
-		log.Debug(ctx, "Pruning backup", "time", timeToPrune)
-		path := backupPath(timeToPrune)
-		err = os.Remove(path)
+	for _, old := range backups[conf.Server.Backup.Count:] {
+		log.Debug(ctx, "Pruning backup", "time", old.time)
+		err = os.Remove(filepath.Join(backupDir, old.name))
 		if err != nil {
 			errs = append(errs, err)
 		} else {

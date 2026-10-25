@@ -7,11 +7,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/consts"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/utils/slice"
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/consts"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/utils/slice"
 	"github.com/zeebo/xxh3"
 )
 
@@ -81,7 +81,7 @@ func ReconcileConfigFingerprint(ctx context.Context, ds model.DataStore) error {
 		return MarkConfigApplied(ctx, ds)
 	default:
 		log.Warn(ctx, "Artwork: Config changed since the last full reprocess. Stored artwork keeps "+
-			"the old resolution; run 'navidrome artwork reprocess --all' to apply the change",
+			"the old resolution; run 'lyvune artwork reprocess --all' to apply the change",
 			"stored", stored, "current", current, "inputs", FingerprintInputs())
 	}
 	return nil

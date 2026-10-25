@@ -8,7 +8,7 @@
 
 package metadata
 
-import "github.com/navidrome/navidrome/plugins/pdk/go/types"
+import "github.com/Tian-MC/lyvune/plugins/pdk/go/types"
 
 // Deprecated: use types.ArtistRef.
 type ArtistRef = types.ArtistRef
@@ -70,7 +70,7 @@ type ArtistImagesResponse struct {
 
 // ArtistMBIDRequest is the request for GetArtistMBID.
 type ArtistMBIDRequest struct {
-	// ID is the internal Navidrome artist ID.
+	// ID is the internal Lyvune artist ID.
 	ID string `json:"id"`
 	// Name is the artist name.
 	Name string `json:"name"`
@@ -84,7 +84,7 @@ type ArtistMBIDResponse struct {
 
 // ArtistRequest is the common request for artist-related functions.
 type ArtistRequest struct {
-	// ID is the internal Navidrome artist ID.
+	// ID is the internal Lyvune artist ID.
 	ID string `json:"id"`
 	// Name is the artist name.
 	Name string `json:"name"`
@@ -108,7 +108,7 @@ type ImageInfo struct {
 
 // SimilarArtistsRequest is the request for GetSimilarArtists.
 type SimilarArtistsRequest struct {
-	// ID is the internal Navidrome artist ID.
+	// ID is the internal Lyvune artist ID.
 	ID string `json:"id"`
 	// Name is the artist name.
 	Name string `json:"name"`
@@ -126,7 +126,7 @@ type SimilarArtistsResponse struct {
 
 // SimilarSongsByAlbumRequest is the request for GetSimilarSongsByAlbum.
 type SimilarSongsByAlbumRequest struct {
-	// ID is the internal Navidrome album ID.
+	// ID is the internal Lyvune album ID.
 	ID string `json:"id"`
 	// Name is the album name.
 	Name string `json:"name"`
@@ -140,7 +140,7 @@ type SimilarSongsByAlbumRequest struct {
 
 // SimilarSongsByArtistRequest is the request for GetSimilarSongsByArtist.
 type SimilarSongsByArtistRequest struct {
-	// ID is the internal Navidrome artist ID.
+	// ID is the internal Lyvune artist ID.
 	ID string `json:"id"`
 	// Name is the artist name.
 	Name string `json:"name"`
@@ -152,7 +152,7 @@ type SimilarSongsByArtistRequest struct {
 
 // SimilarSongsByTrackRequest is the request for GetSimilarSongsByTrack.
 type SimilarSongsByTrackRequest struct {
-	// ID is the internal Navidrome mediafile ID.
+	// ID is the internal Lyvune mediafile ID.
 	ID string `json:"id"`
 	// Name is the track title.
 	Name string `json:"name"`
@@ -172,7 +172,7 @@ type SimilarSongsResponse struct {
 
 // TopSongsRequest is the request for GetArtistTopSongs.
 type TopSongsRequest struct {
-	// ID is the internal Navidrome artist ID.
+	// ID is the internal Lyvune artist ID.
 	ID string `json:"id"`
 	// Name is the artist name.
 	Name string `json:"name"`
@@ -198,7 +198,7 @@ type TopSongsResponse struct {
 // Each method is optional - plugins only need to provide the functionality they support.
 //
 // To say "no data for this item", return a nil response and a nil error. Return an error only when
-// the plugin itself failed, because Navidrome retries failed calls with backoff.
+// the plugin itself failed, because Lyvune retries failed calls with backoff.
 type Metadata interface{}
 
 // ArtistMBIDProvider provides the GetArtistMBID function.

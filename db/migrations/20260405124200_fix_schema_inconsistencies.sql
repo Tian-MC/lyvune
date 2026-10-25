@@ -52,4 +52,4 @@ ALTER TABLE scrobble_buffer_new RENAME TO scrobble_buffer;
 CREATE UNIQUE INDEX scrobble_buffer_id_ix ON scrobble_buffer (id);
 
 -- +goose Down
--- Down migration is intentionally a no-op: Navidrome does not run down migrations.
+-- Down migration is intentionally a no-op: Lyvune does not run down migrations.

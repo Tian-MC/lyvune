@@ -10,10 +10,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/core/storage"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/core/storage"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
 )
 
 // settingsTTL keeps the settings read off the hot path: lyrics are resolved on
@@ -56,8 +56,8 @@ func libraryFS(mf *model.MediaFile) (fs.FS, error) {
 	return st.FS()
 }
 
-// readEnvelope returns the Navidrome sidecar of a track, if it has a valid one.
-// A `.lyrics.json` that is not a Navidrome envelope belongs to someone else and
+// readEnvelope returns the Lyvune sidecar of a track, if it has a valid one.
+// A `.lyrics.json` that is not a Lyvune envelope belongs to someone else and
 // is ignored.
 func readEnvelope(ctx context.Context, mf *model.MediaFile) (*Envelope, string) {
 	if mf == nil || mf.LibraryPath == "" || mf.Path == "" {
@@ -98,7 +98,7 @@ const (
 	originChosen = "chosen"
 )
 
-// junkManaged reports a sidecar Navidrome wrote itself that holds no lyrics, only
+// junkManaged reports a sidecar Lyvune wrote itself that holds no lyrics, only
 // credits. An earlier version saved such an answer (a single "作曲 : name" line)
 // for songs a service had no lyrics for. It is treated as absent, so it is not
 // shown and a later retrieval replaces it (the file is kept in the history). A
@@ -174,7 +174,7 @@ func legacyInfo(hit legacyHit) SourceInfo {
 //  1. Lyrics the user chose (or imported) always win.
 //  2. Local files in the configured lyricspriority order: sidecars, embedded
 //     tags and plugins.
-//  3. Lyrics Navidrome downloaded.
+//  3. Lyrics Lyvune downloaded.
 //
 // When "prefer local" is turned off, downloaded lyrics compete with local ones
 // on quality instead, and local wins ties. A locked source is not special here:
@@ -264,7 +264,7 @@ func (l *lyricsService) resolveCurrent(ctx context.Context, mediaFiles []*model.
 	return base, nil
 }
 
-// localCandidates lists every local lyrics source of a track: the Navidrome
+// localCandidates lists every local lyrics source of a track: the Lyvune
 // sidecar, each configured sidecar format, and embedded tags.
 func (l *lyricsService) localCandidates(ctx context.Context, mf *model.MediaFile) []Candidate {
 	var out []Candidate

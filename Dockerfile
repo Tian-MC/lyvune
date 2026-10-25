@@ -25,7 +25,7 @@ FROM scratch AS xx
 COPY --from=xx-build /out/ /usr/bin/
 
 ########################################################################################################################
-### Build Navidrome UI
+### Build Lyvune UI
 FROM --platform=$BUILDPLATFORM node:lts-alpine AS ui
 WORKDIR /app
 
@@ -42,7 +42,7 @@ FROM scratch AS ui-bundle
 COPY --from=ui /build /build
 
 ########################################################################################################################
-### Build Navidrome binary for Docker image (dynamic musl, enables native libwebp via dlopen)
+### Build Lyvune binary for Docker image (dynamic musl, enables native libwebp via dlopen)
 FROM --platform=$BUILDPLATFORM golang:1.27-alpine AS build-alpine
 COPY --from=xx / /
 
@@ -73,8 +73,8 @@ RUN --mount=type=bind,source=. \
     # -latomic is required on 32-bit arm (arm/v6, arm/v7) so SQLite's 64-bit atomics resolve.
     go build -tags="${BUILD_TAGS}" -ldflags="-w -s \
         -linkmode=external -extldflags '-latomic' \
-        -X github.com/navidrome/navidrome/consts.gitSha=${GIT_SHA} \
-        -X github.com/navidrome/navidrome/consts.gitTag=${GIT_TAG}" \
+        -X github.com/Tian-MC/lyvune/consts.gitSha=${GIT_SHA} \
+        -X github.com/Tian-MC/lyvune/consts.gitTag=${GIT_TAG}" \
         -o /out/navidrome .
     # Fail the build if native libwebp (purego) leaked into a 32-bit binary (issue #5738).
     ./release/verify-binary.sh /out/navidrome
@@ -84,7 +84,7 @@ RUN --mount=type=bind,source=. \
 EOT
 
 ########################################################################################################################
-### Build Navidrome binary for standalone distribution (static glibc, cross-compiled)
+### Build Lyvune binary for standalone distribution (static glibc, cross-compiled)
 FROM --platform=$BUILDPLATFORM golang:1.27-trixie AS base
 RUN apt-get update && apt-get install -y clang lld
 COPY --from=xx / /
@@ -139,8 +139,8 @@ RUN --mount=type=bind,source=. \
 
     BUILD_TAGS=$(./release/build-tags.sh)
     go build -tags="${BUILD_TAGS}" -ldflags="${LD_EXTRA} -w -s \
-        -X github.com/navidrome/navidrome/consts.gitSha=${GIT_SHA} \
-        -X github.com/navidrome/navidrome/consts.gitTag=${GIT_TAG}" \
+        -X github.com/Tian-MC/lyvune/consts.gitSha=${GIT_SHA} \
+        -X github.com/Tian-MC/lyvune/consts.gitTag=${GIT_TAG}" \
         -o /out/navidrome${EXT} .
     # Fail the build if native libwebp (purego) leaked into a 32-bit binary (issue #5738).
     ./release/verify-binary.sh /out/navidrome*
@@ -154,7 +154,7 @@ COPY --from=build /out /
 
 ########################################################################################################################
 ### Build no-op stubs for mpv's video-output libraries
-# mpv links libEGL/libgbm for video output only; Navidrome drives it headless, for audio.
+# mpv links libEGL/libgbm for video output only; Lyvune drives it headless, for audio.
 # Real mesa pulls in LLVM + gallium (+218MB uncompressed), so ship stubs it never calls.
 FROM --platform=$BUILDPLATFORM alpine:3.22 AS mpv-stubs
 COPY --from=xx / /
@@ -180,8 +180,8 @@ EOT
 ########################################################################################################################
 ### Build Final Image
 FROM alpine:3.22 AS final
-LABEL maintainer="deluan@navidrome.org"
-LABEL org.opencontainers.image.source="https://github.com/navidrome/navidrome"
+LABEL maintainer="Tian-MC"
+LABEL org.opencontainers.image.source="https://github.com/Tian-MC/lyvune"
 
 # Install runtime dependencies
 # - libwebp + symlinks: enables native WebP encoding via purego/dlopen
@@ -199,13 +199,14 @@ RUN apk add -U --no-cache curl ffmpeg mpv sqlite libwebp libwebpdemux libwebpmux
 COPY --from=mpv-stubs /out/ /usr/lib/
 RUN mpv --no-video --ao=null --version > /dev/null
 
-# Copy navidrome binary (musl build for Docker, enables native libwebp)
-COPY --from=build-alpine /out/navidrome /app/
+# Copy the binary (musl build for Docker, enables native libwebp). The build stages keep
+# calling it navidrome, which the release pipeline relies on; it is lyvune from here on
+COPY --from=build-alpine /out/navidrome /app/lyvune
 
 VOLUME ["/data", "/music"]
 ENV ND_MUSICFOLDER=/music
 ENV ND_DATAFOLDER=/data
-ENV ND_CONFIGFILE=/data/navidrome.toml
+ENV ND_CONFIGFILE=/data/lyvune.toml
 ENV ND_PORT=4533
 RUN touch /.nddockerenv
 
@@ -213,5 +214,5 @@ EXPOSE ${ND_PORT}
 WORKDIR /app
 ENV PATH="/app:${PATH}"
 
-ENTRYPOINT ["/app/navidrome"]
+ENTRYPOINT ["/app/lyvune"]
 

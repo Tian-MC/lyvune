@@ -1,9 +1,9 @@
 openapi: 3.0.3
 info:
-  title: Navidrome API
+  title: Lyvune API
   version: 1.0.0
   description: |
-    Navidrome API v1. Spec-first, additive within v1. Clients discover implemented
+    Lyvune API v1. Spec-first, additive within v1. Clients discover implemented
     capability modules through `GET /server` and never sniff versions.
 
     Enums are open: new values may be added to any enum within v1. Clients must

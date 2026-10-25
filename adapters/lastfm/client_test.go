@@ -11,7 +11,7 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/navidrome/navidrome/tests"
+	"github.com/Tian-MC/lyvune/tests"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -211,7 +211,7 @@ var _ = Describe("client", func() {
 	Describe("getSession", func() {
 		It("returns a session key when the request is successful", func() {
 			httpClient.Res = http.Response{
-				Body:       io.NopCloser(bytes.NewBufferString(`{"session":{"name":"Navidrome","key":"SESSION_KEY","subscriber":0}}`)),
+				Body:       io.NopCloser(bytes.NewBufferString(`{"session":{"name":"Lyvune","key":"SESSION_KEY","subscriber":0}}`)),
 				StatusCode: 200,
 			}
 

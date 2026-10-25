@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/navidrome/navidrome/model"
+	"github.com/Tian-MC/lyvune/model"
 )
 
 // Engine manages lyrics beyond reading them: retrieval from providers, the
@@ -122,7 +122,7 @@ type SourceInfo struct {
 	Lang     string  `json:"lang,omitempty"`
 	Lines    int     `json:"lines"`
 	Match    float64 `json:"confidence,omitempty"`
-	// RetrievedAt is set for lyrics Navidrome stored.
+	// RetrievedAt is set for lyrics Lyvune stored.
 	RetrievedAt *time.Time `json:"retrievedAt,omitempty"`
 	Attribution string     `json:"attribution,omitempty"`
 }
@@ -144,12 +144,12 @@ type SongStatus struct {
 	// Locked protects the current lyrics from automatic replacement.
 	Locked   bool  `json:"locked"`
 	OffsetMs int64 `json:"offsetMs"`
-	// History is the undo history of the Navidrome sidecar, newest first.
+	// History is the undo history of the Lyvune sidecar, newest first.
 	History []Version `json:"history"`
 	// Writable is false when lyrics cannot be saved for this track (a remote
 	// library, or no readable library folder).
 	Writable bool `json:"writable"`
-	// Ignored lists files next to the audio that Navidrome wrote itself and no
+	// Ignored lists files next to the audio that Lyvune wrote itself and no
 	// longer uses (a saved result that only held credits), so the administrator
 	// can remove them. Nothing is removed without that decision.
 	Ignored []IgnoredSource `json:"ignored"`

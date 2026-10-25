@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Tian-MC/lyvune/core/auth"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
 	"github.com/lestrrat-go/jwx/v3/jwt"
-	"github.com/navidrome/navidrome/core/auth"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
 )
 
 const tokenTTL = 48 * time.Hour

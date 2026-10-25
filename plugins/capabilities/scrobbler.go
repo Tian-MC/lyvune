@@ -1,6 +1,6 @@
 package capabilities
 
-import "github.com/navidrome/navidrome/plugins/types"
+import "github.com/Tian-MC/lyvune/plugins/types"
 
 // Scrobbler provides scrobbling functionality to external services.
 // This capability allows plugins to submit listening history to services like Last.fm,
@@ -36,7 +36,7 @@ type IsAuthorizedRequest struct {
 
 // TrackInfo contains track metadata.
 type TrackInfo struct {
-	// ID is the internal Navidrome track ID.
+	// ID is the internal Lyvune track ID.
 	ID string `json:"id"`
 	// Title is the track title.
 	Title string `json:"title"`

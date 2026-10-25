@@ -9,13 +9,13 @@ import (
 	"strings"
 	"text/tabwriter"
 
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/core/auth"
-	"github.com/navidrome/navidrome/db"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/model/request"
-	"github.com/navidrome/navidrome/persistence"
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/core/auth"
+	"github.com/Tian-MC/lyvune/db"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/model/request"
+	"github.com/Tian-MC/lyvune/persistence"
 )
 
 // existingDBFile returns the database file (DbPath minus DSN params), and whether it exists.

@@ -7,7 +7,7 @@ import (
 	"math"
 	"strings"
 
-	"github.com/navidrome/navidrome/model"
+	"github.com/Tian-MC/lyvune/model"
 )
 
 // RichSync is Musixmatch's word-timed lyrics format, returned by the

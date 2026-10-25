@@ -9,14 +9,14 @@ import (
 	"os"
 	"strings"
 
-	"github.com/navidrome/navidrome/core/artwork"
-	"github.com/navidrome/navidrome/core/playlists"
-	"github.com/navidrome/navidrome/db"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/persistence"
-	"github.com/navidrome/navidrome/scanner"
-	"github.com/navidrome/navidrome/utils/pl"
+	"github.com/Tian-MC/lyvune/core/artwork"
+	"github.com/Tian-MC/lyvune/core/playlists"
+	"github.com/Tian-MC/lyvune/db"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/persistence"
+	"github.com/Tian-MC/lyvune/scanner"
+	"github.com/Tian-MC/lyvune/utils/pl"
 	"github.com/spf13/cobra"
 )
 

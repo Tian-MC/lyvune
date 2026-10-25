@@ -7,13 +7,13 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/navidrome/navidrome/core/artwork"
-	"github.com/navidrome/navidrome/core/auth"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/model/request"
-	"github.com/navidrome/navidrome/server/imghttp"
-	"github.com/navidrome/navidrome/utils/req"
+	"github.com/Tian-MC/lyvune/core/artwork"
+	"github.com/Tian-MC/lyvune/core/auth"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/model/request"
+	"github.com/Tian-MC/lyvune/server/imghttp"
+	"github.com/Tian-MC/lyvune/utils/req"
 )
 
 func (pub *Router) handleImages(w http.ResponseWriter, r *http.Request) {

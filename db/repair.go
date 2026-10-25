@@ -115,7 +115,7 @@ func verifyFTS(ctx context.Context, database execer) error {
 
 const ftsSearchMigration int64 = 20260220173400
 
-var errNotMigrated = errors.New("the FTS search migration has not been applied yet; start Navidrome once to migrate the database first")
+var errNotMigrated = errors.New("the FTS search migration has not been applied yet; start Lyvune once to migrate the database first")
 
 // requireFTSMigration fails unless the FTS search migration has run. The goose table
 // is probed separately because a query against a missing table fails at prepare time.

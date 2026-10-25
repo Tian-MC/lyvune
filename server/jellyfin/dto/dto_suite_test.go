@@ -3,9 +3,9 @@ package dto
 import (
 	"testing"
 
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model/id"
-	"github.com/navidrome/navidrome/tests"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model/id"
+	"github.com/Tian-MC/lyvune/tests"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

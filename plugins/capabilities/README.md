@@ -1,6 +1,6 @@
-# Navidrome Plugin Capabilities
+# Lyvune Plugin Capabilities
 
-This directory contains the Go interface definitions for Navidrome plugin capabilities. These interfaces are the **source of truth** for plugin development and are used to generate:
+This directory contains the Go interface definitions for Lyvune plugin capabilities. These interfaces are the **source of truth** for plugin development and are used to generate:
 
 1. **Go PDK packages** (`pdk/go/*/`) - Type-safe wrappers for Go plugin developers
 2. **Rust PDK crates** (`pdk/rust/*/`) - Type-safe wrappers for Rust plugin developers

@@ -12,10 +12,10 @@ import (
 	"testing/fstest"
 	"time"
 
-	"github.com/navidrome/navidrome/core/storage"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model/metadata"
-	"github.com/navidrome/navidrome/utils/random"
+	"github.com/Tian-MC/lyvune/core/storage"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model/metadata"
+	"github.com/Tian-MC/lyvune/utils/random"
 )
 
 // FakeStorage is a fake storage that provides a FakeFS.

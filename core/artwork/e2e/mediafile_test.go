@@ -4,15 +4,15 @@ import (
 	"testing/fstest"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/model"
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/model"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
 // Doc reference:
 // https://www.navidrome.org/docs/usage/library/artwork/#mediafiles
-// Navidrome resolves mediafile artwork in this order:
+// Lyvune resolves mediafile artwork in this order:
 //  1. Embedded image from the mediafile itself
 //  2. For multi-disc albums, disc-level artwork
 //  3. Album cover art

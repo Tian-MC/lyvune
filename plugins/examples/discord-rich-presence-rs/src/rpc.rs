@@ -297,7 +297,7 @@ pub fn disconnect(username: &str) -> Result<(), Error> {
     // Close the WebSocket connection
     let conn_key = connection_key(username);
     if let Some(conn_id) = cache::get_string(&conn_key)?.filter(|s| !s.is_empty()) {
-        if let Err(e) = websocket::close_connection(&conn_id, 1000, "Navidrome disconnect") {
+        if let Err(e) = websocket::close_connection(&conn_id, 1000, "Lyvune disconnect") {
             warn!("Failed to close WebSocket connection: {:?}", e);
         }
         // Clean up reverse mapping

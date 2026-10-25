@@ -3,8 +3,8 @@ package api_test
 import (
 	"os"
 
+	"github.com/Tian-MC/lyvune/api"
 	"github.com/getkin/kin-openapi/openapi3"
-	"github.com/navidrome/navidrome/api"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"gopkg.in/yaml.v3"

@@ -6,10 +6,10 @@ import (
 	"math"
 	"time"
 
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/model/id"
-	"github.com/navidrome/navidrome/utils/slice"
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/model/id"
+	"github.com/Tian-MC/lyvune/utils/slice"
 )
 
 // sortName must match the persistence ORDER BY key (see setSortMappings): Finamp's A-Z jump
@@ -26,7 +26,7 @@ const ticksPerMillis = 10_000
 
 func TicksFromSeconds(sec float32) int64 { return int64(float64(sec) * 1000 * ticksPerMillis) }
 
-// TicksFromMillis converts milliseconds (Navidrome lyric timestamps) to ticks.
+// TicksFromMillis converts milliseconds (Lyvune lyric timestamps) to ticks.
 func TicksFromMillis(ms int64) int64 { return ms * ticksPerMillis }
 
 // MillisFromTicks converts ticks (client-reported playback positions) to milliseconds.
@@ -93,7 +93,7 @@ func MediaSourceFromMediaFile(mf model.MediaFile) MediaSourceInfo {
 		Type:          "Audio",
 		Index:         0,
 		Codec:         mf.Codec,
-		BitRate:       mf.BitRate * 1000, // Navidrome stores kbps; Jellyfin's BitRate is bps.
+		BitRate:       mf.BitRate * 1000, // Lyvune stores kbps; Jellyfin's BitRate is bps.
 		Channels:      mf.Channels,
 		SampleRate:    mf.SampleRate,
 		ChannelLayout: channelLayout(mf.Channels),
@@ -110,7 +110,7 @@ func MediaSourceFromMediaFile(mf model.MediaFile) MediaSourceInfo {
 		Name:                 mf.Title,
 		Type:                 "Default",
 		RunTimeTicks:         TicksFromSeconds(mf.Duration),
-		Bitrate:              mf.BitRate * 1000, // Navidrome stores kbps; Jellyfin's Bitrate is bps.
+		Bitrate:              mf.BitRate * 1000, // Lyvune stores kbps; Jellyfin's Bitrate is bps.
 		SupportsDirectPlay:   true,
 		SupportsDirectStream: true,
 		SupportsTranscoding:  true,
@@ -157,7 +157,7 @@ func UserData(a model.Annotations, itemID string) *UserItemDataDto {
 		ItemId:     encodedID,
 	}
 	if a.Rating > 0 {
-		r := float64(a.Rating) * 2 // Navidrome 0-5 -> Jellyfin 0-10
+		r := float64(a.Rating) * 2 // Lyvune 0-5 -> Jellyfin 0-10
 		d.Rating = &r
 		d.Likes = new(r >= minLikeRating)
 	}

@@ -5,8 +5,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/navidrome/navidrome/core/agents"
-	"github.com/navidrome/navidrome/model"
+	"github.com/Tian-MC/lyvune/core/agents"
+	"github.com/Tian-MC/lyvune/model"
 )
 
 type Scrobble struct {

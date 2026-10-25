@@ -2,8 +2,8 @@
 name = "webhook-rs"
 version = "1.0.0"
 edition = "2021"
-description = "Navidrome webhook plugin that sends HTTP requests on scrobble events"
-authors = ["Navidrome Team"]
+description = "Lyvune webhook plugin that sends HTTP requests on scrobble events"
+authors = ["Lyvune Team"]
 license = "GPL-3.0"
 
 [lib]

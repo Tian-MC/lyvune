@@ -6,7 +6,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/navidrome/navidrome/utils/slice"
+	"github.com/Tian-MC/lyvune/utils/slice"
 	"github.com/zeebo/xxh3"
 )
 

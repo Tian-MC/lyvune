@@ -11,7 +11,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/navidrome/navidrome/core/lyrics"
+	"github.com/Tian-MC/lyvune/core/lyrics"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

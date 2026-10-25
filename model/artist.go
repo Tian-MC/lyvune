@@ -7,8 +7,8 @@ import (
 	"slices"
 	"time"
 
+	"github.com/Tian-MC/lyvune/consts"
 	"github.com/deluan/rest"
-	"github.com/navidrome/navidrome/consts"
 )
 
 type Artist struct {

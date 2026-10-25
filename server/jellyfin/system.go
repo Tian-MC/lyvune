@@ -12,13 +12,13 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/consts"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/server"
+	"github.com/Tian-MC/lyvune/server/jellyfin/dto"
 	"github.com/google/uuid"
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/consts"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/server"
-	"github.com/navidrome/navidrome/server/jellyfin/dto"
 )
 
 // jellyfinVersion is the Jellyfin API version advertised in the handshake. Clients and SDKs gate on
@@ -29,7 +29,7 @@ func serverName() string {
 	if conf.Server.Jellyfin.ServerName != "" {
 		return conf.Server.Jellyfin.ServerName
 	}
-	return fmt.Sprintf("Navidrome %s", consts.Version)
+	return fmt.Sprintf("Lyvune %s", consts.Version)
 }
 
 func (api *Router) serverID(ctx context.Context) string {

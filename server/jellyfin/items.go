@@ -11,13 +11,13 @@ import (
 	"strings"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/model/request"
-	"github.com/navidrome/navidrome/server/filter"
-	"github.com/navidrome/navidrome/server/jellyfin/dto"
-	"github.com/navidrome/navidrome/utils/req"
-	"github.com/navidrome/navidrome/utils/slice"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/model/request"
+	"github.com/Tian-MC/lyvune/server/filter"
+	"github.com/Tian-MC/lyvune/server/jellyfin/dto"
+	"github.com/Tian-MC/lyvune/utils/req"
+	"github.com/Tian-MC/lyvune/utils/slice"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -39,7 +39,7 @@ type itemFilters struct {
 }
 
 // parseItemFilters reads the standalone params first and lets the Filters list win, matching real
-// Jellyfin. Tokens with no Navidrome equivalent (Likes, IsFolder, IsResumable) are dropped.
+// Jellyfin. Tokens with no Lyvune equivalent (Likes, IsFolder, IsResumable) are dropped.
 func parseItemFilters(p *req.Values) itemFilters {
 	f := itemFilters{favorite: p.BoolPtr("isfavorite"), played: p.BoolPtr("isplayed")}
 	for token := range strings.SplitSeq(p.StringOr("filters", ""), ",") {
@@ -588,7 +588,7 @@ func parseYears(r *http.Request) []int {
 }
 
 // supportedTypes maps lowercased IncludeItemTypes names (Jellyfin binds them case-insensitively)
-// to the item types Navidrome serves.
+// to the item types Lyvune serves.
 var supportedTypes = map[string]string{
 	"audio": "Audio", "musicartist": "MusicArtist", "musicalbum": "MusicAlbum", "musicgenre": "MusicGenre", "playlist": "Playlist",
 }
@@ -1047,7 +1047,7 @@ var sortColumnsByType = map[string]map[string]string{
 	"Audio": {
 		"sortname": "title", "name": "title",
 		"album": "album",
-		// Finamp's album view sorts by ParentIndexNumber,IndexNumber (disc, track); Navidrome's
+		// Finamp's album view sorts by ParentIndexNumber,IndexNumber (disc, track); Lyvune's
 		// "album" sort key is disc+track order within an album, so map both to it.
 		"indexnumber":       "album",
 		"parentindexnumber": "album",

@@ -1,10 +1,10 @@
 # Discord Rich Presence Plugin (Rust)
 
-A Navidrome plugin that displays your currently playing track on Discord using Rich Presence. This is the Rust implementation demonstrating how to use the `nd-pdk` library.
+A Lyvune plugin that displays your currently playing track on Discord using Rich Presence. This is the Rust implementation demonstrating how to use the `nd-pdk` library.
 
 ## ⚠️ Warning
 
-This plugin is for **demonstration purposes only**. It requires storing your Discord token in the Navidrome configuration file, which:
+This plugin is for **demonstration purposes only**. It requires storing your Discord token in the Lyvune configuration file, which:
 
 1. Is not secure (tokens should never be stored in plain text)
 2. May violate Discord's Terms of Service
@@ -23,13 +23,13 @@ This plugin is for **demonstration purposes only**. It requires storing your Dis
 
 This plugin implements multiple capabilities to demonstrate the nd-pdk library:
 
-- **Scrobbler**: Receives now-playing events from Navidrome
+- **Scrobbler**: Receives now-playing events from Lyvune
 - **SchedulerCallback**: Handles heartbeat and activity clearing timers
 - **WebSocketCallback**: Communicates with Discord gateway (text, binary, error, and close handlers)
 
 ## Configuration
 
-Configure in the Navidrome UI (Settings → Plugins → discord-rich-presence-rs):
+Configure in the Lyvune UI (Settings → Plugins → discord-rich-presence-rs):
 
 | Key           | Description                          | Example                   |
 |---------------|--------------------------------------|---------------------------|
@@ -65,9 +65,9 @@ make discord-rich-presence-rs.ndp
 ## Installation
 
 1. Build the plugin using the command above
-2. Copy the `.ndp` file to your Navidrome plugins directory
-3. Enable and configure the plugin in the Navidrome UI (Settings → Plugins)
-4. Restart Navidrome if needed
+2. Copy the `.ndp` file to your Lyvune plugins directory
+3. Enable and configure the plugin in the Lyvune UI (Settings → Plugins)
+4. Restart Lyvune if needed
 
 ## Using nd-pdk Library
 

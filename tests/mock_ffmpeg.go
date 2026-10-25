@@ -8,7 +8,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/navidrome/navidrome/core/ffmpeg"
+	"github.com/Tian-MC/lyvune/core/ffmpeg"
 )
 
 func NewMockFFmpeg(data string) *MockFFmpeg {

@@ -14,14 +14,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/consts"
-	"github.com/navidrome/navidrome/core/agents"
-	"github.com/navidrome/navidrome/core/artwork/blurhash"
-	"github.com/navidrome/navidrome/core/artwork/dominant"
-	"github.com/navidrome/navidrome/core/artwork/thumbhash"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/consts"
+	"github.com/Tian-MC/lyvune/core/agents"
+	"github.com/Tian-MC/lyvune/core/artwork/blurhash"
+	"github.com/Tian-MC/lyvune/core/artwork/dominant"
+	"github.com/Tian-MC/lyvune/core/artwork/thumbhash"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
 	xdraw "golang.org/x/image/draw"
 )
 

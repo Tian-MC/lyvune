@@ -6,10 +6,10 @@ import (
 	"io/fs"
 	"net/http"
 
+	"github.com/Tian-MC/lyvune/core/lyrics"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
 	"github.com/go-chi/chi/v5"
-	"github.com/navidrome/navidrome/core/lyrics"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
 )
 
 // maxLyricsBody bounds a request body: an import is up to 2 MB of text, which can
@@ -119,7 +119,7 @@ func failLyrics(w http.ResponseWriter, r *http.Request, err error) {
 	case errors.Is(err, lyrics.ErrUnsafePath):
 		lyricsError(w, http.StatusUnprocessableEntity, "unsafe-path", "That location is not safe to write to.")
 	case errors.Is(err, lyrics.ErrNotManaged):
-		lyricsError(w, http.StatusConflict, "not-managed", "A file with that name exists that Navidrome did not write, so it was left alone.")
+		lyricsError(w, http.StatusConflict, "not-managed", "A file with that name exists that Lyvune did not write, so it was left alone.")
 	default:
 		log.Error(r.Context(), "Lyrics operation failed", err)
 		lyricsError(w, http.StatusInternalServerError, "internal", "The lyrics operation failed.")

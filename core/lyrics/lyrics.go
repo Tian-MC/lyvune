@@ -8,10 +8,10 @@ import (
 	"time"
 
 	. "github.com/Masterminds/squirrel"
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/persistence"
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/persistence"
 	"golang.org/x/sync/singleflight"
 )
 
@@ -175,7 +175,7 @@ type legacyHit struct {
 }
 
 // resolveLegacy tries the configured sources in order (lyricspriority): sidecar
-// files by suffix, embedded tags and lyrics plugins. This is how Navidrome has
+// files by suffix, embedded tags and lyrics plugins. This is how Lyvune has
 // always picked lyrics, and it is what "local files first" means by default.
 func (l *lyricsService) resolveLegacy(ctx context.Context, mediaFiles []*model.MediaFile) (legacyHit, bool) {
 	for pattern := range strings.SplitSeq(conf.Server.LyricsPriority, ",") {

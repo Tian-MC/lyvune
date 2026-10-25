@@ -7,11 +7,11 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/core/storage"
-	"github.com/navidrome/navidrome/core/storage/local"
-	_ "github.com/navidrome/navidrome/core/storage/local"
-	"github.com/navidrome/navidrome/model/metadata"
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/core/storage"
+	"github.com/Tian-MC/lyvune/core/storage/local"
+	_ "github.com/Tian-MC/lyvune/core/storage/local"
+	"github.com/Tian-MC/lyvune/model/metadata"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

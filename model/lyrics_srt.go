@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/navidrome/navidrome/utils/str"
+	"github.com/Tian-MC/lyvune/utils/str"
 )
 
 var (

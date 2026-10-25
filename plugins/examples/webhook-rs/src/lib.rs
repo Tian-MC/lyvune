@@ -1,6 +1,6 @@
-//! Webhook Scrobbler Plugin for Navidrome
+//! Webhook Scrobbler Plugin for Lyvune
 //!
-//! This plugin demonstrates how to build a Navidrome plugin in Rust using the nd-pdk crate.
+//! This plugin demonstrates how to build a Lyvune plugin in Rust using the nd-pdk crate.
 //! It implements the Scrobbler capability and sends HTTP GET requests to configured URLs
 //! whenever a track is scrobbled.
 //!

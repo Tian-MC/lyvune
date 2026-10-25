@@ -1,6 +1,6 @@
 {
   "name": "Wikimedia",
-  "author": "Navidrome",
+  "author": "Lyvune",
   "version": "1.0.0",
   "description": "Fetches artist metadata from Wikidata, DBpedia and Wikipedia",
   "website": "https://navidrome.org",

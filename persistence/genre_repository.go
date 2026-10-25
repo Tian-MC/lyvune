@@ -4,8 +4,8 @@ import (
 	"context"
 
 	. "github.com/Masterminds/squirrel"
+	"github.com/Tian-MC/lyvune/model"
 	"github.com/deluan/rest"
-	"github.com/navidrome/navidrome/model"
 	"github.com/pocketbase/dbx"
 )
 

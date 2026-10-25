@@ -7,7 +7,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/navidrome/navidrome/server/jellyfin/dto"
+	"github.com/Tian-MC/lyvune/server/jellyfin/dto"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -118,7 +118,7 @@ var _ = Describe("Browsing", func() {
 				Expect(q.TotalRecordCount).To(Equal(0))
 				Expect(q.Items).To(BeEmpty())
 			},
-			Entry("a Jellyfin kind Navidrome has none of", "Boxset"),
+			Entry("a Jellyfin kind Lyvune has none of", "Boxset"),
 		)
 
 		It("treats a name Jellyfin does not know as an absent IncludeItemTypes", func() {

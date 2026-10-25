@@ -9,13 +9,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Tian-MC/lyvune/conf"
+	_ "github.com/Tian-MC/lyvune/db/migrations"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/utils/hasher"
+	"github.com/Tian-MC/lyvune/utils/natural"
+	"github.com/Tian-MC/lyvune/utils/singleton"
 	"github.com/mattn/go-sqlite3"
-	"github.com/navidrome/navidrome/conf"
-	_ "github.com/navidrome/navidrome/db/migrations"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/utils/hasher"
-	"github.com/navidrome/navidrome/utils/natural"
-	"github.com/navidrome/navidrome/utils/singleton"
 	"github.com/pressly/goose/v3"
 )
 

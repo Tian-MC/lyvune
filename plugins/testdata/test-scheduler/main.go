@@ -1,10 +1,10 @@
-// Test scheduler plugin for Navidrome plugin system integration tests.
+// Test scheduler plugin for Lyvune plugin system integration tests.
 // Build with: tinygo build -o ../test-scheduler.wasm -target wasip1 -buildmode=c-shared .
 package main
 
 import (
-	"github.com/navidrome/navidrome/plugins/pdk/go/host"
-	"github.com/navidrome/navidrome/plugins/pdk/go/scheduler"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/host"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/scheduler"
 )
 
 func init() {

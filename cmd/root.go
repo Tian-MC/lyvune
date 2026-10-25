@@ -9,26 +9,26 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/consts"
+	"github.com/Tian-MC/lyvune/core/artwork"
+	"github.com/Tian-MC/lyvune/db"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/resources"
+	"github.com/Tian-MC/lyvune/scanner"
+	"github.com/Tian-MC/lyvune/scheduler"
+	"github.com/Tian-MC/lyvune/server/backgrounds"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/consts"
-	"github.com/navidrome/navidrome/core/artwork"
-	"github.com/navidrome/navidrome/db"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/resources"
-	"github.com/navidrome/navidrome/scanner"
-	"github.com/navidrome/navidrome/scheduler"
-	"github.com/navidrome/navidrome/server/backgrounds"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"golang.org/x/sync/errgroup"
 
 	// Import adapters to register them
-	_ "github.com/navidrome/navidrome/adapters/deezer"
-	_ "github.com/navidrome/navidrome/adapters/gotaglib"
-	_ "github.com/navidrome/navidrome/adapters/lastfm"
-	_ "github.com/navidrome/navidrome/adapters/listenbrainz"
+	_ "github.com/Tian-MC/lyvune/adapters/deezer"
+	_ "github.com/Tian-MC/lyvune/adapters/gotaglib"
+	_ "github.com/Tian-MC/lyvune/adapters/lastfm"
+	_ "github.com/Tian-MC/lyvune/adapters/listenbrainz"
 )
 
 var (
@@ -36,16 +36,16 @@ var (
 	noBanner bool
 
 	rootCmd = &cobra.Command{
-		Use:   "navidrome",
-		Short: "Navidrome is a self-hosted music server and streamer",
-		Long: `Navidrome is a self-hosted music server and streamer.
+		Use:   "lyvune",
+		Short: "Lyvune is a self-hosted music server and streamer",
+		Long: `Lyvune is a self-hosted music server and streamer.
 Complete documentation is available at https://www.navidrome.org/docs`,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			preRun()
 		},
 		Run: func(cmd *cobra.Command, args []string) {
-			if err := runNavidrome(cmd.Context()); err != nil {
-				log.Fatal("Fatal error in Navidrome. Aborting", err)
+			if err := runLyvune(cmd.Context()); err != nil {
+				log.Fatal("Fatal error in Lyvune. Aborting", err)
 			}
 		},
 		PostRun: func(cmd *cobra.Command, args []string) {
@@ -55,7 +55,7 @@ Complete documentation is available at https://www.navidrome.org/docs`,
 	}
 )
 
-// Execute runs the root cobra command, which will start the Navidrome server by calling the runNavidrome function.
+// Execute runs the root cobra command, which will start the Lyvune server by calling the runLyvune function.
 func Execute() {
 	ctx, cancel := mainContext(context.Background())
 	defer cancel()
@@ -74,13 +74,13 @@ func preRun() {
 }
 
 func postRun() {
-	log.Info("Navidrome stopped, bye.")
+	log.Info("Lyvune stopped, bye.")
 }
 
-// runNavidrome is the main entry point for the Navidrome server. It starts all the services and blocks.
+// runLyvune is the main entry point for the Lyvune server. It starts all the services and blocks.
 // If any of the services returns an error, it stops the others and returns that error, so the caller can
 // exit with a non-zero code. If the context is cancelled (a signal or a service stop), it returns nil.
-func runNavidrome(parentCtx context.Context) error {
+func runLyvune(parentCtx context.Context) error {
 	defer db.Init(parentCtx)()
 
 	g, ctx := errgroup.WithContext(parentCtx)
@@ -121,7 +121,7 @@ func mainContext(ctx context.Context) (context.Context, context.CancelFunc) {
 	)
 }
 
-// startServer starts the Navidrome web server, adding all the necessary routers.
+// startServer starts the Lyvune web server, adding all the necessary routers.
 func startServer(ctx context.Context) func() error {
 	return func() error {
 		a := CreateServer()
@@ -326,7 +326,7 @@ func scheduleDBAnalyzer(ctx context.Context) func() error {
 	}
 }
 
-// startScheduler starts the Navidrome scheduler, which is used to run periodic tasks.
+// startScheduler starts the Lyvune scheduler, which is used to run periodic tasks.
 func startScheduler(ctx context.Context) func() error {
 	return func() error {
 		log.Info(ctx, "Starting scheduler")
@@ -336,7 +336,7 @@ func startScheduler(ctx context.Context) func() error {
 	}
 }
 
-// startInsightsCollector starts the Navidrome Insight Collector, if configured.
+// startInsightsCollector starts the Lyvune Insight Collector, if configured.
 func startInsightsCollector(ctx context.Context) func() error {
 	return func() error {
 		if !conf.Server.EnableInsightsCollector {
@@ -367,7 +367,7 @@ func startJellyfinDiscovery(ctx context.Context) func() error {
 	}
 }
 
-// startPlaybackServer starts the Navidrome playback server, if configured.
+// startPlaybackServer starts the Lyvune playback server, if configured.
 // It is responsible for the Jukebox functionality
 func startPlaybackServer(ctx context.Context) func() error {
 	return func() error {
@@ -454,7 +454,7 @@ func init() {
 		conf.InitConfig(cfgFile, true)
 	})
 
-	rootCmd.PersistentFlags().StringVarP(&cfgFile, "configfile", "c", "", `config file (default "./navidrome.toml")`)
+	rootCmd.PersistentFlags().StringVarP(&cfgFile, "configfile", "c", "", `config file (default "./lyvune.toml", or "./navidrome.toml" if that is the one you have)`)
 	rootCmd.PersistentFlags().BoolVarP(&noBanner, "nobanner", "n", false, `don't show banner`)
 	rootCmd.PersistentFlags().String("musicfolder", viper.GetString("musicfolder"), "folder where your music is stored")
 	rootCmd.PersistentFlags().String("datafolder", viper.GetString("datafolder"), "folder to store application data (DB), needs write access")
@@ -469,13 +469,13 @@ func init() {
 	_ = viper.BindPFlag("logfile", rootCmd.PersistentFlags().Lookup("logfile"))
 
 	rootCmd.Flags().StringP("address", "a", viper.GetString("address"), "IP address to bind to")
-	rootCmd.Flags().IntP("port", "p", viper.GetInt("port"), "HTTP port Navidrome will listen to")
-	rootCmd.Flags().String("baseurl", viper.GetString("baseurl"), "base URL to configure Navidrome behind a proxy (ex: /music or http://my.server.com)")
+	rootCmd.Flags().IntP("port", "p", viper.GetInt("port"), "HTTP port Lyvune will listen to")
+	rootCmd.Flags().String("baseurl", viper.GetString("baseurl"), "base URL to configure Lyvune behind a proxy (ex: /music or http://my.server.com)")
 	rootCmd.Flags().String("tlscert", viper.GetString("tlscert"), "optional path to a TLS cert file (enables HTTPS listening)")
 	rootCmd.Flags().String("unixsocketperm", viper.GetString("unixsocketperm"), "optional file permission for the unix socket")
 	rootCmd.Flags().String("tlskey", viper.GetString("tlskey"), "optional path to a TLS key file (enables HTTPS listening)")
 
-	rootCmd.Flags().Duration("sessiontimeout", viper.GetDuration("sessiontimeout"), "how long Navidrome will wait before closing web ui idle sessions")
+	rootCmd.Flags().Duration("sessiontimeout", viper.GetDuration("sessiontimeout"), "how long Lyvune will wait before closing web ui idle sessions")
 	rootCmd.Flags().Duration("scaninterval", viper.GetDuration("scaninterval"), "how frequently to scan for changes in your music library")
 	rootCmd.Flags().String("uiloginbackgroundurl", viper.GetString("uiloginbackgroundurl"), "URL to a backaground image used in the Login page")
 	rootCmd.Flags().Bool("enabletranscodingconfig", viper.GetBool("enabletranscodingconfig"), "enables transcoding configuration in the UI")

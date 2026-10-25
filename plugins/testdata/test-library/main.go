@@ -1,4 +1,4 @@
-// Test Library plugin for Navidrome plugin system integration tests.
+// Test Library plugin for Lyvune plugin system integration tests.
 // This plugin tests library metadata access WITH filesystem permission,
 // allowing tests for both metadata and filesystem access.
 // Build with: tinygo build -o ../test-library.wasm -target wasip1 -buildmode=c-shared .
@@ -8,8 +8,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/navidrome/navidrome/plugins/pdk/go/host"
-	"github.com/navidrome/navidrome/plugins/pdk/go/pdk"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/host"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/pdk"
 )
 
 // TestLibraryInput is the input for nd_test_library callback.

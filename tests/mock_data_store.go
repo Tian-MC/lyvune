@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/navidrome/navidrome/model"
+	"github.com/Tian-MC/lyvune/model"
 )
 
 type MockDataStore struct {

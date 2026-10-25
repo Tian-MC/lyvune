@@ -3,7 +3,7 @@ package tests
 import (
 	"context"
 
-	"github.com/navidrome/navidrome/model"
+	"github.com/Tian-MC/lyvune/model"
 )
 
 type MockTranscodingRepo struct {

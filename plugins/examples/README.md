@@ -1,6 +1,6 @@
-# Navidrome Plugin Examples
+# Lyvune Plugin Examples
 
-This folder contains example plugins demonstrating various capabilities and languages supported by Navidrome's plugin system.
+This folder contains example plugins demonstrating various capabilities and languages supported by Lyvune's plugin system.
 
 ## Available Examples
 
@@ -49,7 +49,7 @@ make clean
 
 ### With Extism CLI
 
-Test any plugin without running Navidrome. First extract the `.wasm` file from the `.ndp` package:
+Test any plugin without running Lyvune. First extract the `.wasm` file from the `.ndp` package:
 
 ```bash
 # Install: https://extism.org/docs/install
@@ -72,7 +72,7 @@ extism call wikimedia.wasm nd_get_artist_biography --wasi \
   --allow-host "en.wikipedia.org"
 ```
 
-### With Navidrome
+### With Lyvune
 
 1. Copy the `.ndp` file to your plugins folder
 2. Enable plugins in `navidrome.toml`:

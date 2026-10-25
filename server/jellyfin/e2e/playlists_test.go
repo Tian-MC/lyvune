@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/server/jellyfin/dto"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/server/jellyfin/dto"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

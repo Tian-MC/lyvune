@@ -1,7 +1,7 @@
-# Now Playing Logger Plugin for Navidrome
+# Now Playing Logger Plugin for Lyvune
 #
 # This plugin demonstrates the Scheduler and SubsonicAPI host services by
-# periodically logging what is currently playing in Navidrome.
+# periodically logging what is currently playing in Lyvune.
 #
 # Build with:
 #   extism-py plugin/__init__.py -o nowplaying-py.wasm
@@ -21,7 +21,7 @@ SCHEDULE_ID = "nowplaying-check"
 # =============================================================================
 # Host Function Imports
 # =============================================================================
-# These are custom host functions provided by Navidrome.
+# These are custom host functions provided by Lyvune.
 # We import them using the extism:host/user namespace.
 
 

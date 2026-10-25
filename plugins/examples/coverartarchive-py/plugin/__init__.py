@@ -1,4 +1,4 @@
-# Cover Art Archive Plugin for Navidrome
+# Cover Art Archive Plugin for Lyvune
 #
 # This plugin fetches album cover art from the Cover Art Archive (https://coverartarchive.org/)
 # using the MusicBrainz album MBID.
@@ -16,7 +16,7 @@ def _http_send(offset: int) -> int: ...
 
 
 def http_get(url):
-    """GET url via Navidrome's HTTP host service. Returns (status_code, body_bytes)."""
+    """GET url via Lyvune's HTTP host service. Returns (status_code, body_bytes)."""
     request = json.dumps({"request": {"method": "GET", "url": url}}).encode("utf-8")
     response_offset = _http_send(extism.memory.alloc(request).offset)
     resp = json.loads(extism.memory.string(extism.memory.find(response_offset)))

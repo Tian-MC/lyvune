@@ -6,7 +6,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/navidrome/navidrome/server/jellyfin"
+	"github.com/Tian-MC/lyvune/server/jellyfin"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

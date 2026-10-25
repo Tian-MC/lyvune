@@ -6,16 +6,16 @@ import (
 	"net/http"
 	"path"
 
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/consts"
-	"github.com/navidrome/navidrome/core/auth"
-	"github.com/navidrome/navidrome/core/publicurl"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/server"
-	"github.com/navidrome/navidrome/ui"
-	. "github.com/navidrome/navidrome/utils/gg"
-	"github.com/navidrome/navidrome/utils/req"
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/consts"
+	"github.com/Tian-MC/lyvune/core/auth"
+	"github.com/Tian-MC/lyvune/core/publicurl"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/server"
+	"github.com/Tian-MC/lyvune/ui"
+	. "github.com/Tian-MC/lyvune/utils/gg"
+	"github.com/Tian-MC/lyvune/utils/req"
 )
 
 func (pub *Router) handleShares(w http.ResponseWriter, r *http.Request) {
@@ -100,7 +100,7 @@ func (pub *Router) mapShareToM3U(r *http.Request, s model.Share) *model.Share {
 // encodeMediafileShare builds the signed token embedded in a public share link
 // for a single track.
 //
-// NOTE ON JWT USAGE: This is deliberately NOT part of Navidrome's authentication.
+// NOTE ON JWT USAGE: This is deliberately NOT part of Lyvune's authentication.
 // The token is a signed, opaque capability that identifies one shared track
 // (plus its transcode format/bitrate and the parent share id). We use a JWT here
 // (reusing the library we already have) because it is a simple way to get three

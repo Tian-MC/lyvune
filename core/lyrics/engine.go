@@ -12,8 +12,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
 )
 
 const (
@@ -696,7 +696,7 @@ func (l *lyricsService) retrieveMissing(ctx context.Context, mf *model.MediaFile
 		return ResolveResult{Result: result}, nil
 	}
 	persisted := false
-	// An ignored sidecar is Navidrome's own file that is no longer used. Nothing
+	// An ignored sidecar is Lyvune's own file that is no longer used. Nothing
 	// automatic overwrites it: the administrator removes it, or replaces it by choice.
 	blocked := hasIgnoredSidecar(ctx, mf)
 	if blocked && opts.NoDisplay {
@@ -734,7 +734,7 @@ func (l *lyricsService) retrieveMissing(ctx context.Context, mf *model.MediaFile
 	return res, nil
 }
 
-// hasIgnoredSidecar reports whether the track has a sidecar Navidrome wrote that
+// hasIgnoredSidecar reports whether the track has a sidecar Lyvune wrote that
 // is no longer used (see junkManaged).
 func hasIgnoredSidecar(ctx context.Context, mf *model.MediaFile) bool {
 	env, _ := readEnvelope(ctx, mf)

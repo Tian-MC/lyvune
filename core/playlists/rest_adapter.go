@@ -5,11 +5,11 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/model/criteria"
+	"github.com/Tian-MC/lyvune/model/request"
+	"github.com/Tian-MC/lyvune/utils/slice"
 	"github.com/deluan/rest"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/model/criteria"
-	"github.com/navidrome/navidrome/model/request"
-	"github.com/navidrome/navidrome/utils/slice"
 )
 
 // --- REST adapter (follows Share/Library pattern) ---

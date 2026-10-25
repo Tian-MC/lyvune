@@ -1,18 +1,18 @@
 package core
 
 import (
+	"github.com/Tian-MC/lyvune/core/agents"
+	"github.com/Tian-MC/lyvune/core/external"
+	"github.com/Tian-MC/lyvune/core/ffmpeg"
+	"github.com/Tian-MC/lyvune/core/lyrics"
+	"github.com/Tian-MC/lyvune/core/matcher"
+	"github.com/Tian-MC/lyvune/core/metrics"
+	"github.com/Tian-MC/lyvune/core/playback"
+	"github.com/Tian-MC/lyvune/core/playlists"
+	"github.com/Tian-MC/lyvune/core/quickconnect"
+	"github.com/Tian-MC/lyvune/core/scrobbler"
+	"github.com/Tian-MC/lyvune/core/stream"
 	"github.com/google/wire"
-	"github.com/navidrome/navidrome/core/agents"
-	"github.com/navidrome/navidrome/core/external"
-	"github.com/navidrome/navidrome/core/ffmpeg"
-	"github.com/navidrome/navidrome/core/lyrics"
-	"github.com/navidrome/navidrome/core/matcher"
-	"github.com/navidrome/navidrome/core/metrics"
-	"github.com/navidrome/navidrome/core/playback"
-	"github.com/navidrome/navidrome/core/playlists"
-	"github.com/navidrome/navidrome/core/quickconnect"
-	"github.com/navidrome/navidrome/core/scrobbler"
-	"github.com/navidrome/navidrome/core/stream"
 )
 
 var Set = wire.NewSet(

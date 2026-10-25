@@ -1,12 +1,12 @@
 package types
 
-// ArtistRef is the minimal information a plugin returns for Navidrome to match an
+// ArtistRef is the minimal information a plugin returns for Lyvune to match an
 // artist against the library. It is a reference, not a full artist entity: it
 // carries only matching keys (name and optional internal/MusicBrainz IDs) plus a
 // few projection fields used when describing a track's participants, never
 // descriptive data such as biographies or images.
 type ArtistRef struct {
-	// ID is the internal Navidrome artist ID (if known).
+	// ID is the internal Lyvune artist ID (if known).
 	ID string `json:"id,omitempty"`
 	// Name is the artist name.
 	Name string `json:"name"`
@@ -20,13 +20,13 @@ type ArtistRef struct {
 	SubRole string `json:"subRole,omitempty"`
 }
 
-// SongRef is the minimal information exchanged between a plugin and Navidrome to
-// match a song. It is used both as input (a song Navidrome already has) and as
+// SongRef is the minimal information exchanged between a plugin and Lyvune to
+// match a song. It is used both as input (a song Lyvune already has) and as
 // output (a song a plugin suggests, which may not be in the library yet). Unlike
 // Track, it is an abstract recording reference carrying only matching keys (IDs,
-// ISRC, and title/artist/album/duration) that Navidrome resolves to a library track.
+// ISRC, and title/artist/album/duration) that Lyvune resolves to a library track.
 type SongRef struct {
-	// ID is the internal Navidrome mediafile ID (if known).
+	// ID is the internal Lyvune mediafile ID (if known).
 	ID string `json:"id,omitempty"`
 	// Name is the song name.
 	Name string `json:"name"` // TODO: rename to Title to align with Track.Title and model.MediaFile.Title; kept as Name for now for compatibility.

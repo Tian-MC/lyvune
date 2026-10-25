@@ -6,11 +6,11 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/Tian-MC/lyvune/consts"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/server"
 	"github.com/deluan/rest"
 	"github.com/go-chi/chi/v5"
-	"github.com/navidrome/navidrome/consts"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/server"
 )
 
 func (api *Router) addRadioRoute(r chi.Router) {

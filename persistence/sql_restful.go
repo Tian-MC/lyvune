@@ -9,10 +9,10 @@ import (
 	"sync"
 
 	. "github.com/Masterminds/squirrel"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
 	"github.com/deluan/rest"
 	"github.com/fatih/structs"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
 )
 
 type filterFunc = func(field string, value any) Sqlizer

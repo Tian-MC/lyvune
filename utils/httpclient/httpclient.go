@@ -1,5 +1,5 @@
 // Package httpclient provides a shared http.Client factory that identifies
-// Navidrome via the User-Agent header on all outgoing requests.
+// Lyvune via the User-Agent header on all outgoing requests.
 package httpclient
 
 import (
@@ -10,8 +10,8 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/navidrome/navidrome/consts"
-	"github.com/navidrome/navidrome/utils/netguard"
+	"github.com/Tian-MC/lyvune/consts"
+	"github.com/Tian-MC/lyvune/utils/netguard"
 )
 
 type uaTransport struct {
@@ -27,7 +27,7 @@ func (t *uaTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 // NewTransport wraps base (or http.DefaultTransport if nil) to set the
-// Navidrome User-Agent on requests that don't have one.
+// Lyvune User-Agent on requests that don't have one.
 func NewTransport(base http.RoundTripper) http.RoundTripper {
 	if base == nil {
 		base = http.DefaultTransport

@@ -6,8 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/plugins/host"
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/plugins/host"
 )
 
 const storageMount = "/storage"

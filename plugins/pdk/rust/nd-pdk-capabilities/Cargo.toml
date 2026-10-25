@@ -2,8 +2,8 @@
 name = "nd-pdk-capabilities"
 version = "0.1.0"
 edition = "2021"
-description = "Navidrome capability wrappers for Rust plugins"
-authors = ["Navidrome Team"]
+description = "Lyvune capability wrappers for Rust plugins"
+authors = ["Lyvune Team"]
 license = "GPL-3.0"
 
 [lib]

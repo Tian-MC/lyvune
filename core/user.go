@@ -3,8 +3,8 @@ package core
 import (
 	"context"
 
+	"github.com/Tian-MC/lyvune/model"
 	"github.com/deluan/rest"
-	"github.com/navidrome/navidrome/model"
 )
 
 // PluginUnloader defines the interface for unloading disabled plugins.

@@ -1,10 +1,10 @@
-// Wikimedia plugin for Navidrome - fetches artist metadata from Wikidata, DBpedia and Wikipedia.
+// Wikimedia plugin for Lyvune - fetches artist metadata from Wikidata, DBpedia and Wikipedia.
 //
 // Build with:
 //
 //	tinygo build -o wikimedia.wasm -target wasip1 -buildmode=c-shared .
 //
-// Install by copying the .ndp file to your Navidrome plugins folder.
+// Install by copying the .ndp file to your Lyvune plugins folder.
 package main
 
 import (
@@ -14,9 +14,9 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/navidrome/navidrome/plugins/pdk/go/host"
-	"github.com/navidrome/navidrome/plugins/pdk/go/metadata"
-	"github.com/navidrome/navidrome/plugins/pdk/go/pdk"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/host"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/metadata"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/pdk"
 )
 
 // wikimediaPlugin implements the metadata provider interfaces for the methods we support.

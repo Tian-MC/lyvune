@@ -9,10 +9,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/conf/configtest"
-	"github.com/navidrome/navidrome/consts"
-	"github.com/navidrome/navidrome/log"
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/conf/configtest"
+	"github.com/Tian-MC/lyvune/consts"
+	"github.com/Tian-MC/lyvune/log"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/spf13/viper"
@@ -450,7 +450,7 @@ var _ = Describe("Configuration", func() {
 			// Attempt to load config as root user - should fail before creating directories
 			Expect(func() {
 				conf.Load(true)
-			}).To(PanicWith(ContainSubstring("EnforceNonRootUser is enabled but Navidrome is running as root")))
+			}).To(PanicWith(ContainSubstring("EnforceNonRootUser is enabled but Lyvune is running as root")))
 
 			// Verify that the data folder was NOT created
 			Expect(nonExistentDataFolder).ToNot(BeAnExistingFile())

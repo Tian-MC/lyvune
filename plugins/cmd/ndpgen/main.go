@@ -1,11 +1,11 @@
-// ndpgen generates Navidrome Plugin Development Kit (PDK) code from annotated Go interfaces.
+// ndpgen generates Lyvune Plugin Development Kit (PDK) code from annotated Go interfaces.
 //
 // This is the unified code generator that handles both host function wrappers
 // and capability export wrappers.
 //
 // Usage:
 //
-//	# Generate host wrappers for Navidrome server (output to input directory)
+//	# Generate host wrappers for Lyvune server (output to input directory)
 //	ndpgen -host-wrappers -input=./plugins/host -package=host
 //
 //	# Generate PDK client wrappers (from plugins/host to plugins/pdk)
@@ -18,7 +18,7 @@
 //	ndpgen -schemas -input=./plugins/capabilities
 //
 // Output directories:
-//   - Host wrappers:   $input/<servicename>_gen.go (server-side, used by Navidrome)
+//   - Host wrappers:   $input/<servicename>_gen.go (server-side, used by Lyvune)
 //   - Host functions:  $output/go/host/, $output/rust/host/
 //   - Capabilities:    $output/go/<capability>/ (e.g., $output/go/metadata/)
 //   - Schemas:         $input/<capability>.yaml (co-located with Go sources)
@@ -28,7 +28,7 @@
 //	-input           Input directory containing Go source files with annotated interfaces
 //	-output          Output directory base for generated files (default: same as input)
 //	-package         Output package name for Go (default: host for host-only, auto for capabilities)
-//	-host-wrappers   Generate server-side host wrappers (used by Navidrome, output to input directory)
+//	-host-wrappers   Generate server-side host wrappers (used by Lyvune, output to input directory)
 //	-host-only       Generate PDK client wrappers for calling host functions
 //	-capability-only Generate only capability export wrappers
 //	-schemas         Generate XTP YAML schemas from capabilities
@@ -48,7 +48,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/navidrome/navidrome/plugins/cmd/ndpgen/internal"
+	"github.com/Tian-MC/lyvune/plugins/cmd/ndpgen/internal"
 )
 
 // config holds the parsed command-line configuration.
@@ -59,7 +59,7 @@ type config struct {
 	rustOutputDir    string // Rust output: $outputDir/rust/host
 	pkgName          string
 	hostOnly         bool
-	hostWrappers     bool // Generate host wrappers (used by Navidrome server)
+	hostWrappers     bool // Generate host wrappers (used by Lyvune server)
 	capabilityOnly   bool
 	schemasOnly      bool   // Generate XTP schemas from capabilities (output goes to inputDir)
 	pdkOnly          bool   // Generate PDK abstraction layer wrapper
@@ -353,7 +353,7 @@ func generatePDKPackage(outputDir string, dryRun, verbose bool) error {
 
 // runHostWrapperGeneration handles host wrapper code generation.
 // This generates the *_gen.go files in the input directory that are used
-// by Navidrome server to expose host functions to plugins.
+// by Lyvune server to expose host functions to plugins.
 func runHostWrapperGeneration(cfg *config) error {
 	services, err := parseServices(cfg)
 	if err != nil {
@@ -383,7 +383,7 @@ func parseConfig() (*config, error) {
 		outputDir      = flag.String("output", "", "Base output directory for generated files (default: same as input)")
 		pkgName        = flag.String("package", "", "Output package name for Go (default: host for host-only, auto for capabilities)")
 		hostOnly       = flag.Bool("host-only", false, "Generate only host function wrappers")
-		hostWrappers   = flag.Bool("host-wrappers", false, "Generate host wrappers (used by Navidrome server, output to input directory)")
+		hostWrappers   = flag.Bool("host-wrappers", false, "Generate host wrappers (used by Lyvune server, output to input directory)")
 		capabilityOnly = flag.Bool("capability-only", false, "Generate only capability export wrappers")
 		schemasOnly    = flag.Bool("schemas", false, "Generate XTP YAML schemas from capabilities (output to input directory)")
 		pdkOnly        = flag.Bool("extism-pdk", false, "Generate PDK abstraction layer by parsing extism/go-pdk")
@@ -738,7 +738,7 @@ func generateAllCode(cfg *config, services []internal.Service) error {
 }
 
 // generateHostWrapperCode generates host wrapper code for a service.
-// This generates the *_gen.go files that are used by Navidrome server
+// This generates the *_gen.go files that are used by Lyvune server
 // to expose host functions to plugins via Extism.
 func generateHostWrapperCode(svc internal.Service, outputDir, pkgName string, dryRun, verbose bool) error {
 	code, err := internal.GenerateHost(svc, pkgName)

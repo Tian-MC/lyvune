@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/navidrome/navidrome/core/auth"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/server/jellyfin/dto"
+	"github.com/Tian-MC/lyvune/core/auth"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/server/jellyfin/dto"
 )
 
 type authenticateByNameRequest struct {
@@ -23,7 +23,7 @@ func (api *Router) authenticateByName(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Navidrome stores recoverable passwords; this mirrors Subsonic's validateCredentials plaintext path.
+	// Lyvune stores recoverable passwords; this mirrors Subsonic's validateCredentials plaintext path.
 	usr, err := api.ds.User().FindByUsernameWithPassword(ctx, body.Username)
 	if body.Pw == "" || err != nil || usr == nil || usr.Password != body.Pw {
 		log.Warn(ctx, "Jellyfin API: invalid login", "username", body.Username, "remoteAddr", r.RemoteAddr)
@@ -58,7 +58,7 @@ func (api *Router) signIn(w http.ResponseWriter, r *http.Request, usr *model.Use
 }
 
 // userToDto builds the User object clients expect. Finamp reads Policy and Configuration right after
-// login and null-crashes if absent, so both are filled with Navidrome-appropriate defaults.
+// login and null-crashes if absent, so both are filled with Lyvune-appropriate defaults.
 func userToDto(u *model.User, serverName, serverID string) *dto.UserDto {
 	return &dto.UserDto{
 		Name:                  u.UserName,

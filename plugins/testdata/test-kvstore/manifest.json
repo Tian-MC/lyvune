@@ -1,6 +1,6 @@
 {
   "name": "Test KVStore Plugin",
-  "author": "Navidrome Test",
+  "author": "Lyvune Test",
   "version": "1.0.0",
   "description": "A test kvstore plugin for integration testing",
   "permissions": {

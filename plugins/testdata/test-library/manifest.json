@@ -1,6 +1,6 @@
 {
   "name": "Test Library Plugin",
-  "author": "Navidrome Test",
+  "author": "Lyvune Test",
   "version": "1.0.0",
   "description": "A test library plugin for integration testing",
   "permissions": {

@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/navidrome/navidrome/model"
+	"github.com/Tian-MC/lyvune/model"
 )
 
 // Test hooks: make the pacing and retry delays negligible.

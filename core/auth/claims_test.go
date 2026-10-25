@@ -3,8 +3,8 @@ package auth_test
 import (
 	"time"
 
+	"github.com/Tian-MC/lyvune/core/auth"
 	"github.com/go-chi/jwtauth/v5"
-	"github.com/navidrome/navidrome/core/auth"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

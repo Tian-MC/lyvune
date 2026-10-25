@@ -7,13 +7,13 @@ import (
 	"math/rand/v2"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/navidrome/navidrome/core/agents"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/persistence"
-	"github.com/navidrome/navidrome/utils"
-	"github.com/navidrome/navidrome/utils/random"
-	"github.com/navidrome/navidrome/utils/slice"
+	"github.com/Tian-MC/lyvune/core/agents"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/persistence"
+	"github.com/Tian-MC/lyvune/utils"
+	"github.com/Tian-MC/lyvune/utils/random"
+	"github.com/Tian-MC/lyvune/utils/slice"
 	"golang.org/x/sync/errgroup"
 )
 

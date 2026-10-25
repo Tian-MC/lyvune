@@ -12,9 +12,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Tian-MC/lyvune/core/agents"
+	"github.com/Tian-MC/lyvune/log"
 	"github.com/microcosm-cc/bluemonday"
-	"github.com/navidrome/navidrome/core/agents"
-	"github.com/navidrome/navidrome/log"
 )
 
 const apiBaseURL = "https://api.deezer.com"

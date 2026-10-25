@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/navidrome/navidrome/model"
+	"github.com/Tian-MC/lyvune/model"
 )
 
 const (
@@ -28,7 +28,7 @@ type Settings struct {
 	PreferLocal bool `json:"preferLocal"`
 	// AutoRetrieve fetches lyrics for tracks that have none. Default true.
 	AutoRetrieve bool `json:"autoRetrieve"`
-	// AutoUpgrade looks for better lyrics for Navidrome-managed lyrics. Default true.
+	// AutoUpgrade looks for better lyrics for Lyvune-managed lyrics. Default true.
 	AutoUpgrade bool `json:"autoUpgrade"`
 	// AutoReplaceManual lets an automatic upgrade supersede a sidecar or embedded
 	// lyrics the user supplied. Default false.

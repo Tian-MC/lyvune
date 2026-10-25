@@ -11,12 +11,12 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/Tian-MC/lyvune/conf"
+	"github.com/Tian-MC/lyvune/consts"
+	"github.com/Tian-MC/lyvune/log"
 	"github.com/djherbis/fscache"
 	"github.com/dustin/go-humanize"
 	"github.com/hashicorp/go-multierror"
-	"github.com/navidrome/navidrome/conf"
-	"github.com/navidrome/navidrome/consts"
-	"github.com/navidrome/navidrome/log"
 )
 
 // Item represents an item that can be cached. It must implement the Key method that returns a unique key for a

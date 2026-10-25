@@ -1,4 +1,4 @@
-// Test WebSocket plugin for Navidrome plugin system integration tests.
+// Test WebSocket plugin for Lyvune plugin system integration tests.
 // Build with: tinygo build -o ../test-websocket.wasm -target wasip1 -buildmode=c-shared .
 package main
 
@@ -6,9 +6,9 @@ import (
 	"encoding/base64"
 	"errors"
 
-	"github.com/navidrome/navidrome/plugins/pdk/go/host"
-	"github.com/navidrome/navidrome/plugins/pdk/go/pdk"
-	"github.com/navidrome/navidrome/plugins/pdk/go/websocket"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/host"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/pdk"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/websocket"
 )
 
 func init() {

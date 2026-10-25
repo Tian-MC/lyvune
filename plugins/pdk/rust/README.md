@@ -1,13 +1,13 @@
-# Navidrome Plugin Development Kit for Rust
+# Lyvune Plugin Development Kit for Rust
 
-This directory contains the Rust PDK crates for building Navidrome plugins.
+This directory contains the Rust PDK crates for building Lyvune plugins.
 
 ## Crate Structure
 
 ```
 plugins/pdk/rust/
 ├── nd-pdk/              # Umbrella crate - use this as your dependency
-├── nd-pdk-host/         # Host function wrappers (call Navidrome services)
+├── nd-pdk-host/         # Host function wrappers (call Lyvune services)
 └── nd-pdk-capabilities/ # Capability traits and types (generated)
 ```
 
@@ -91,7 +91,7 @@ impl ArtistBiographyProvider for MyPlugin {
 
 ### Using Host Services
 
-Access Navidrome services via the host module:
+Access Lyvune services via the host module:
 
 ```rust
 use nd_pdk::host::{artwork, scheduler, library};

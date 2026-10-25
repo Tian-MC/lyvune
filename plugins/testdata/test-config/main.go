@@ -1,10 +1,10 @@
-// Test Config plugin for Navidrome plugin system integration tests.
+// Test Config plugin for Lyvune plugin system integration tests.
 // Build with: tinygo build -o ../test-config.wasm -target wasip1 -buildmode=c-shared .
 package main
 
 import (
-	"github.com/navidrome/navidrome/plugins/pdk/go/host"
-	"github.com/navidrome/navidrome/plugins/pdk/go/pdk"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/host"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/pdk"
 )
 
 // TestConfigInput is the input for nd_test_config callback.

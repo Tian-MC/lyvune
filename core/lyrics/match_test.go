@@ -1,8 +1,8 @@
 package lyrics_test
 
 import (
-	"github.com/navidrome/navidrome/core/lyrics"
-	"github.com/navidrome/navidrome/model"
+	"github.com/Tian-MC/lyvune/core/lyrics"
+	"github.com/Tian-MC/lyvune/model"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

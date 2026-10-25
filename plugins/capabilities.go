@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"slices"
 
-	"github.com/navidrome/navidrome/core/agents"
+	"github.com/Tian-MC/lyvune/core/agents"
 )
 
 // Capability represents a plugin capability type.

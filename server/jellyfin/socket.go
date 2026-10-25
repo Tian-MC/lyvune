@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Tian-MC/lyvune/log"
 	"github.com/gorilla/websocket"
-	"github.com/navidrome/navidrome/log"
 )
 
 // socketKeepAliveInterval (seconds) is sent in the initial ForceKeepAlive telling the client how

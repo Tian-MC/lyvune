@@ -13,11 +13,11 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model/id"
+	"github.com/Tian-MC/lyvune/plugins/capabilities"
+	"github.com/Tian-MC/lyvune/plugins/host"
 	"github.com/gorilla/websocket"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model/id"
-	"github.com/navidrome/navidrome/plugins/capabilities"
-	"github.com/navidrome/navidrome/plugins/host"
 )
 
 // CapabilityWebSocket indicates the plugin can receive WebSocket callbacks.

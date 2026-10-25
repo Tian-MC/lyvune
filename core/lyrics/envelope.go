@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/navidrome/navidrome/model"
+	"github.com/Tian-MC/lyvune/model"
 )
 
-// EnvelopeFormat identifies a `.lyrics.json` sidecar written by Navidrome.
+// EnvelopeFormat identifies a `.lyrics.json` sidecar written by Lyvune.
 const EnvelopeFormat = "navidrome-lyrics"
 
 // EnvelopeVersion is the current schema version. Readers reject newer ones.
@@ -20,7 +20,7 @@ const EnvelopeSuffix = ".lyrics.json"
 
 // Envelope origins.
 const (
-	// OriginManaged marks lyrics Navidrome downloaded on its own.
+	// OriginManaged marks lyrics Lyvune downloaded on its own.
 	OriginManaged = "managed"
 	// OriginUser marks lyrics the user selected or imported on purpose.
 	OriginUser = "user"

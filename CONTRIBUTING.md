@@ -1,6 +1,6 @@
-# Navidrome Contribution Guide
+# Lyvune Contribution Guide
 
-Navidrome is a streaming service which allows you to enjoy your music collection from anywhere. We'd welcome you to contribute to our open source project and make Navidrome even better. There are some basic guidelines which you need to follow if you like to contribute to Navidrome.
+Lyvune is a streaming service which allows you to enjoy your music collection from anywhere. We'd welcome you to contribute to our open source project and make Lyvune even better. There are some basic guidelines which you need to follow if you like to contribute to Lyvune.
 
 - [Asking Support Questions](#asking-support-questions)
 - [Code of Conduct](#code-of-conduct)
@@ -12,7 +12,7 @@ Navidrome is a streaming service which allows you to enjoy your music collection
 We have an active [discussion forum](https://github.com/navidrome/navidrome/discussions) where users and developers can ask questions. Please don't use the GitHub issue tracker to ask questions.
 
 ## Code of Conduct
-Please read the following [Code of Conduct](https://github.com/navidrome/navidrome/blob/master/CODE_OF_CONDUCT.md).
+Please read the following [Code of Conduct](https://github.com/Tian-MC/lyvune/blob/master/CODE_OF_CONDUCT.md).
 
 ## Issues
 Found any issue or bug in our codebase? Have a great idea you want to propose or discuss with 

@@ -1,11 +1,11 @@
-// Test lyrics plugin for Navidrome plugin system integration tests.
+// Test lyrics plugin for Lyvune plugin system integration tests.
 package main
 
 import (
 	"fmt"
 
-	"github.com/navidrome/navidrome/plugins/pdk/go/lyrics"
-	"github.com/navidrome/navidrome/plugins/pdk/go/pdk"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/lyrics"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/pdk"
 )
 
 func init() {

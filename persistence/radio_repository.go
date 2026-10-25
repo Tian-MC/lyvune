@@ -5,10 +5,10 @@ import (
 	"time"
 
 	. "github.com/Masterminds/squirrel"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
+	"github.com/Tian-MC/lyvune/model/id"
 	"github.com/deluan/rest"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
-	"github.com/navidrome/navidrome/model/id"
 	"github.com/pocketbase/dbx"
 )
 

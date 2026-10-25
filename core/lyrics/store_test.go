@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/navidrome/navidrome/core/lyrics"
-	"github.com/navidrome/navidrome/model"
+	"github.com/Tian-MC/lyvune/core/lyrics"
+	"github.com/Tian-MC/lyvune/model"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -138,7 +138,7 @@ var _ = Describe("Store", func() {
 		Expect(inLibrary).To(ConsistOf(audioFn, "01 - Song.lyrics.json"))
 	})
 
-	It("deletes a Navidrome sidecar but keeps it in the history", func() {
+	It("deletes a Lyvune sidecar but keeps it in the history", func() {
 		_, _ = store.Save(target, envelopeFor("first", lyrics.OriginManaged))
 		_, err := store.Delete(target)
 		Expect(err).ToNot(HaveOccurred())
@@ -150,7 +150,7 @@ var _ = Describe("Store", func() {
 		Expect(lineOf(read())).To(Equal("first"))
 	})
 
-	It("will not delete or overwrite a .lyrics.json that is not a Navidrome envelope", func() {
+	It("will not delete or overwrite a .lyrics.json that is not a Lyvune envelope", func() {
 		Expect(os.WriteFile(sidecar(), []byte(`{"someone":"else"}`), 0o644)).To(Succeed())
 		_, err := store.Save(target, envelopeFor("mine", lyrics.OriginManaged))
 		Expect(err).To(MatchError(lyrics.ErrNotManaged))

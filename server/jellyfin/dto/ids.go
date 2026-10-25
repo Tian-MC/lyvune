@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/navidrome/navidrome/model/id"
+	"github.com/Tian-MC/lyvune/model/id"
 )
 
 // guidLen is the length of a Jellyfin GUID on the wire: 16 bytes as lowercase hex, no dashes
@@ -35,7 +35,7 @@ const PlaylistsFolderID = "playlists"
 // PlaylistsFolderGUID is the wire form of PlaylistsFolderID.
 var PlaylistsFolderGUID = encodeReserved(kindPlaylistsFolder, 0)
 
-// EncodeID renders a canonical Navidrome id as a Jellyfin GUID. Anything that isn't one encodes
+// EncodeID renders a canonical Lyvune id as a Jellyfin GUID. Anything that isn't one encodes
 // to "" rather than to a shape clients can't parse.
 func EncodeID(ndID string) string {
 	b, err := id.Decode(ndID)

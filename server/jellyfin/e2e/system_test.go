@@ -17,7 +17,7 @@ var _ = Describe("System", func() {
 			Expect(w.Code).To(Equal(http.StatusOK))
 			var info map[string]any
 			parseInto(w, &info)
-			Expect(info["ServerName"]).To(HavePrefix("Navidrome"))
+			Expect(info["ServerName"]).To(HavePrefix("Lyvune"))
 			Expect(info["ProductName"]).To(Equal("Jellyfin Server"))
 			Expect(info["StartupWizardCompleted"]).To(BeTrue())
 			Expect(info["Id"]).ToNot(BeEmpty())
@@ -72,13 +72,13 @@ var _ = Describe("System", func() {
 			w := rawReq("GET", "/System/Ping", "")
 			Expect(w.Code).To(Equal(http.StatusOK))
 			Expect(w.Header().Get("Content-Type")).To(HavePrefix("text/plain"))
-			Expect(w.Body.String()).To(HavePrefix("Navidrome"))
+			Expect(w.Body.String()).To(HavePrefix("Lyvune"))
 		})
 
 		It("answers POST identically", func() {
 			w := rawReq("POST", "/System/Ping", "")
 			Expect(w.Code).To(Equal(http.StatusOK))
-			Expect(strings.TrimSpace(w.Body.String())).To(HavePrefix("Navidrome"))
+			Expect(strings.TrimSpace(w.Body.String())).To(HavePrefix("Lyvune"))
 		})
 	})
 })

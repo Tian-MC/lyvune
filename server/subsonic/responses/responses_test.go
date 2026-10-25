@@ -5,9 +5,9 @@ import (
 	"encoding/xml"
 	"time"
 
-	"github.com/navidrome/navidrome/consts"
-	"github.com/navidrome/navidrome/server/subsonic/responses"
-	. "github.com/navidrome/navidrome/server/subsonic/responses"
+	"github.com/Tian-MC/lyvune/consts"
+	"github.com/Tian-MC/lyvune/server/subsonic/responses"
+	. "github.com/Tian-MC/lyvune/server/subsonic/responses"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -18,7 +18,7 @@ var _ = Describe("Responses", func() {
 		response = &Subsonic{
 			Status:        StatusOK,
 			Version:       "1.16.1",
-			Type:          consts.AppName,
+			Type:          consts.SubsonicServerType,
 			ServerVersion: "v0.55.0",
 			OpenSubsonic:  true,
 		}

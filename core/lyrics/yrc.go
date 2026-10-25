@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/navidrome/navidrome/model"
+	"github.com/Tian-MC/lyvune/model"
 )
 
 // YRC is NetEase Cloud Music's word-timed lyrics format:

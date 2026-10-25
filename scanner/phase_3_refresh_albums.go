@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model"
 	ppl "github.com/google/go-pipeline/pkg/pipeline"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model"
 )
 
 // phaseRefreshAlbums is responsible for refreshing albums that have been

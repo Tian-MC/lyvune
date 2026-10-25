@@ -4,7 +4,7 @@
 package main
 
 import (
-	"github.com/navidrome/navidrome/plugins/pdk/go/metadata"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/metadata"
 )
 
 func init() {

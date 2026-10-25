@@ -5,14 +5,14 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/navidrome/navidrome/core/scrobbler"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/model/request"
-	"github.com/navidrome/navidrome/server/jellyfin/dto"
+	"github.com/Tian-MC/lyvune/core/scrobbler"
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/model/request"
+	"github.com/Tian-MC/lyvune/server/jellyfin/dto"
 )
 
 // playbackReport is the subset of Jellyfin's PlaybackStartInfo/PlaybackProgressInfo
-// fields Navidrome needs to keep its playback/scrobbling state in sync.
+// fields Lyvune needs to keep its playback/scrobbling state in sync.
 type playbackReport struct {
 	ItemId        string `json:"ItemId"`
 	PositionTicks int64  `json:"PositionTicks"`
@@ -113,7 +113,7 @@ func (api *Router) reportPlaybackStopped(w http.ResponseWriter, r *http.Request)
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// acknowledge answers requests Navidrome keeps no state for: session capabilities (not tracked per
+// acknowledge answers requests Lyvune keeps no state for: session capabilities (not tracked per
 // session) and playback pings (transcodes live only as long as their stream request).
 func (api *Router) acknowledge(w http.ResponseWriter, _ *http.Request) {
 	w.WriteHeader(http.StatusNoContent)

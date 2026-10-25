@@ -7,7 +7,7 @@ A Python example plugin that fetches album cover images from the [Cover Art Arch
 - Implements the `nd_get_album_images` method of the MetadataAgent plugin interface
 - Returns front cover images for a given release MBID
 - Returns `not found` if no MBID is provided or no images are found
-- Demonstrates Python plugin development for Navidrome
+- Demonstrates Python plugin development for Lyvune
 
 ## Prerequisites
 
@@ -35,7 +35,7 @@ zip -j coverartarchive-py.ndp manifest.json plugin.wasm
 
 ## Installation
 
-1. Copy `coverartarchive-py.ndp` to your Navidrome plugins folder
+1. Copy `coverartarchive-py.ndp` to your Lyvune plugins folder
 
 2. Enable plugins in `navidrome.toml`:
    ```toml
@@ -51,7 +51,7 @@ zip -j coverartarchive-py.ndp manifest.json plugin.wasm
 
 ## Testing
 
-The plugin makes HTTP requests through Navidrome's `http_send` host function, so it only runs inside Navidrome (the `extism` CLI can't provide that function). Install the `.ndp` as described above, then open an album that has a MusicBrainz ID and check the Navidrome logs.
+The plugin makes HTTP requests through Lyvune's `http_send` host function, so it only runs inside Lyvune (the `extism` CLI can't provide that function). Install the `.ndp` as described above, then open an album that has a MusicBrainz ID and check the Lyvune logs.
 
 ## How It Works
 

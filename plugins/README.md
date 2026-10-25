@@ -1,6 +1,6 @@
-# Navidrome Plugin System
+# Lyvune Plugin System
 
-Navidrome supports WebAssembly (Wasm) plugins for extending functionality. Plugins run in a secure sandbox and can provide metadata agents, scrobblers, lyrics providers, audio similarity, and other integrations through host services like scheduling, caching, task queues, WebSockets, and Subsonic API access.
+Lyvune supports WebAssembly (Wasm) plugins for extending functionality. Plugins run in a secure sandbox and can provide metadata agents, scrobblers, lyrics providers, audio similarity, and other integrations through host services like scheduling, caching, task queues, WebSockets, and Subsonic API access.
 
 The plugin system is built on **[Extism](https://extism.org/)**, a cross-language framework for building WebAssembly plugins. You can write plugins in any language that Extism supports (Go, Rust, Python, TypeScript, and more) using their Plugin Development Kits (PDKs).
 
@@ -86,7 +86,7 @@ zip -j my-plugin.ndp manifest.json plugin.wasm
 
 ### 3. Install
 
-Copy `my-plugin.ndp` to your Navidrome plugins folder and enable plugins in your config:
+Copy `my-plugin.ndp` to your Lyvune plugins folder and enable plugins in your config:
 
 ```toml
 [Plugins]
@@ -100,7 +100,7 @@ Folder = "/path/to/plugins"
 
 ### What is a Plugin?
 
-A Navidrome plugin is an `.ndp` package file (zip archive) containing:
+A Lyvune plugin is an `.ndp` package file (zip archive) containing:
 
 1. **`manifest.json`** – Plugin metadata (name, author, version, permissions)
 2. **`plugin.wasm`** – Compiled WebAssembly module with capability functions
@@ -144,7 +144,7 @@ Every plugin must include a `manifest.json` file. Example:
 
 #### Config Definition
 
-The `config` field defines the plugin's configuration schema using [JSON Schema (draft-07)](https://json-schema.org/) and an optional [JSONForms](https://jsonforms.io/) UI schema for rendering in the Navidrome web UI:
+The `config` field defines the plugin's configuration schema using [JSON Schema (draft-07)](https://json-schema.org/) and an optional [JSONForms](https://jsonforms.io/) UI schema for rendering in the Lyvune web UI:
 
 ```json
 {
@@ -175,12 +175,12 @@ Capabilities define what your plugin can do. They're automatically detected base
 Provides artist and album metadata. All methods are **optional** — implement only the ones your data source supports.
 
 > **Returning "not found".** When you have no data for an item, return an empty response and no
-> error. In the Go PDK that is `return nil, nil`. Navidrome reads it as a definitive "not found"
+> error. In the Go PDK that is `return nil, nil`. Lyvune reads it as a definitive "not found"
 > and stops asking.
 >
 > Return an error only when the plugin itself failed, such as an unreachable API or a broken host
-> call. Navidrome retries failed calls with backoff. A plugin that errors on "no data" makes
-> Navidrome retry every item it has no data for.
+> call. Lyvune retries failed calls with backoff. A plugin that errors on "no data" makes
+> Lyvune retry every item it has no data for.
 
 | Function                          | Input                      | Output                           | Description              |
 |-----------------------------------|----------------------------|----------------------------------|--------------------------|
@@ -207,7 +207,7 @@ Agents = "lastfm,spotify,my-plugin"
 ```go
 package main
 
-import "github.com/navidrome/navidrome/plugins/pdk/go/metadata"
+import "github.com/Tian-MC/lyvune/plugins/pdk/go/metadata"
 
 type myPlugin struct{}
 
@@ -245,7 +245,7 @@ Integrates with external scrobbling services. All four methods are **required**.
 | `nd_scrobbler_scrobble`         | See below    | (none) | Submit a scrobble            |
 | `nd_scrobbler_playback_report`  | See below    | (none) | Send playback state report   |
 
-> **Important:** Scrobbler plugins require the `users` permission in their manifest. Scrobble events are only sent for users assigned to the plugin through Navidrome's configuration.
+> **Important:** Scrobbler plugins require the `users` permission in their manifest. Scrobble events are only sent for users assigned to the plugin through Lyvune's configuration.
 
 **Manifest permission:**
 
@@ -305,11 +305,11 @@ Same `username` and `track` fields, plus playback state details:
 On success, return `0`. On failure, use `pdk.SetError()` with one of these error types:
 
 - `scrobbler(not_authorized)` – User needs to re-authorize
-- `scrobbler(retry_later)` – Temporary failure, Navidrome will retry
+- `scrobbler(retry_later)` – Temporary failure, Lyvune will retry
 - `scrobbler(unrecoverable)` – Permanent failure, scrobble discarded
 
 ```go
-import "github.com/navidrome/navidrome/plugins/pdk/go/scrobbler"
+import "github.com/Tian-MC/lyvune/plugins/pdk/go/scrobbler"
 
 return scrobbler.ScrobblerErrorNotAuthorized
 return scrobbler.ScrobblerErrorRetryLater
@@ -382,21 +382,21 @@ Each callback invocation is subject to a 30-second timeout.
 
 ## Host Services
 
-Host services let your plugin call back into Navidrome for advanced functionality. Each service (except [Config](#config)) requires declaring the corresponding permission in your manifest.
+Host services let your plugin call back into Lyvune for advanced functionality. Each service (except [Config](#config)) requires declaring the corresponding permission in your manifest.
 
 ### Go PDK Setup
 
 All host service examples below use the generated Go SDK. Add this to your `go.mod`:
 
 ```
-require github.com/navidrome/navidrome/plugins/pdk/go v0.0.0
-replace github.com/navidrome/navidrome/plugins/pdk/go => ../../pdk/go
+require github.com/Tian-MC/lyvune/plugins/pdk/go v0.0.0
+replace github.com/Tian-MC/lyvune/plugins/pdk/go => ../../pdk/go
 ```
 
 Then import:
 
 ```go
-import "github.com/navidrome/navidrome/plugins/pdk/go/host"
+import "github.com/Tian-MC/lyvune/plugins/pdk/go/host"
 ```
 
 ### HTTP
@@ -617,7 +617,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/navidrome/navidrome/plugins/pdk/go/host"
+	"github.com/Tian-MC/lyvune/plugins/pdk/go/host"
 )
 
 // The path never changes, so read it once instead of per operation
@@ -795,7 +795,7 @@ for _, lib := range libraries {
 
 ### Matcher
 
-Match externally-obtained songs (e.g. results from a recommendation or similarity API) to tracks in the local library, reusing Navidrome's matching algorithm (ID > MBID > ISRC > fuzzy title).
+Match externally-obtained songs (e.g. results from a recommendation or similarity API) to tracks in the local library, reusing Lyvune's matching algorithm (ID > MBID > ISRC > fuzzy title).
 
 **Manifest permission:**
 
@@ -825,7 +825,7 @@ The result has one entry per input song, in the same order; the entry for a song
 **Usage:**
 
 ```go
-import "github.com/navidrome/navidrome/plugins/pdk/go/types"
+import "github.com/Tian-MC/lyvune/plugins/pdk/go/types"
 
 matches, err := host.MatcherMatchSongs([]types.SongRef{
     {Name: "Song Title", Artists: []types.ArtistRef{{Name: "Artist Name"}}},
@@ -834,7 +834,7 @@ matches, err := host.MatcherMatchSongs([]types.SongRef{
 
 ### Artwork
 
-Generate public URLs for Navidrome artwork (albums, artists, tracks, playlists).
+Generate public URLs for Lyvune artwork (albums, artists, tracks, playlists).
 
 **Manifest permission:**
 
@@ -865,7 +865,7 @@ url, err := host.ArtworkGetAlbumUrl("album-id", 300)
 
 ### SubsonicAPI
 
-Call Navidrome's Subsonic API internally (no network round-trip).
+Call Lyvune's Subsonic API internally (no network round-trip).
 
 **Manifest permission:**
 
@@ -882,7 +882,7 @@ Call Navidrome's Subsonic API internally (no network round-trip).
 }
 ```
 
-> **Important:** The `subsonicapi` permission requires the `users` permission. Which users the plugin can act as is controlled through the Navidrome UI.
+> **Important:** The `subsonicapi` permission requires the `users` permission. Which users the plugin can act as is controlled through the Lyvune UI.
 
 **Host functions:**
 
@@ -1001,7 +1001,7 @@ Retrieve the scrobble history of users the plugin has been granted access to. Ea
 }
 ```
 
-> **Important:** The `scrobbleRetriever` permission requires the `users` permission. Which users the plugin can act as is controlled through the Navidrome UI.
+> **Important:** The `scrobbleRetriever` permission requires the `users` permission. Which users the plugin can act as is controlled through the Lyvune UI.
 
 **Host functions:**
 
@@ -1077,7 +1077,7 @@ CacheSize = "200MB"           # Compilation cache size limit
 
 ### Plugin Configuration
 
-Plugin configuration is managed through the Navidrome web UI. Navigate to the Plugins page, select a plugin, and edit its configuration as key-value pairs.
+Plugin configuration is managed through the Lyvune web UI. Navigate to the Plugins page, select a plugin, and edit its configuration as key-value pairs.
 
 Access configuration values in your plugin:
 
@@ -1141,12 +1141,12 @@ zip -j my-plugin.ndp manifest.json plugin.wasm
 
 #### Using Go PDK Packages
 
-Navidrome provides type-safe Go packages for each capability and host service in `plugins/pdk/go/`. Instead of manually exporting functions with `//go:wasmexport`, use the `Register()` pattern:
+Lyvune provides type-safe Go packages for each capability and host service in `plugins/pdk/go/`. Instead of manually exporting functions with `//go:wasmexport`, use the `Register()` pattern:
 
 ```go
 package main
 
-import "github.com/navidrome/navidrome/plugins/pdk/go/metadata"
+import "github.com/Tian-MC/lyvune/plugins/pdk/go/metadata"
 
 type myPlugin struct{}
 
@@ -1161,8 +1161,8 @@ func main() {}
 Add to your `go.mod`:
 
 ```
-require github.com/navidrome/navidrome v0.0.0
-replace github.com/navidrome/navidrome => ../../..
+require github.com/Tian-MC/lyvune v0.0.0
+replace github.com/Tian-MC/lyvune => ../../..
 ```
 
 **Available capability packages:**
@@ -1297,7 +1297,7 @@ Plugins run in a secure WebAssembly sandbox provided by [Extism](https://extism.
 3. **No Network Listeners** – Plugins cannot bind ports
 4. **Config Isolation** – Plugins only receive their own config section
 5. **Memory Limits** – Controlled by the WebAssembly runtime
-6. **User-Scoped Authorization** – Plugins with `subsonicapi`, `scrobbleRetriever`, or `scrobbler` capabilities can only access/receive events for users assigned to them through Navidrome's configuration
+6. **User-Scoped Authorization** – Plugins with `subsonicapi`, `scrobbleRetriever`, or `scrobbler` capabilities can only access/receive events for users assigned to them through Lyvune's configuration
 7. **Users Permission** – Plugins requesting user access must be explicitly configured with allowed users; sensitive data (passwords, emails) is never exposed
 
 ---
@@ -1306,13 +1306,13 @@ Plugins run in a secure WebAssembly sandbox provided by [Extism](https://extism.
 
 ### Auto-Reload
 
-With `AutoReload = true`, Navidrome watches the plugins folder and automatically detects when `.ndp` files are added, modified, or removed. When a plugin file changes, the plugin is disabled and its metadata is re-read from the archive.
+With `AutoReload = true`, Lyvune watches the plugins folder and automatically detects when `.ndp` files are added, modified, or removed. When a plugin file changes, the plugin is disabled and its metadata is re-read from the archive.
 
-If `AutoReload` is disabled, Navidrome needs to be restarted to pick up plugin changes.
+If `AutoReload` is disabled, Lyvune needs to be restarted to pick up plugin changes.
 
 ### Enabling/Disabling Plugins
 
-Plugins can be enabled/disabled via the Navidrome UI or the [`navidrome plugin` CLI](#command-line-interface). The plugin state is persisted in the database.
+Plugins can be enabled/disabled via the Lyvune UI or the [`navidrome plugin` CLI](#command-line-interface). The plugin state is persisted in the database.
 
 ### Important Notes
 

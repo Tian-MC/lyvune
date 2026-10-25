@@ -1,7 +1,7 @@
-# Navidrome Host Function Wrappers for Rust
+# Lyvune Host Function Wrappers for Rust
 
-This directory contains auto-generated Rust wrappers for Navidrome's host services.
-These wrappers provide idiomatic Rust APIs for interacting with Navidrome from WASM plugins.
+This directory contains auto-generated Rust wrappers for Lyvune's host services.
+These wrappers provide idiomatic Rust APIs for interacting with Lyvune from WASM plugins.
 
 ## ⚠️ Auto-Generated Code
 

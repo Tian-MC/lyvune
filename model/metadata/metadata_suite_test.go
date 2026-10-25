@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Tian-MC/lyvune/log"
+	"github.com/Tian-MC/lyvune/tests"
 	"github.com/djherbis/times"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/navidrome/navidrome/log"
-	"github.com/navidrome/navidrome/tests"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

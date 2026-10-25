@@ -3,8 +3,8 @@ package main
 import (
 	_ "net/http/pprof" //nolint:gosec
 
-	"github.com/navidrome/navidrome/cmd"
-	"github.com/navidrome/navidrome/conf/buildtags"
+	"github.com/Tian-MC/lyvune/cmd"
+	"github.com/Tian-MC/lyvune/conf/buildtags"
 )
 
 //goland:noinspection GoBoolExpressions
