@@ -3,9 +3,9 @@ package lyrics
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
-	"math"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -18,37 +18,45 @@ import (
 
 const musixmatchID = "musixmatch"
 
-// musixmatchMatchConfidence is the confidence given to a matcher result. The
-// matcher is fuzzy on Musixmatch's side and returns no track metadata we could
-// compare, so a result is never trusted enough to be stored automatically.
-const musixmatchMatchConfidence = 0.7
-
 // musixmatch uses the official Musixmatch API with the user's own API key
-// (Lyrics.Musixmatch.ApiKey in the configuration).
+// (Lyrics.Musixmatch.ApiKey in the configuration). It never uses the private
+// tokens of Musixmatch's apps.
 //
-// It has NOT been verified against the live service: the developer terms could
-// not be read and no key was available. The implementation therefore does the
-// least that is safe:
-//   - lyrics are shown for manual selection only, never stored in sidecars,
-//   - the match is never reported as verified,
-//   - word-level (richsync) lyrics are not requested.
+// Flow, all documented methods:
+//
+//	matcher.track.get      the track Musixmatch thinks this is, with its real
+//	                       title, artist, album, length and what it has
+//	track.richsync.get     word-timed lyrics (parsed by ParseRichSync)
+//	track.subtitle.get     line-timed lyrics
+//	track.lyrics.get       plain lyrics
+//
+// The match is scored on the metadata Musixmatch returns, like every other
+// provider. Which of the calls an API key may use depends on its plan; a call
+// the plan refuses is skipped, not treated as a broken key.
+//
+// This adapter has NOT been verified against the live service: no API key was
+// available. Its parsing is covered by tests built from the documented
+// response shapes only.
 type musixmatch struct {
 	baseURL string
 	apiKey  string
+	store   bool
 	client  *http.Client
 	pacer   *pacer
 	timeout time.Duration
 }
 
 // NewMusixmatch returns the Musixmatch provider. Without an API key it reports
-// that credentials are needed and makes no request.
-func NewMusixmatch(baseURL, apiKey string) OnlineProvider {
+// that credentials are needed and makes no request. store allows its lyrics to
+// be saved, which only the user's own plan can authorize.
+func NewMusixmatch(baseURL, apiKey string, store bool) OnlineProvider {
 	if baseURL == "" {
 		baseURL = "https://api.musixmatch.com/ws/1.1"
 	}
 	return &musixmatch{
 		baseURL: strings.TrimRight(baseURL, "/"),
 		apiKey:  strings.TrimSpace(apiKey),
+		store:   store,
 		client:  &http.Client{},
 		pacer:   newPacer(musixmatchID, time.Second),
 		timeout: 8 * time.Second,
@@ -56,11 +64,15 @@ func NewMusixmatch(baseURL, apiKey string) OnlineProvider {
 }
 
 func (m *musixmatch) Info() ProviderInfo {
+	note := "Official API with your own key. Not verified against the live service. " +
+		"Word timing (RichSync) is read when your plan returns it, but is not advertised until it has been seen working. " +
+		"Free keys return partial lyrics, which are discarded."
+	if !m.store {
+		note += " Lyrics can be previewed but are not saved unless Lyrics.Musixmatch.Store is turned on."
+	}
 	info := ProviderInfo{
 		ID: musixmatchID, Name: "Musixmatch", Status: StatusReady, Verified: false,
-		Plain: true, Synced: true, Storable: false,
-		Note: "Needs your own Musixmatch API key. Results can be previewed but are not saved: " +
-			"the service terms could not be verified, and full or synced lyrics depend on your plan. Word-level lyrics are not supported.",
+		Plain: true, Synced: true, Storable: m.store, Note: note,
 	}
 	if m.apiKey == "" {
 		info.Status = StatusNeedsCredentials
@@ -78,6 +90,24 @@ type musixmatchEnvelope struct {
 	} `json:"message"`
 }
 
+// errPlanDenied means the key is valid but its plan does not include the call.
+var errPlanDenied = errors.New("not included in the plan")
+
+type musixmatchTrack struct {
+	TrackID      int64   `json:"track_id"`
+	Name         string  `json:"track_name"`
+	Artist       string  `json:"artist_name"`
+	Album        string  `json:"album_name"`
+	Length       float64 `json:"track_length"`
+	Instrumental int     `json:"instrumental"`
+	HasLyrics    int     `json:"has_lyrics"`
+	HasSubtitles int     `json:"has_subtitles"`
+	HasRichsync  int     `json:"has_richsync"`
+}
+
+// musixmatchFreeMarker is appended to the truncated lyrics of free keys.
+const musixmatchFreeMarker = "NOT for Commercial use"
+
 func (m *musixmatch) Search(ctx context.Context, rec Recording) ([]Candidate, error) {
 	if m.apiKey == "" {
 		return nil, ErrProviderDisabled
@@ -88,55 +118,124 @@ func (m *musixmatch) Search(ctx context.Context, rec Recording) ([]Candidate, er
 		return nil, nil
 	}
 
-	c := Candidate{
-		ID: musixmatchID + ":" + title + "|" + artist, Provider: musixmatchID, Source: SourceRemote,
-		Meta:     Meta{Title: rec.Title, Artist: rec.Artist, Album: rec.Album, DurationSec: rec.DurationSec},
-		Storable: false,
-		Match:    Match{Confidence: musixmatchMatchConfidence, Mismatch: []string{"unverified-match"}},
+	var found struct {
+		Track musixmatchTrack `json:"track"`
 	}
-
-	var plain struct {
-		Lyrics struct {
-			Body      string `json:"lyrics_body"`
-			Language  string `json:"lyrics_language"`
-			Copyright string `json:"lyrics_copyright"`
-		} `json:"lyrics"`
+	q := url.Values{"q_track": {title}, "q_artist": {artist}}
+	if rec.Album != "" {
+		q.Set("q_album", rec.Album)
 	}
-	if err := m.call(ctx, "matcher.lyrics.get", url.Values{"q_track": {title}, "q_artist": {artist}}, &plain); err != nil && err != errNotFound {
+	if err := m.call(ctx, "matcher.track.get", q, &found); err != nil {
+		if errors.Is(err, errNotFound) || errors.Is(err, errPlanDenied) {
+			return nil, nil
+		}
 		return nil, err
 	}
-	c.Attribution = strings.TrimSpace(plain.Lyrics.Copyright)
-	c.Meta.Lang = plain.Lyrics.Language
-	if list, err := model.ParseLyrics(ctx, ".txt", "xxx", []byte(plain.Lyrics.Body)); err == nil && len(list) > 0 {
-		c.Lyrics, c.Quality = list, QualityOf(list)
+	t := found.Track
+	if t.TrackID == 0 {
+		return nil, nil
 	}
+	c := Candidate{
+		ID: fmt.Sprintf("%s:%d", musixmatchID, t.TrackID), Provider: musixmatchID, Source: SourceRemote,
+		Meta:     Meta{Title: t.Name, Artist: t.Artist, Album: t.Album, DurationSec: t.Length, Instrumental: t.Instrumental == 1},
+		Storable: m.store,
+	}
+	c.Match = ScoreMatch(rec, c.Meta)
+	if !c.Match.Listed() {
+		return nil, nil
+	}
+	if c.Meta.Instrumental {
+		return []Candidate{c}, nil
+	}
+	id := url.Values{"track_id": {strconv.FormatInt(t.TrackID, 10)}}
 
-	var sub struct {
-		Subtitle struct {
-			Body string `json:"subtitle_body"`
-		} `json:"subtitle"`
-	}
-	q := url.Values{"q_track": {title}, "q_artist": {artist}, "subtitle_format": {"lrc"}}
-	if rec.DurationSec > 0 {
-		q.Set("f_subtitle_length", strconv.Itoa(int(math.Round(rec.DurationSec))))
-		q.Set("f_subtitle_length_max_deviation", "3")
-	}
-	switch err := m.call(ctx, "matcher.subtitle.get", q, &sub); err {
-	case nil:
-		if list, perr := model.ParseLyrics(ctx, ".lrc", "xxx", []byte(sub.Subtitle.Body)); perr == nil {
-			if sq := QualityOf(list); sq > c.Quality {
-				c.Lyrics, c.Quality = list, sq
+	best := func(list model.LyricList) {
+		if len(list) == 0 {
+			return
+		}
+		for i := range list {
+			if list[i].Kind == "" {
+				list[i].Kind = model.LyricKindMain
 			}
 		}
-	case errNotFound:
-	default:
-		// The plain lyrics are still worth offering when synced lyrics are not in the plan.
-		log.Debug(ctx, "Musixmatch synced lyrics unavailable", err)
+		if q := QualityOf(list); q > c.Quality {
+			c.Lyrics, c.Quality = list, q
+		}
+	}
+	soft := func(what string, err error) error {
+		if err == nil || errors.Is(err, errNotFound) || errors.Is(err, errPlanDenied) {
+			return nil
+		}
+		var rl *RateLimitedError
+		if errors.As(err, &rl) || ctx.Err() != nil {
+			return err
+		}
+		log.Debug(ctx, "Musixmatch call failed", "what", what, err)
+		return nil
+	}
+
+	if t.HasRichsync == 1 {
+		var rs struct {
+			Richsync struct {
+				Body string `json:"richsync_body"`
+			} `json:"richsync"`
+		}
+		if err := soft("richsync", m.call(ctx, "track.richsync.get", cloneValues(id), &rs)); err != nil {
+			return nil, err
+		}
+		if list, err := ParseRichSync(rs.Richsync.Body); err == nil {
+			list, _ = rejectSyntheticWordTiming(list)
+			best(list)
+		}
+	}
+	if c.Quality < QualityKaraoke && t.HasSubtitles == 1 {
+		var sub struct {
+			Subtitle struct {
+				Body string `json:"subtitle_body"`
+			} `json:"subtitle"`
+		}
+		sq := cloneValues(id)
+		sq.Set("subtitle_format", "lrc")
+		if err := soft("subtitle", m.call(ctx, "track.subtitle.get", sq, &sub)); err != nil {
+			return nil, err
+		}
+		if list, err := model.ParseLyrics(ctx, ".lrc", "xxx", []byte(sub.Subtitle.Body)); err == nil {
+			best(list)
+		}
+	}
+	if c.Quality == QualityNone && t.HasLyrics == 1 {
+		var plain struct {
+			Lyrics struct {
+				Body      string `json:"lyrics_body"`
+				Language  string `json:"lyrics_language"`
+				Copyright string `json:"lyrics_copyright"`
+			} `json:"lyrics"`
+		}
+		if err := soft("lyrics", m.call(ctx, "track.lyrics.get", cloneValues(id), &plain)); err != nil {
+			return nil, err
+		}
+		// Free keys get a cut-down text ending in a notice. Showing part of a song as
+		// if it were the song would be wrong, so it is dropped.
+		if body := plain.Lyrics.Body; body != "" && !strings.Contains(body, musixmatchFreeMarker) {
+			c.Attribution = strings.TrimSpace(plain.Lyrics.Copyright)
+			c.Meta.Lang = plain.Lyrics.Language
+			if list, err := model.ParseLyrics(ctx, ".txt", "xxx", []byte(body)); err == nil {
+				best(list)
+			}
+		}
 	}
 	if c.Quality == QualityNone {
 		return nil, nil
 	}
 	return []Candidate{c}, nil
+}
+
+func cloneValues(v url.Values) url.Values {
+	out := make(url.Values, len(v))
+	for k, vals := range v {
+		out[k] = append([]string(nil), vals...)
+	}
+	return out
 }
 
 func (m *musixmatch) call(ctx context.Context, method string, q url.Values, out any) error {
@@ -173,7 +272,9 @@ func (m *musixmatch) call(ctx context.Context, method string, q url.Values, out 
 	case code == http.StatusTooManyRequests:
 		m.pacer.coolDown(time.Minute)
 		return &RateLimitedError{Provider: musixmatchID, RetryAfter: time.Minute}
-	case code == http.StatusUnauthorized || code == http.StatusPaymentRequired || code == http.StatusForbidden:
+	case code == http.StatusForbidden:
+		return fmt.Errorf("%w: %s", errPlanDenied, method)
+	case code == http.StatusUnauthorized || code == http.StatusPaymentRequired:
 		return fmt.Errorf("%w: the API key was refused (status %d)", ErrProviderDisabled, code)
 	default:
 		return fmt.Errorf("%w: status %d", ErrProviderUnavailable, code)

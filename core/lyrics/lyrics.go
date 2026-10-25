@@ -79,8 +79,10 @@ func NewService(o Options) Lyrics {
 	if o.Providers == nil {
 		o.Providers = NewProviders(
 			NewLRCLIB(conf.Server.Lyrics.LRCLIB.BaseURL, conf.Server.Lyrics.LRCLIB.Enabled),
-			NewMusixmatch("", conf.Server.Lyrics.Musixmatch.ApiKey),
-			NewKuGou(), NewNetEase(), NewAppleMusic(),
+			NewMusixmatch("", conf.Server.Lyrics.Musixmatch.ApiKey, conf.Server.Lyrics.Musixmatch.Store),
+			NewKuGou("", "", conf.Server.Lyrics.KuGou.Store),
+			NewNetEase("", conf.Server.Lyrics.NetEase.Store),
+			NewAppleMusic(),
 		)
 	}
 	if o.Store == nil {
