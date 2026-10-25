@@ -1,8 +1,8 @@
-# Navidrome Design System
+# Lyvune Design System
 
 **Quiet when browsing. Immersive when listening.**
 
-The visual language of the redesigned Navidrome UI: roughly 70% minimal premium
+The visual language of the redesigned Lyvune UI: roughly 70% minimal premium
 (typography, spacing, restraint) and 30% cinematic (artwork-lit heroes, Now Playing).
 Everything below is implemented in `ui/src/design/` and consumed by `shell/`,
 `playback/`, `lyrics/` and `views/`.
@@ -13,7 +13,7 @@ Everything below is implemented in `ui/src/design/` and consumed by `shell/`,
 
 | Role | Token | Value | Notes |
 | --- | --- | --- | --- |
-| Navidrome Blue | `--nd-blue` | `#0084FF` | Extracted from the official logo (`resources/logo-192x192.png`). Icons, progress, active states, focus. |
+| Lyvune Blue | `--nd-blue` | `#0084FF` | Extracted from the official logo (`resources/logo-192x192.png`). Icons, progress, active states, focus. |
 | Hover | `--nd-blue-hover` | `#2A97FF` | |
 | Solid (text on blue) | `--nd-blue-solid` | `#0073DE` | Filled buttons with labels: 4.6:1 against white (AA). |
 | Blue text | `--nd-blue-text` | `#4BA6FF` | Small blue text on dark surfaces (≥ 6:1). |
@@ -121,7 +121,7 @@ Product components: `shell/` (AppShell, Sidebar, TopBar, MobileNav, UserMenu),
 
 ## 9. States & accessibility rules
 
-* Focus: 2px Navidrome Blue ring (`--focus-ring`) on every interactive element
+* Focus: 2px Lyvune Blue ring (`--focus-ring`) on every interactive element
   (`:focus-visible`).
 * State is never colour-only: active nav = blue icon + bold label + indicator bar;
   current track = playing bars + blue title; toggles = blue + dot + `aria-pressed`.
@@ -178,9 +178,9 @@ users stored in earlier versions working, without rewriting what is stored:
 
 | Support | Themes | Result |
 | --- | --- | --- |
-| successor | Dark, Extra Dark | the official Navidrome and Navidrome OLED variants |
+| successor | Dark, Extra Dark | the official Lyvune and Lyvune OLED variants |
 | tinted | 18 dark community themes | their accent and background feed the tokens (`computeTint`); secondary text, muted text and filled-accent text are recomputed so contrast stays ≥ 7:1 / 4.5:1 / 4.5:1 |
-| unsupported | 9 light themes | Navidrome is used and the theme picker says so |
+| unsupported | 9 light themes | Lyvune is used and the theme picker says so |
 
 The legacy theme definitions in `src/themes/` are data only; none of their
 player or layout stylesheets remain.
@@ -198,6 +198,6 @@ occurs on upstream `master`; reproduced there with the same backend):
 | `SyntaxError: expected property name, got '{'` (×2 at load) | `ui/index.html` holds Go template placeholders (`{{ .AppConfig }}`) that only the Go server substitutes | start `vite` alone |
 | `Could not load user libraries …` | upstream `LibrarySelector` logs when its library request fails right after sign-in | sign in on a fresh browser profile |
 
-Other limits: the nine light legacy themes are not supported (Navidrome is used);
+Other limits: the nine light legacy themes are not supported (Lyvune is used);
 languages other than English and Italian fall back to English for the new `ui.*`
 strings.

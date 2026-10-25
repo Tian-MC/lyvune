@@ -1,7 +1,8 @@
-# Navidrome Reimagined
+# Lyvune
 
-A fork of [Navidrome](https://www.navidrome.org), the open source web-based music server and streamer, with a
-rewritten web interface.
+Lyvune is an open source web-based music server and streamer, with a rewritten web interface, word-by-word karaoke
+lyrics and a lyrics engine. It started as a fork of [Navidrome](https://www.navidrome.org) (previously *Navidrome
+Reimagined*) and keeps its code, its license and its copyright notices.
 
 The frontend in `ui/` was rebuilt, and the backend gained a lyrics engine. The REST and Subsonic APIs, authentication,
 the database, library scanning and streaming are otherwise the upstream code, so existing Subsonic clients,
@@ -29,9 +30,9 @@ On a phone the lyrics view keeps the same controls:
 - react-admin is still used for the data layer and the administration screens.
 - The previous player, layout, album/artist/playlist pages and the `navidrome-music-player`, `react-drag-listview`
   and `react-measure` dependencies were removed.
-- Themes saved by existing users keep working. *Dark* and *Extra Dark* map to the new *Navidrome* and
-  *Navidrome Black (OLED)* themes, other dark themes are applied as colour tints, and light themes fall back to
-  Navidrome.
+- Themes saved by existing users keep working. *Dark* and *Extra Dark* map to the new *Lyvune* and
+  *Lyvune Black (OLED)* themes, other dark themes are applied as colour tints, and light themes fall back to
+  Lyvune.
 - A lyrics engine looks for missing lyrics online (LRCLIB, KuGou, NetEase, QQ Music and, with your own key,
   Musixmatch), prefers the files you already have, and lets you override, lock and undo. Word-by-word karaoke is
   shown when a source really has it. Found lyrics are saved next to the audio (`.lyrics.json`, offline, with word timing) according to a per-provider
@@ -63,12 +64,18 @@ Build and run a binary:
 
 ```sh
 make build
-ND_MUSICFOLDER=/path/to/music ND_DATAFOLDER=/path/to/data ./navidrome
+ND_MUSICFOLDER=/path/to/music ND_DATAFOLDER=/path/to/data ./lyvune
 ```
 
-Navidrome reads the music folder and only writes `.lyrics.json` lyrics files into it (see above). Configuration
-options and installation methods other than building from source are the same as upstream: see the
-[Navidrome documentation](https://www.navidrome.org/docs/).
+Lyvune reads the music folder and only writes `.lyrics.json` lyrics files into it (see above). Configuration
+options are the same as Navidrome's: see the [Navidrome documentation](https://www.navidrome.org/docs/).
+
+**If you come from Navidrome**, nothing has to be migrated. The configuration file is `lyvune.toml`, and a
+`navidrome.toml` in the same place is still read when there is no `lyvune.toml`. Environment variables keep their
+`ND_` prefix. An existing `navidrome.db` is used as it is (a new installation creates `lyvune.db`), and old
+`navidrome_backup_*.db` backups are still listed and pruned. The server still presents itself to Subsonic clients as
+`navidrome`, because clients recognise it, and the features it has, by that name. Sidecar files keep the format name
+`navidrome-lyrics`, so lyrics saved earlier still load.
 
 ## Tests
 
@@ -86,9 +93,9 @@ make test-i18n
 
 ## Upstream
 
-This project follows [navidrome/navidrome](https://github.com/navidrome/navidrome). Bugs in the server, the APIs and
-scanning belong there. See the [contributing guide](CONTRIBUTING.md) and the
-[code of conduct](CODE_OF_CONDUCT.md).
+Lyvune builds on [Navidrome](https://github.com/navidrome/navidrome), by Deluan Quintão and its contributors. Bugs
+in the parts that come from it (the server, the APIs and scanning) may also belong there. See the
+[contributing guide](CONTRIBUTING.md) and the [code of conduct](CODE_OF_CONDUCT.md).
 
 ## License
 

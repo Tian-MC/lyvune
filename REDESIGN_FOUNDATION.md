@@ -1,4 +1,4 @@
-# Navidrome Reimagined — Redesign Foundation
+# Lyvune — Redesign Foundation
 
 Phase 0 deliverable: an audit of the existing frontend, the functional systems that
 must survive the reconstruction, the architectural decisions taken, and the phased
@@ -107,10 +107,10 @@ about dialog, quick connect.
 
 ## 4. Brand identity — extracted, not invented
 
-* The Navidrome logo (`resources/logo-192x192.png`, `ui/public/android-chrome-*`)
+* The Lyvune logo (`resources/logo-192x192.png`, `ui/public/android-chrome-*`)
   is **black, white and `#0084FF`** (pixel census: `#0084ff` dominant, `#000000`
   second). The UI already uses `#0085ff` for the system-name link.
-* **Navidrome Blue = `#0084FF`.** It is the only accent of the new design system.
+* **Lyvune Blue = `#0084FF`.** It is the only accent of the new design system.
 
 ## 5. Reuse vs. rebuild
 
@@ -219,7 +219,7 @@ IT.
 ### Known limitations
 * Development-only console warnings that come from upstream code and also occur on
   `master` are listed, with origin and reproduction steps, in `DESIGN_SYSTEM.md` §14.
-* The nine light legacy themes are not supported by the dark-only UI; Navidrome is used
+* The nine light legacy themes are not supported by the dark-only UI; Lyvune is used
   instead and the picker says so.
 * Languages other than English and Italian fall back to English for the new `ui.*`
   strings.

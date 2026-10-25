@@ -1,6 +1,6 @@
 # Lyrics engine
 
-How Navidrome Reimagined finds, ranks, stores and lets you override lyrics.
+How Lyvune finds, ranks, stores and lets you override lyrics.
 
 Three rules drive everything:
 
@@ -14,7 +14,7 @@ Audio files are never modified. Timestamps are never invented: karaoke means the
 
 | Part | Where |
 | --- | --- |
-| Parsers (LRC, Enhanced LRC, TTML, SRT, Lyricsfile YAML, plain text) | `model/lyrics_*.go` (already in Navidrome) |
+| Parsers (LRC, Enhanced LRC, TTML, SRT, Lyricsfile YAML, plain text) | `model/lyrics_*.go` (already in Lyvune) |
 | Source order for local files, plugins | `core/lyrics/lyrics.go` (`lyricspriority`) |
 | Quality and source model | `core/lyrics/candidate.go` |
 | Recording match | `core/lyrics/match.go` |
@@ -55,11 +55,11 @@ Choosing lyrics over a sidecar or embedded lyrics **does not touch the original*
 
 ## Files next to the audio
 
-Navidrome only creates, replaces or deletes **`.lyrics.json` files that carry its own envelope**. It never writes `.lrc`, never edits tags and never touches audio, artwork or timestamps.
+Lyvune only creates, replaces or deletes **`.lyrics.json` files that carry its own envelope**. It never writes `.lrc`, never edits tags and never touches audio, artwork or timestamps.
 
 Name: `01 - Song.lyrics.json`. If another **audio** file shares the base name (`01 - Song.flac` and `01 - Song.mp3`), the audio extension is kept: `01 - Song.flac.lyrics.json`. Other files with the same base name, such as `01 - Song.lrc` or a cover, do not count.
 
-Writes are atomic (temporary file in the same folder, flushed, renamed), verified by reading the file back, and serialised per file. A `.lyrics.json` that is not a Navidrome envelope is ignored and never overwritten.
+Writes are atomic (temporary file in the same folder, flushed, renamed), verified by reading the file back, and serialised per file. A `.lyrics.json` that is not a Lyvune envelope is ignored and never overwritten.
 
 ### Schema (version 1)
 
@@ -90,7 +90,7 @@ Lock and offset live in the sidecar when there is one. For a track whose current
 
 ## History and undo
 
-Before any change to a Navidrome sidecar, the previous content is saved under `<data folder>/lyrics-history/<track key>/`, outside the library. The last 10 versions are kept per track (`Lyrics.HistoryKeep`). The very first save is recorded as "no file", so even that can be undone. Restoring is itself undoable. Changing the lock or the offset does not add history, so adjusting the timing never pushes real versions out.
+Before any change to a Lyvune sidecar, the previous content is saved under `<data folder>/lyrics-history/<track key>/`, outside the library. The last 10 versions are kept per track (`Lyrics.HistoryKeep`). The very first save is recorded as "no file", so even that can be undone. Restoring is itself undoable. Changing the lock or the offset does not add history, so adjusting the timing never pushes real versions out.
 
 ## Matching the recording
 
@@ -290,7 +290,7 @@ All under `/api/lyrics`, with the usual authentication. Reading and automatic re
 | `POST /song/{id}/apply` | admin | Choose a candidate by ID (`confirm`, `force`) |
 | `POST /song/{id}/import` | admin | Import a file's text (`.lrc`, `.elrc`, `.ttml`, `.srt`, `.txt`, `.yaml`, `.lyrics.json`, up to 2 MB) |
 | `PUT /song/{id}/lock`, `PUT /song/{id}/offset` | admin | Lock; offset (clamped to ±10 min) |
-| `POST /song/{id}/restore`, `DELETE /song/{id}` | admin | Restore a version; delete the Navidrome sidecar |
+| `POST /song/{id}/restore`, `DELETE /song/{id}` | admin | Restore a version; delete the Lyvune sidecar |
 | `POST /bulk`, `GET`/`DELETE /bulk/{id}` | admin | Library, album or track jobs: `missing`, `upgrade`, `recheck`, `replace-manual` (needs `confirm`) |
 
 A candidate is always referred to by an ID the server issued, so a client cannot supply lyrics of its own through it. Errors carry a code (`confirm-required`, `locked`, `not-storable`, `no-candidate`, `read-only`, `unsafe-path`, `not-managed`, `busy`, …).
@@ -323,7 +323,7 @@ A candidate is always referred to by an ID the server issued, so a client cannot
 ## Security
 
 - Writes are confined to the library: the folder must resolve inside it, symbolic links at the target or in the path are refused, and non-local libraries are not written.
-- Only Navidrome envelopes are replaced or deleted; other files with the same name are left alone.
+- Only Lyvune envelopes are replaced or deleted; other files with the same name are left alone.
 - Provider answers are size-bounded and validated; imports are bounded; offsets are clamped.
 - Credentials never reach the interface, the logs or the error messages.
 - Nothing can switch saving on for a provider without a written authorization; results that may not be kept are held in memory only (at most 300 tracks, twelve hours) and never written to the library or the database.
