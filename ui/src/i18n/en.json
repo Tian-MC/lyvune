@@ -917,7 +917,9 @@
         "noResults": "No matching lyrics were found.",
         "noneBefore": "Before any lyrics were saved",
         "notStorable": "Cannot be saved",
-        "notStorableHint": "This provider does not allow its lyrics to be saved.",
+        "notStorableHint": "Saving is off for this provider. An administrator can turn it on in the server configuration, if its terms allow it.",
+        "filterProvider": "Show results from",
+        "allProviders": "All",
         "offset": "Timing offset",
         "outcome": {
           "disabled": "not set up",

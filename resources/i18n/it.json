@@ -854,7 +854,9 @@
                 "noResults": "Non sono stati trovati testi corrispondenti.",
                 "noneBefore": "Prima che fossero salvati dei testi",
                 "notStorable": "Non si può salvare",
-                "notStorableHint": "Questo provider non permette di salvare i suoi testi.",
+                "notStorableHint": "Il salvataggio è disattivato per questo provider. Un amministratore può attivarlo nella configurazione del server, se i suoi termini lo permettono.",
+                "filterProvider": "Mostra i risultati di",
+                "allProviders": "Tutti",
                 "offset": "Sfasamento temporale",
                 "outcome": {
                     "disabled": "non configurato",
