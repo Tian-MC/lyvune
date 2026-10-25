@@ -568,6 +568,10 @@ func (l *lyricsService) upgrade(ctx context.Context, mf *model.MediaFile, s Sett
 		l.markChecked(ctx, mf)
 	}
 	if best == nil {
+		// A provider that did not answer is not the same as "nothing better exists"
+		if anyFailed(outcomes) {
+			return ResolveResult{Result: ResolveUnavailable}, nil
+		}
 		return ResolveResult{Result: ResolveKept}, nil
 	}
 	// Replacing a manual sidecar goes in the user layer, so it outranks it

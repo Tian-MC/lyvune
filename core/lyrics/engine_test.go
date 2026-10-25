@@ -400,6 +400,18 @@ var _ = Describe("Lyrics engine", func() {
 			Expect(firstLine(get())).To(Equal("synced version"))
 		})
 
+		It("says the provider did not answer, rather than 'nothing better', during an outage", func() {
+			saveManaged(ctx, engine, mf, fake, "p", plainOf("plain version"))
+			fake.mu.Lock()
+			fake.err = lyrics.ErrProviderUnavailable
+			fake.mu.Unlock()
+			Expect(resolve(lyrics.ResolveOptions{}).Result).To(Equal(lyrics.ResolveUnavailable))
+			Expect(firstLine(get())).To(Equal("plain version"))
+			// and it is checked again later: an outage must not count as "checked recently"
+			fake.set(remote("fake", "2", syncedOf("better"), 0.97))
+			Expect(resolve(lyrics.ResolveOptions{}).Result).To(Equal(lyrics.ResolveUpgraded))
+		})
+
 		It("leaves karaoke alone without asking providers", func() {
 			saveManagedKaraoke(ctx, engine, mf, fake)
 			calls := fake.calls.Load()
