@@ -4,7 +4,6 @@ import { useT } from '../i18n/useT'
 import { Button } from '../design/Button'
 import { ProviderCard } from './ProviderCard'
 import { errorCode, lyricsApi } from '../lyrics/manageApi'
-import { providerName } from '../lyrics/lyricsSource'
 import styles from './LyricsSettings.module.css'
 
 const POLL_MS = 1500
@@ -23,6 +22,13 @@ const SWITCHES = [
     'Find missing lyrics automatically',
     'ui.lyrics.settings.autoRetrieveHint',
     'When a track without lyrics plays, look for them online and save them next to the file.',
+  ],
+  [
+    'autoPersist',
+    'ui.lyrics.settings.autoPersist',
+    'Save found lyrics automatically',
+    'ui.lyrics.settings.autoPersistHint',
+    'Keep what is found next to the audio, for the providers set to save below. Turn it off to only show results. Nothing is saved over lyrics you added yourself.',
   ],
   [
     'autoUpgrade',
@@ -210,9 +216,14 @@ export const LyricsSettings = () => {
         : settings.providers.filter((p) => p !== id),
     })
 
-  // What the retired "allow saving" switch used to cover, and settings that differ
-  // from the recommended ones. Neither is changed behind the administrator's back.
-  const legacyStore = (settings.store ?? []).map(providerName)
+  const setSavePref = (id, on) =>
+    save({
+      ...settings,
+      storePref: { ...(settings.storePref ?? {}), [id]: on },
+    })
+
+  // Settings that differ from the recommended ones are never changed behind the
+  // administrator's back
   const differences = [
     !settings.preferLocal &&
       t('ui.lyrics.settings.diffPreferLocal', 'Prefer local files is off'),
@@ -231,29 +242,6 @@ export const LyricsSettings = () => {
         <p role="alert" className={styles.error}>
           {errorText}
         </p>
-      )}
-
-      {legacyStore.length > 0 && (
-        <div className={styles.notice} role="note">
-          <strong>
-            {t(
-              'ui.lyrics.settings.legacyStoreTitle',
-              'Saving by switch has been withdrawn',
-            )}
-          </strong>
-          <p className={styles.hint}>
-            {t(
-              'ui.lyrics.settings.legacyStoreBody',
-              'This server had saving turned on for %{providers} with a switch that no longer exists: turning it on never gave a right to keep those lyrics. Their results are now shown while playing but not saved. Lyrics you already saved stay as they are. A provider can be allowed to save only with a written authorization (see LYRICS_ENGINE.md).',
-              { providers: legacyStore.join(', ') },
-            )}
-          </p>
-          <div className={styles.actions}>
-            <Button size="sm" onClick={() => save({ ...settings, store: [] })}>
-              {t('ui.lyrics.settings.legacyStoreOk', 'Understood')}
-            </Button>
-          </div>
-        </div>
       )}
 
       {showRecommended && (
@@ -350,7 +338,12 @@ export const LyricsSettings = () => {
       </div>
       <ul className={styles.providers}>
         {providers.map((p) => (
-          <ProviderCard key={p.id} p={p} onToggle={toggleProvider} />
+          <ProviderCard
+            key={p.id}
+            p={p}
+            onToggle={toggleProvider}
+            onSavePref={setSavePref}
+          />
         ))}
       </ul>
 

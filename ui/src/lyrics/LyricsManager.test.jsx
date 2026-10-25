@@ -270,8 +270,9 @@ describe('<LyricsManager />', () => {
             id: 'musixmatch:x',
             provider: 'musixmatch',
             verified: false,
-            storable: false,
-            displayOnly: false,
+            storable: true,
+            canShow: false,
+            rights: 'unclear',
             match: { confidence: 0.7 },
             attribution: 'Lyrics powered by Musixmatch',
           }),
@@ -280,8 +281,23 @@ describe('<LyricsManager />', () => {
             provider: 'kugou',
             storable: false,
             displayOnly: true,
+            canShow: true,
+            rights: 'restricted',
           }),
-          candidate({ id: 'lrclib:z', provider: 'lrclib', storable: true }),
+          candidate({
+            id: 'lrclib:z',
+            provider: 'lrclib',
+            storable: true,
+            canShow: true,
+            autoSave: true,
+            rights: 'unclear',
+          }),
+          candidate({
+            id: 'plugin:p',
+            provider: 'plugin',
+            storable: false,
+            displayOnly: false,
+          }),
         ],
         providers: [],
       })
@@ -295,18 +311,116 @@ describe('<LyricsManager />', () => {
       expect(
         screen.getByText('Lyrics powered by Musixmatch'),
       ).toBeInTheDocument()
-      // preview only: cannot be chosen at all
-      expect(screen.getByText('Preview only')).toBeInTheDocument()
-      // may be shown while playing, never kept
+      // restricted by recorded terms: only shown
       expect(screen.getByText('Shown only, not saved')).toBeInTheDocument()
       expect(
-        screen.getByRole('button', { name: 'Show this version (not saved)' }),
-      ).toBeEnabled()
-      // may be kept
-      expect(screen.getByText('Can be saved')).toBeInTheDocument()
-      const use = screen.getAllByRole('button', { name: 'Use this version' })
-      expect(use.some((b) => b.disabled)).toBe(true)
-      expect(use.some((b) => !b.disabled)).toBe(true)
+        screen
+          .getAllByRole('button', { name: 'Show this version (not saved)' })
+          .filter((b) => !b.disabled),
+      ).toHaveLength(1)
+      // neither shown nor saveable: preview only
+      expect(screen.getByText('Preview only')).toBeInTheDocument()
+      // saving is possible, with the rights said to be unclear, never "permitted"
+      expect(screen.getAllByText('Rights unclear').length).toBeGreaterThan(0)
+      expect(screen.queryByText(/permitted/i)).toBeNull()
+      expect(screen.getByText('Saved automatically')).toBeInTheDocument()
+      expect(
+        screen.getAllByRole('button', { name: 'Save lyrics locally' }),
+      ).toHaveLength(2)
+      // only a provider that may be shown offers to show without saving
+      expect(screen.getAllByRole('button', { name: 'Show only' })).toHaveLength(
+        1,
+      )
+    })
+
+    it('saves by hand, and asks to show only when the user wants that', async () => {
+      api.search.mockResolvedValue({
+        candidates: [
+          candidate({
+            id: 'kugou:y',
+            provider: 'kugou',
+            storable: true,
+            canShow: true,
+          }),
+        ],
+        providers: [],
+      })
+      api.apply.mockResolvedValue({
+        action: 'created-preferred',
+        status: status(),
+      })
+      await open(id())
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Search for better lyrics' }),
+      )
+      fireEvent.click(
+        await screen.findByRole('button', { name: 'Save lyrics locally' }),
+      )
+      await waitFor(() =>
+        expect(api.apply).toHaveBeenLastCalledWith(id(), {
+          candidateId: 'kugou:y',
+          confirm: false,
+          force: false,
+          mode: 'save',
+        }),
+      )
+      expect(
+        await screen.findByText(
+          'Saved locally and read back. It stays available offline.',
+        ),
+      ).toBeInTheDocument()
+
+      api.apply.mockResolvedValue({
+        action: 'shown-not-saved',
+        notSaved: true,
+        status: status(),
+      })
+      fireEvent.click(screen.getByRole('button', { name: 'Show only' }))
+      await waitFor(() =>
+        expect(api.apply).toHaveBeenLastCalledWith(id(), {
+          candidateId: 'kugou:y',
+          confirm: false,
+          force: false,
+          mode: 'show',
+        }),
+      )
+      expect(await screen.findByText(/Shown, not saved\./)).toBeInTheDocument()
+    })
+
+    it("explains a save the provider's recorded terms refuse, and one that could not be read back", async () => {
+      api.search.mockResolvedValue({
+        candidates: [
+          candidate({
+            id: 'kugou:y',
+            provider: 'kugou',
+            storable: true,
+            canShow: true,
+          }),
+        ],
+        providers: [],
+      })
+      await open(id())
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Search for better lyrics' }),
+      )
+      const save = await screen.findByRole('button', {
+        name: 'Save lyrics locally',
+      })
+      api.apply.mockRejectedValueOnce(httpError(422, 'storage-restricted'))
+      fireEvent.click(save)
+      expect(await screen.findByRole('alert')).toHaveTextContent(
+        'terms recorded for this provider',
+      )
+      api.apply.mockRejectedValueOnce(httpError(500, 'save-unverified'))
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Save lyrics locally' }),
+      )
+      await waitFor(() =>
+        expect(screen.getByRole('alert')).toHaveTextContent(
+          'could not be read back',
+        ),
+      )
+      expect(screen.queryByText(/Saved locally/)).toBeNull()
     })
 
     it('says plainly that a chosen result is shown, not saved', async () => {
@@ -317,6 +431,8 @@ describe('<LyricsManager />', () => {
             provider: 'kugou',
             storable: false,
             displayOnly: true,
+            canShow: true,
+            rights: 'restricted',
           }),
         ],
         providers: [],
@@ -338,7 +454,7 @@ describe('<LyricsManager />', () => {
       expect(
         await screen.findByText(/Shown, not saved\. It is held in memory only/),
       ).toBeInTheDocument()
-      expect(screen.queryByText('Lyrics updated.')).toBeNull()
+      expect(screen.queryByText(/Saved locally/)).toBeNull()
     })
 
     it('says when a provider is not set up, slow or down, and when nothing matched', async () => {
@@ -379,12 +495,15 @@ describe('<LyricsManager />', () => {
     it('uses a version: asks first, with nothing sent that is not the candidate id', async () => {
       api.apply.mockRejectedValueOnce(httpError(409, 'confirm-required'))
       await search()
-      fireEvent.click(screen.getByRole('button', { name: 'Use this version' }))
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Save lyrics locally' }),
+      )
       await waitFor(() =>
         expect(api.apply).toHaveBeenCalledWith(id(), {
           candidateId: 'lrclib:1',
           confirm: false,
           force: false,
+          mode: 'save',
         }),
       )
       const prompt = await screen.findByRole('group', { name: 'Confirm' })
@@ -396,7 +515,9 @@ describe('<LyricsManager />', () => {
       api.apply.mockRejectedValueOnce(httpError(409, 'confirm-required'))
       api.restore.mockResolvedValue({ action: 'restored', status: status() })
       await search()
-      fireEvent.click(screen.getByRole('button', { name: 'Use this version' }))
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Save lyrics locally' }),
+      )
       const prompt = await screen.findByRole('group', { name: 'Confirm' })
       fireEvent.click(within(prompt).getByRole('button', { name: 'Replace' }))
       await waitFor(() =>
@@ -404,9 +525,14 @@ describe('<LyricsManager />', () => {
           candidateId: 'lrclib:1',
           confirm: true,
           force: false,
+          mode: 'save',
         }),
       )
-      expect(await screen.findByText('Lyrics updated.')).toBeInTheDocument()
+      expect(
+        await screen.findByText(
+          'Saved locally and read back. It stays available offline.',
+        ),
+      ).toBeInTheDocument()
       expect(
         screen.queryByRole('group', { name: 'Confirm' }),
       ).not.toBeInTheDocument()
@@ -419,7 +545,9 @@ describe('<LyricsManager />', () => {
     it('does nothing more when the confirmation is cancelled', async () => {
       api.apply.mockRejectedValueOnce(httpError(409, 'confirm-required'))
       await search()
-      fireEvent.click(screen.getByRole('button', { name: 'Use this version' }))
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Save lyrics locally' }),
+      )
       const prompt = await screen.findByRole('group', { name: 'Confirm' })
       fireEvent.click(within(prompt).getByRole('button', { name: 'Cancel' }))
       expect(
@@ -431,7 +559,9 @@ describe('<LyricsManager />', () => {
     it('offers "replace anyway" for locked lyrics and then forces it', async () => {
       api.apply.mockRejectedValueOnce(httpError(409, 'locked'))
       await search()
-      fireEvent.click(screen.getByRole('button', { name: 'Use this version' }))
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Save lyrics locally' }),
+      )
       const prompt = await screen.findByRole('group', { name: 'Confirm' })
       expect(prompt).toHaveTextContent('locked')
       fireEvent.click(
@@ -442,6 +572,7 @@ describe('<LyricsManager />', () => {
           candidateId: 'lrclib:1',
           confirm: true,
           force: true,
+          mode: 'save',
         }),
       )
     })
@@ -454,14 +585,18 @@ describe('<LyricsManager />', () => {
     ])('explains the "%s" failure', async (code, text) => {
       api.apply.mockRejectedValueOnce(httpError(422, code))
       await search()
-      fireEvent.click(screen.getByRole('button', { name: 'Use this version' }))
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Save lyrics locally' }),
+      )
       expect(await screen.findByRole('alert')).toHaveTextContent(text)
     })
 
     it('tells a non-administrator that only administrators can change lyrics', async () => {
       api.apply.mockRejectedValueOnce(httpError(403))
       await search()
-      fireEvent.click(screen.getByRole('button', { name: 'Use this version' }))
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Save lyrics locally' }),
+      )
       expect(await screen.findByRole('alert')).toHaveTextContent(
         'Only an administrator',
       )
@@ -765,7 +900,7 @@ describe('<LyricsManager />', () => {
       screen.getByRole('button', { name: 'Search for better lyrics' }),
     )
     await screen.findByText('Matches the track · 97%')
-    fireEvent.click(screen.getByRole('button', { name: 'Use this version' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Save lyrics locally' }))
     await screen.findByRole('group', { name: 'Confirm' })
 
     rerender(<LyricsManager trackId="other-track" onClose={() => {}} />)

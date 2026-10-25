@@ -48,7 +48,7 @@ const Tag = ({ on, children, warn }) => (
  * implemented, set up, seen working and seen returning karaoke are separate
  * facts, and none is inferred from another.
  */
-export const ProviderCard = ({ p, onToggle }) => {
+export const ProviderCard = ({ p, onToggle, onSavePref }) => {
   const t = useT()
   const [availKey, availDefault, tone] = AVAILABILITY[p.availability] ?? [
     'ui.lyrics.provider.unknown',
@@ -116,23 +116,23 @@ export const ProviderCard = ({ p, onToggle }) => {
             )}
           </Tag>
         )}
-        {p.storeEligible ? (
-          <>
-            <Tag on>{t('ui.lyrics.provider.tagCanSave', 'Can be saved')}</Tag>
-            <Tag on={p.storeVerified} warn={!p.storeVerified}>
-              {p.storeVerified
-                ? t('ui.lyrics.provider.tagVerified', 'Permission verified')
-                : t(
-                    'ui.lyrics.provider.tagNotVerified',
-                    'Permission not verified',
-                  )}
-            </Tag>
-          </>
-        ) : p.display === 'session' ? (
-          <Tag warn>{t('ui.lyrics.provider.tagShown', 'Shown, not saved')}</Tag>
-        ) : (
-          <Tag warn={p.implemented}>
-            {t('ui.lyrics.provider.tagPreview', 'Preview only')}
+        {p.implemented && (
+          <Tag
+            on={p.storeStatus === 'granted'}
+            warn={p.storeStatus !== 'granted'}
+          >
+            {p.storeStatus === 'granted'
+              ? t('ui.lyrics.provider.rightsGranted', 'Rights documented')
+              : p.storeStatus === 'restricted'
+                ? t('ui.lyrics.provider.rightsRestricted', 'Saving restricted')
+                : t('ui.lyrics.provider.rightsUnclear', 'Rights unclear')}
+          </Tag>
+        )}
+        {p.implemented && p.storeAllowed && (
+          <Tag on={p.savePreference}>
+            {p.savePreference
+              ? t('ui.lyrics.provider.tagSaved', 'Saved automatically')
+              : t('ui.lyrics.provider.tagNotSaved', 'Not saved automatically')}
           </Tag>
         )}
       </p>
@@ -162,50 +162,86 @@ export const ProviderCard = ({ p, onToggle }) => {
       </p>
 
       {p.implemented && (
-        <p className={styles.hint}>
-          {p.storeEligible
-            ? t(
-                'ui.lyrics.provider.storageEligible',
-                'Results can be saved next to the audio.',
-              )
-            : p.display === 'session'
+        <div className={styles.store}>
+          <FormControlLabel
+            labelPlacement="start"
+            control={
+              <Switch
+                color="primary"
+                size="small"
+                checked={!!p.savePreference}
+                disabled={!p.storeAllowed || p.status !== 'ready'}
+                onChange={(e) => onSavePref(p.id, e.target.checked)}
+                inputProps={{
+                  'aria-label': t(
+                    'ui.lyrics.provider.saveSwitch',
+                    'Save lyrics from %{name} locally',
+                    { name: p.name },
+                  ),
+                }}
+              />
+            }
+            label={t(
+              'ui.lyrics.provider.saveSwitchLabel',
+              'Save its lyrics locally',
+            )}
+          />
+          <p className={styles.hint}>
+            {p.storeStatus === 'restricted'
               ? t(
-                  'ui.lyrics.provider.storageShown',
-                  'Results are shown while playing and never saved.',
+                  'ui.lyrics.provider.permRestricted',
+                  'Saving is restricted by the terms recorded for this provider: %{basis} (%{reference}). Its results are only shown.',
+                  { basis: p.storeBasis, reference: p.storeReference },
                 )
-              : t(
-                  'ui.lyrics.provider.storagePreview',
-                  'Results can only be previewed in the lyrics manager.',
-                )}{' '}
-          {p.storeEligible
-            ? t(
-                'ui.lyrics.provider.offlineYes',
-                'Available offline once saved.',
-              )
-            : t('ui.lyrics.provider.offlineNo', 'Not available offline.')}
-        </p>
-      )}
-
-      {p.implemented && p.storeBasis && (
-        <p className={styles.hint}>
-          {p.storeVerified
-            ? t(
-                'ui.lyrics.provider.permVerified',
-                'Storage permission verified: %{basis} (%{reference})',
-                { basis: p.storeBasis, reference: p.storeReference },
-              )
-            : p.storeEligible
+              : p.storeStatus === 'granted'
+                ? t(
+                    'ui.lyrics.provider.permGranted',
+                    'A written authorization is recorded: %{basis} (%{reference}). Saving is still your choice.',
+                    { basis: p.storeBasis, reference: p.storeReference },
+                  )
+                : t(
+                    'ui.lyrics.provider.permUnclear',
+                    'Rights unclear: %{basis} Turning this on is your decision; it is not a permission from the provider.',
+                    { basis: p.storeBasis },
+                  )}
+          </p>
+          <p className={styles.hint}>
+            {p.storeAllowed && p.savePreference
               ? t(
-                  'ui.lyrics.provider.permNotVerified',
-                  'Storage permission not verified: %{basis}',
-                  { basis: p.storeBasis },
+                  'ui.lyrics.provider.savedOffline',
+                  'Results are saved next to the audio and stay available offline.',
                 )
-              : t(
-                  'ui.lyrics.provider.permNone',
-                  'No storage permission: %{basis}',
-                  { basis: p.storeBasis },
-                )}
-        </p>
+              : p.display === 'session'
+                ? t(
+                    'ui.lyrics.provider.notSavedShown',
+                    'Results are shown while playing, not saved, and not available offline. You can still save one by hand in the lyrics manager.',
+                  )
+                : t(
+                    'ui.lyrics.provider.notSavedPreview',
+                    'Results can only be previewed in the lyrics manager, and are not available offline unless you save one by hand.',
+                  )}
+            {p.savePreferenceSource === 'legacy' &&
+              ` ${t(
+                'ui.lyrics.provider.prefLegacy',
+                'This choice was carried over from an earlier version.',
+              )}`}
+          </p>
+          {p.lastSave && (
+            <p className={styles.hint} role="status">
+              {p.lastSave.ok
+                ? t(
+                    'ui.lyrics.provider.lastSaveOk',
+                    'Last save: succeeded and was read back (%{time}).',
+                    { time: when(p.lastSave.at) },
+                  )
+                : t(
+                    'ui.lyrics.provider.lastSaveFailed',
+                    'Last save failed: %{message} (%{time})',
+                    { message: p.lastSave.message, time: when(p.lastSave.at) },
+                  )}
+            </p>
+          )}
+        </div>
       )}
 
       {p.formats?.length > 0 && (

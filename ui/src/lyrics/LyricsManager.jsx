@@ -28,6 +28,16 @@ const errorText = (t, e) => {
   switch (errorCode(e)) {
     case 'locked':
       return t('ui.lyrics.error.locked', 'These lyrics are locked.')
+    case 'storage-restricted':
+      return t(
+        'ui.lyrics.error.storageRestricted',
+        'The terms recorded for this provider do not allow keeping its lyrics. They can still be shown.',
+      )
+    case 'save-unverified':
+      return t(
+        'ui.lyrics.error.saveUnverified',
+        'The lyrics were written but could not be read back as saved, so they are not reported as saved.',
+      )
     case 'not-storable':
       return t(
         'ui.lyrics.error.notStorable',
@@ -168,6 +178,7 @@ export const LyricsManager = ({ trackId, title, onClose }) => {
                 candidateId: payload.id,
                 confirm: !!opts.confirm,
                 force: !!opts.force,
+                ...(opts.mode && { mode: opts.mode }),
               })
       setBusy(true)
       setNotice(null)
@@ -183,15 +194,21 @@ export const LyricsManager = ({ trackId, title, onClose }) => {
                 'ui.lyrics.manager.appliedShown',
                 'Shown, not saved. It is held in memory only: gone after a restart and not available offline.',
               )
-            : t('ui.lyrics.manager.applied', 'Lyrics updated.'),
+            : opts.mode === 'save' || payload.storable
+              ? t(
+                  'ui.lyrics.manager.appliedSaved',
+                  'Saved locally and read back. It stays available offline.',
+                )
+              : t('ui.lyrics.manager.applied', 'Lyrics updated.'),
           undo: res?.undo,
         })
       } catch (e) {
         if (!alive.current) return
         const code = errorCode(e)
         if (code === 'confirm-required')
-          setPending({ kind, payload, locked: false })
-        else if (code === 'locked') setPending({ kind, payload, locked: true })
+          setPending({ kind, payload, locked: false, mode: opts.mode })
+        else if (code === 'locked')
+          setPending({ kind, payload, locked: true, mode: opts.mode })
         else {
           setPending(null)
           setNotice({ kind: 'error', text: errorText(t, e) })
@@ -277,7 +294,7 @@ export const LyricsManager = ({ trackId, title, onClose }) => {
     }
   }
 
-  const choose = (candidate) => attempt('apply', candidate)
+  const choose = (candidate, mode) => attempt('apply', candidate, { mode })
 
   return (
     <Dialog
@@ -366,6 +383,7 @@ export const LyricsManager = ({ trackId, title, onClose }) => {
                   attempt(pending.kind, pending.payload, {
                     confirm: true,
                     force: pending.locked,
+                    mode: pending.mode,
                   })
                 }
               >

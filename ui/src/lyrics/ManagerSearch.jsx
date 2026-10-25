@@ -126,9 +126,32 @@ const Candidate = ({ c, busy, onUse }) => {
             </span>
           )}
           {c.storable ? (
-            <span className={styles.tag}>
-              {t('ui.lyrics.manager.canSave', 'Can be saved')}
-            </span>
+            <>
+              <span className={styles.tag}>
+                {t('ui.lyrics.manager.canSave', 'Can be saved')}
+              </span>
+              {c.rights && (
+                <span
+                  className={clsx(
+                    styles.tag,
+                    c.rights !== 'granted' && styles.tagWarn,
+                  )}
+                  title={t(
+                    'ui.lyrics.manager.rightsHint',
+                    "What is known about the provider's terms on keeping its lyrics. Saving is your choice, not a permission from the provider.",
+                  )}
+                >
+                  {c.rights === 'granted'
+                    ? t('ui.lyrics.provider.rightsGranted', 'Rights documented')
+                    : t('ui.lyrics.provider.rightsUnclear', 'Rights unclear')}
+                </span>
+              )}
+              {c.autoSave && (
+                <span className={styles.tag}>
+                  {t('ui.lyrics.provider.tagSaved', 'Saved automatically')}
+                </span>
+              )}
+            </>
           ) : c.displayOnly ? (
             <span
               className={clsx(styles.tag, styles.tagWarn)}
@@ -165,16 +188,36 @@ const Candidate = ({ c, busy, onUse }) => {
             ? t('ui.lyrics.manager.hidePreview', 'Hide preview')
             : t('ui.lyrics.manager.showPreview', 'Preview')}
         </Button>
-        <Button
-          size="sm"
-          variant="primary"
-          disabled={busy || (!c.storable && !c.displayOnly) || !c.lines}
-          onClick={() => onUse(c)}
-        >
-          {c.storable || !c.displayOnly
-            ? t('ui.lyrics.manager.use', 'Use this version')
-            : t('ui.lyrics.manager.useShown', 'Show this version (not saved)')}
-        </Button>
+        {c.storable ? (
+          <>
+            <Button
+              size="sm"
+              variant="primary"
+              disabled={busy || !c.lines}
+              onClick={() => onUse(c, 'save')}
+            >
+              {t('ui.lyrics.manager.saveLocally', 'Save lyrics locally')}
+            </Button>
+            {c.canShow && (
+              <Button
+                size="sm"
+                disabled={busy || !c.lines}
+                onClick={() => onUse(c, 'show')}
+              >
+                {t('ui.lyrics.manager.showOnly', 'Show only')}
+              </Button>
+            )}
+          </>
+        ) : (
+          <Button
+            size="sm"
+            variant="primary"
+            disabled={busy || !c.displayOnly || !c.lines}
+            onClick={() => onUse(c, 'show')}
+          >
+            {t('ui.lyrics.manager.useShown', 'Show this version (not saved)')}
+          </Button>
+        )}
       </div>
       {open && <Preview lines={c.preview} truncated={c.truncated} />}
     </li>
