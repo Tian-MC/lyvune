@@ -1,21 +1,46 @@
+# What the image build does not need. The Go binary is built from the Go sources, resources/ and the UI bundle
+# built in the Dockerfile's own ui stage; everything below is left out of the build context.
+
+# Version control and editor/tool state
+.git
+.github
+.devcontainer
+.playwright-mcp
+.vscode
+.idea
 .DS_Store
+
+# Documentation, the brand kit, screenshots and deployment examples
+docs
+contrib
+*.md
+compose*.yaml
+.env
+
+# Tests, test fixtures and example plugins (not part of the binary)
+**/*_test.go
+**/testdata
+tests
+plugins/examples
+plugins/cmd
+**/*.wasm
+
+# Local build products, data and configuration
 ui/node_modules
 ui/build
 !ui/build/.gitkeep
-Dockerfile
-docker-compose*.yml
 data
-*.db
-testDB
-navidrome
-navidrome.toml
-lyvune
-lyvune.toml
+cache
+music
+music.old
 tmp
 !tmp/taglib
 dist
 binaries
-cache
-music
-music.old
-!Dockerfile
+testDB
+*.db
+*.db-*
+navidrome
+navidrome.toml
+lyvune
+lyvune.toml

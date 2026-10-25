@@ -1,3 +1,6 @@
+# Node major used to build the UI: the one in .nvmrc, so the image and a local build agree
+ARG NODE_VERSION=24
+
 FROM --platform=$BUILDPLATFORM ghcr.io/crazy-max/osxcross:14.5-debian AS osxcross
 
 ########################################################################################################################
@@ -26,7 +29,7 @@ COPY --from=xx-build /out/ /usr/bin/
 
 ########################################################################################################################
 ### Build Lyvune UI
-FROM --platform=$BUILDPLATFORM node:lts-alpine AS ui
+FROM --platform=$BUILDPLATFORM node:${NODE_VERSION}-alpine AS ui
 WORKDIR /app
 
 # Install node dependencies
@@ -34,9 +37,10 @@ COPY ui/package.json ui/package-lock.json ./
 COPY ui/bin/ ./bin/
 RUN npm ci
 
-# Build bundle
+# Build bundle. Without source maps: they are 31 of the 52 MB of the bundle, which the binary embeds, and
+# nothing in a running server reads them
 COPY ui/ ./
-RUN npm run build -- --outDir=/build
+RUN npm run build -- --outDir=/build --sourcemap false
 
 FROM scratch AS ui-bundle
 COPY --from=ui /build /build
@@ -180,14 +184,31 @@ EOT
 ########################################################################################################################
 ### Build Final Image
 FROM alpine:3.22 AS final
-LABEL maintainer="Tian-MC"
-LABEL org.opencontainers.image.source="https://github.com/Tian-MC/lyvune"
+
+ARG GIT_SHA
+ARG GIT_TAG
+# The user the server runs as. A bind-mounted data folder has to be writable by it;
+# `user:` in Compose (or --user) runs the image as any other id
+ARG LYVUNE_UID=1000
+ARG LYVUNE_GID=1000
+
+LABEL org.opencontainers.image.title="Lyvune" \
+      org.opencontainers.image.description="A self-hosted music server and streamer, with word-by-word karaoke lyrics" \
+      org.opencontainers.image.url="https://github.com/Tian-MC/lyvune" \
+      org.opencontainers.image.source="https://github.com/Tian-MC/lyvune" \
+      org.opencontainers.image.documentation="https://github.com/Tian-MC/lyvune/blob/master/docs/DOCKER.md" \
+      org.opencontainers.image.licenses="GPL-3.0" \
+      org.opencontainers.image.revision="${GIT_SHA}" \
+      org.opencontainers.image.version="${GIT_TAG}"
 
 # Install runtime dependencies
+# - ca-certificates: HTTPS to the lyrics and metadata providers
+# - tzdata: TZ=Europe/Rome and the like; the binary does not embed time zones
+# - ffmpeg: transcoding; mpv: the jukebox; sqlite: the shell `lyvune doctor` points to for recovery
 # - libwebp + symlinks: enables native WebP encoding via purego/dlopen
 # The mesa/LLVM stack mpv pulls in for video output is dropped in this same layer,
 # otherwise the deleted bytes still ship in the image.
-RUN apk add -U --no-cache curl ffmpeg mpv sqlite libwebp libwebpdemux libwebpmux && \
+RUN apk add -U --no-cache ca-certificates tzdata ffmpeg mpv sqlite libwebp libwebpdemux libwebpmux && \
     for lib in libwebp libwebpdemux libwebpmux; do \
         target=$(ls /usr/lib/$lib.so.* 2>/dev/null | head -1) && \
         [ -n "$target" ] && ln -sf "$target" /usr/lib/$lib.so; \
@@ -199,6 +220,12 @@ RUN apk add -U --no-cache curl ffmpeg mpv sqlite libwebp libwebpdemux libwebpmux
 COPY --from=mpv-stubs /out/ /usr/lib/
 RUN mpv --no-video --ao=null --version > /dev/null
 
+# An unprivileged user, and a data folder it owns: a named volume mounted on /data starts with this
+# ownership. /music is left alone (it is the user's library: nothing here changes its owner)
+RUN addgroup -S -g "${LYVUNE_GID}" lyvune && \
+    adduser -S -D -H -u "${LYVUNE_UID}" -G lyvune -s /sbin/nologin lyvune && \
+    mkdir -p /data /music && chown lyvune:lyvune /data
+
 # Copy the binary (musl build for Docker, enables native libwebp). The build stages keep
 # calling it navidrome, which the release pipeline relies on; it is lyvune from here on
 COPY --from=build-alpine /out/navidrome /app/lyvune
@@ -206,13 +233,25 @@ COPY --from=build-alpine /out/navidrome /app/lyvune
 VOLUME ["/data", "/music"]
 ENV ND_MUSICFOLDER=/music
 ENV ND_DATAFOLDER=/data
+# lyvune.toml first; a navidrome.toml beside it is read when there is no lyvune.toml
 ENV ND_CONFIGFILE=/data/lyvune.toml
 ENV ND_PORT=4533
+# `lyvune backup create` writes here, inside the data volume. Without it backups would go to the working
+# directory, which is neither writable by the server's user nor kept. Scheduled backups stay off until
+# ND_BACKUP_SCHEDULE and ND_BACKUP_COUNT are set
+ENV ND_BACKUP_PATH=/data/backups
 RUN touch /.nddockerenv
 
 EXPOSE ${ND_PORT}
 WORKDIR /app
 ENV PATH="/app:${PATH}"
 
-ENTRYPOINT ["/app/lyvune"]
+USER lyvune:lyvune
 
+# `lyvune healthcheck` asks the server's own /ping on the port, address and TLS it is configured with:
+# no curl, wget or shell needed. The start period covers a first start, which migrates the database
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD ["/app/lyvune", "healthcheck"]
+
+STOPSIGNAL SIGTERM
+ENTRYPOINT ["/app/lyvune"]
