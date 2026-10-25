@@ -388,9 +388,11 @@ export const LyricsView = ({ trackId, title, isRadio, className }) => {
             roman.engines.includes('ja') && (
               <span
                 className={styles.segmented}
+                data-value={style}
                 role="group"
                 aria-label={t('ui.lyrics.romajiStyle', 'Romaji style')}
               >
+                <span className={styles.thumb} aria-hidden="true" />
                 {[
                   [
                     'ascii',

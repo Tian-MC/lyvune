@@ -200,34 +200,54 @@
 }
 
 .segmented {
-  display: inline-flex;
+  position: relative;
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
   align-self: center;
   padding: 2px;
+  background: var(--color-surface-sunken, rgba(255, 255, 255, 0.08));
   border-radius: var(--radius-pill, 999px);
 }
 
+/* The highlight slides between the two options instead of jumping */
+.thumb {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  left: 2px;
+  width: calc(50% - 2px);
+  background: var(--color-surface-raised, rgba(255, 255, 255, 0.2));
+  border-radius: var(--radius-pill, 999px);
+  transition: transform 240ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.segmented[data-value='macron'] .thumb {
+  transform: translateX(100%);
+}
+
 .segment {
+  position: relative;
+  z-index: 1;
   padding: var(--space-1) var(--space-3);
   font: inherit;
   font-size: var(--text-sm, 0.8125rem);
   color: inherit;
+  text-align: center;
   white-space: nowrap;
   cursor: pointer;
   background: transparent;
   border: 0;
   border-radius: var(--radius-pill, 999px);
-  opacity: 0.7;
-  transition:
-    background-color 160ms ease,
-    opacity 160ms ease;
+  opacity: 0.65;
+  transition: opacity 240ms ease;
 }
 
 .segment[aria-pressed='true'] {
-  background: var(--color-surface-raised, rgba(255, 255, 255, 0.16));
   opacity: 1;
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .thumb,
   .segment {
     transition: none;
   }
