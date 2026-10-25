@@ -128,16 +128,22 @@ A clean "nothing found" is remembered for a week. An outage, a timeout or a rate
 | Provider | Status | What it does | Saves lyrics |
 | --- | --- | --- | --- |
 | **LRCLIB** | Implemented, checked against the live service | Exact lookup then search; plain, synced and word-synced (Lyricsfile, when `hasWordSync`) | Yes |
-| **Musixmatch** | Implemented, **not verified**; needs your own API key | Official `matcher.lyrics.get` and `matcher.subtitle.get`; no word-level (richsync) | **No** |
-| **KuGou** | Not available | No public lyrics API; no request is ever made | — |
-| **NetEase Cloud Music** | Not available | No public lyrics API; no request is ever made | — |
+| **KuGou Music** | Implemented, checked against the live service; **unofficial** | Song search, lyric entries, `krc` download (word-timed), `lrc` fallback; translation and romanization when the KRC carries them | Only if `Lyrics.KuGou.Store` is on |
+| **NetEase Cloud Music** | Implemented, checked against the live service; **unofficial** | Song search, `lrc`, `tlyric` (translation), `romalrc` (romanization) and `yrc` (word-timed) for the songs that have it | Only if `Lyrics.NetEase.Store` is on |
+| **Musixmatch** | Implemented, **not verified live** (no API key); official API | `matcher.track.get` for real metadata, then `track.richsync.get`, `track.subtitle.get`, `track.lyrics.get`; free-key partial lyrics are discarded | Only if `Lyrics.Musixmatch.Store` is on |
 | **Apple Music** | Not available | The API documents only `hasLyrics`; the timed-lyrics endpoint is private | — |
 
-LRCLIB was checked against the real service: the response has `id`, `trackName`, `artistName`, `albumName`, `duration`, `instrumental`, `hasWordSync`, `plainLyrics`, `syncedLyrics` and `lyricsfile`. The adapter sends a descriptive User-Agent, spaces requests, retries 5xx and network errors at most three times, honours `Retry-After` on 429 (and stops asking during the cool-down), and bounds responses to 4 MB. LRCLIB answered `503 ServerOverloaded` during testing, which is handled. No result with real word timing turned up in the samples tried, so karaoke from LRCLIB is covered by the parser tests and not by a live example.
+[LYRICS_PROVIDERS_RESEARCH.md](LYRICS_PROVIDERS_RESEARCH.md) has the evidence, the licences and the limits of each.
 
-Musixmatch: the developer terms could not be read and no key was available, so the adapter is deliberately conservative. Results can be previewed but not chosen (choosing means saving, which is not allowed), the match is never reported as verified, and the key is read from the server configuration only and redacted from errors.
+LRCLIB was checked against the real service: the response has `id`, `trackName`, `artistName`, `albumName`, `duration`, `instrumental`, `hasWordSync`, `plainLyrics`, `syncedLyrics` and `lyricsfile`. The adapter sends a descriptive User-Agent, spaces requests, retries 5xx and network errors at most three times, honours `Retry-After` on 429 (and stops asking during the cool-down), and bounds responses to 4 MB.
 
-KuGou, NetEase and Apple Music are listed so the interface can say why they are off. KRC and YRC word-timed formats are **not** supported.
+**Word timing is only what the source gives.** KRC and YRC are parsed by `krc.go` and `yrc.go`, RichSync by `richsync.go`; none of them depends on a network adapter, and none estimates a time. A word has an end only when the file says so. A document whose word times look divided by formula (most lines with words of equal length in time, or proportional to their letters) is reduced to line timing, so it can never rank as karaoke. A romanization keeps word timing only when it has exactly one piece per original word; a translation never has word timing.
+
+**KuGou and NetEase are unofficial.** Neither has a public lyrics API. The adapters use the open web endpoints their own web clients use, with no account, cookie, token or request signing, and not the signed `weapi`/`eapi` calls. Their terms were not found, so nothing grants permission to keep their lyrics: by default they are shown for selection and **not** saved. An administrator who accepts that responsibility can turn on `Lyrics.KuGou.Store` / `Lyrics.NetEase.Store`. KuGou's song search answers "0 results" without any error when it is asked too quickly, so the adapter spaces its requests by a second and asks once more before believing an empty list.
+
+**Musixmatch** uses only the official API with your own key; the private token of its apps is not used. Which calls a key may make depends on its plan: a call the plan refuses is skipped. Word timing is not advertised for it until it has been seen working.
+
+Your own `.krc` and `.yrc` files next to the audio are read as local sidecars when their suffix is in `LyricsPriority` (for example `.krc,.lrc,embedded`); a `.krc` may be plain text or the distributed `krc1` container.
 
 LRCLIB's terms of use could not be read from here either; it is a free community service whose own client downloads and stores lyrics.
 
@@ -180,6 +186,9 @@ A candidate is always referred to by an ID the server issued, so a client cannot
 | `Lyrics.LRCLIB.Enabled` | `true` | |
 | `Lyrics.LRCLIB.BaseURL` | `https://lrclib.net` | |
 | `Lyrics.Musixmatch.ApiKey` | empty | Config file or `ND_LYRICS_MUSIXMATCH_APIKEY`; masked in the configuration view |
+| `Lyrics.Musixmatch.Store` | `false` | Save Musixmatch lyrics; only if your plan allows it |
+| `Lyrics.KuGou.Store` | `false` | Save KuGou lyrics (unofficial endpoints) |
+| `Lyrics.NetEase.Store` | `false` | Save NetEase lyrics (unofficial endpoints) |
 | `Lyrics.HistoryKeep` | `10` | Versions kept per track |
 | Prefer local files | on | stored in the database |
 | Find missing lyrics automatically | **on** | stored in the database |
@@ -214,6 +223,10 @@ Beyond the unit tests, the feature was run end to end against the real LRCLIB wi
 - Choosing embedded lyrics copies them into a preferred sidecar; the embedded ones stay in the audio.
 - A library folder reached through a symbolic link that leaves the library is not written to.
 - Bulk jobs run in memory: a restart stops one, and running it again skips finished tracks.
-- Musixmatch is unverified and saves nothing; KuGou, NetEase and Apple Music are off; KRC and YRC are not parsed.
+- Musixmatch is not verified against the live service (no API key was available); Apple Music is off.
+- KuGou and NetEase use undocumented endpoints that can change or block a region at any time; their lyrics are not saved unless the administrator opts in.
+- NetEase word timing exists only for songs where the endpoint returns `yrc`; the others are line-synced. NetEase's `klyric` is ignored.
+- A matching song can be missing from a service (a cover or live version is not accepted instead), and Simplified/Traditional Chinese artist names are not converted, so such a match is offered as "uncertain" and never chosen automatically.
+- QQ Music (QRC) is not implemented.
 - The Windows build was not compiled here (it needs CGO for SQLite); the code avoids platform-specific calls.
 - `golangci-lint` was not run.
