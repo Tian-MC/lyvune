@@ -61,7 +61,7 @@ fi
 own() { if [ "$(id -u)" = 0 ]; then chown -R "$RUN_UID:$RUN_GID" "$@"; fi; }
 FAILED=0
 
-# shellcheck disable=SC2329 # called by the trap
+# shellcheck disable=SC2317,SC2329 # called by the trap (older shellcheck calls it SC2317, newer SC2329)
 cleanup() {
   if [ "$KEEP" = 1 ]; then
     echo "kept: $WORK and the containers named $PREFIX-*"
@@ -69,7 +69,7 @@ cleanup() {
   fi
   docker ps -aq --filter "name=$PREFIX-" | xargs -r docker rm -f > /dev/null 2>&1 || true
   docker volume ls -q --filter "name=$PREFIX-" | xargs -r docker volume rm > /dev/null 2>&1 || true
-  [ -n "$BUILT_IMAGE" ] && docker rmi "$BUILT_IMAGE" > /dev/null 2>&1 || true
+  if [ -n "$BUILT_IMAGE" ]; then docker rmi "$BUILT_IMAGE" > /dev/null 2>&1 || true; fi
   rm -rf "$WORK"
 }
 trap cleanup EXIT
