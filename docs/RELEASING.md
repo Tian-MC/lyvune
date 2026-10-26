@@ -13,7 +13,7 @@
 | `docker.yml` ("Docker image: test") | a pull request or a push to `master` that changes the image, Compose files or scripts, or by hand | builds the image for `amd64` and `arm64`, each on its own architecture, and runs `scripts/docker-smoke-test.sh` against it. The image stays on the runner | works (see [Tested on](#tested-on)) |
 | `coverage-on-pr.yml`, `download-link-on-pr.yml` | after the pipeline finishes for a pull request | comment the coverage and the artifact links on that pull request | works, comments only |
 | `stale.yml` | every night, or by hand | closes and locks stale issues and pull requests of this repository | works |
-| `release.yml` ("Release: Docker image to GHCR") | by hand only, from `master`, with a tag and the word `publish` | checks the request, tests the image on amd64 and arm64, pushes it to `ghcr.io/tian-mc/lyvune` as one tag, tests the pushed image again | **ready, never run**: it only appears in the Actions tab once it is on `master` |
+| `release.yml` ("Release: Docker image to GHCR") | by hand only, from `master`, with a tag and the word `publish` | checks the request, tests the image on amd64 and arm64, pushes it to `ghcr.io/tian-mc/lyvune` as one tag, tests the pushed image again | **used once so far, for `v0.1.0-alpha.1`**; it appears in the Actions tab once its file is on `master` |
 
 Pushing a branch, with or without commits that touch the files above, starts no workflow: the triggers are the ones in
 the table.
@@ -68,19 +68,22 @@ SIGTERM, a Navidrome migration, an unwritable data folder, `mpv`, `libwebp`, no 
 | `linux/amd64` | the maintainer's Docker host (Arch Linux), before the audit fixes | all checks passed |
 | `linux/amd64` | GitHub runner (`ubuntu-24.04`), `docker.yml` run by hand on `master`, on the commit that is tagged | all checks passed |
 | `linux/arm64` | GitHub ARM runner (`ubuntu-24.04-arm`, native, not emulated), `docker.yml` run by hand on `master`, on the commit that is tagged | all checks passed, the same ones as amd64 |
-| the published image | `verify-published` in `release.yml` | not run: nothing is published |
+| the published image `0.1.0-alpha.1` (`linux/amd64` and `linux/arm64`) | `verify-published` in `release.yml`: pulled by its digest `sha256:9faa644f6a3f805c201a765bd145048005e60764f23da5fcd4af1811c1d8511c` on a runner of each architecture | 62 checks passed on each, none failed |
+| the published image, `linux/amd64` | the maintainer's computer, with no GitHub login: an anonymous pull and a new installation with Docker Compose, on a new volume and a generated test library | 18 of 18 checks, before and after a restart |
 
-Not tested anywhere: the `.deb`, `.rpm` and Windows installers (they are not published), a real ARM board (a Raspberry Pi or a NAS), and the published image (nothing is published yet).
+Not tested anywhere: the `.deb`, `.rpm` and Windows installers (they are not published), and a real ARM board (a Raspberry Pi or a NAS).
 
-## What has to be true before publishing
+## What has to be true before publishing (and was, for `v0.1.0-alpha.1`)
 
 1. **The image is tested on both platforms** (above), and `docker.yml` and the Pipeline pass on the commit to tag.
 2. **What is published is Lyvune's.** Only the image is. The `.deb`, `.rpm` and Windows installers still carry
    Navidrome's names, paths and users (`/etc/navidrome`, the `navidrome` user, `navidrome.wxs`); they are built as
    snapshots and **not** published until they have been rebranded and tried on a real system.
-3. **The package can be pulled.** A new package is private, whatever the repository is. Make the repository public, and
-   then the package (your profile, *Packages*, the package, *Package settings*, *Danger Zone*, *Change visibility*; it
-   is done in the web interface and cannot be undone once the package is public) before telling anyone to pull it.
+3. **The package can be pulled without credentials.** GitHub's documentation says a new package starts private. For
+   `0.1.0-alpha.1`, with the repository already public, it could be pulled anonymously right after the push, and that was
+   checked from a client with no login. Look at the package's settings after a first push anyway (your profile,
+   *Packages*, the package, *Package settings*; changing the visibility is done in the web interface and cannot be
+   undone once the package is public).
 
 ## Release strategy
 
@@ -107,7 +110,7 @@ Not tested anywhere: the `.deb`, `.rpm` and Windows installers (they are not pub
    `linux/amd64` and `linux/arm64`.
 6. Create the GitHub pre-release from the tag with the notes: `gh release create v0.1.0-alpha.1 --prerelease --verify-tag
    --title "Lyvune v0.1.0-alpha.1" --notes-file docs/releases/v0.1.0-alpha.1.md`. Add the digest to the notes.
-7. Set the package visibility (above), pull the image on a clean host and follow the notes from the top.
+7. Look at the package visibility (above), pull the image on a clean host without logging in, and follow the notes from the top.
 
 To take a bad release back: delete the package version in GitHub (*Packages*), the release, and the tag
 (`git push origin :v0.1.0-alpha.1`). Nothing deletes them automatically. If the run stops before the push, nothing was
