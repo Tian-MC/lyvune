@@ -83,7 +83,8 @@ jobs:
         with:
           version: ${{ steps.golangci-version.outputs.version }}
           problem-matchers: true
-          args: --timeout 2m
+          # 2m was not enough on a runner with a cold cache: the run timed out while loading the packages
+          args: --timeout 10m
 
       - name: Run go goimports
         run: go run golang.org/x/tools/cmd/goimports@latest -w `find . -name '*.go' | grep -v '_gen.go$' | grep -v '.pb.go$'`
