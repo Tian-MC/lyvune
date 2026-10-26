@@ -9,24 +9,28 @@ Lyvune is a streaming service which allows you to enjoy your music collection fr
 
 
 ## Asking Support Questions
-We have an active [discussion forum](https://github.com/navidrome/navidrome/discussions) where users and developers can ask questions. Please don't use the GitHub issue tracker to ask questions.
+Questions, ideas and feedback go to [Discussions](https://github.com/Tian-MC/lyvune/discussions), where users and developers can answer them. Please don't use the GitHub issue tracker to ask questions.
+
+If you try Lyvune on a Raspberry Pi, a NAS or another `arm64` machine (the alpha was tested on GitHub's `arm64` runners, not on real boards), please tell us in Discussions: the device, the operating system, the Docker version, and what happened.
 
 ## Code of Conduct
 Please read the following [Code of Conduct](https://github.com/Tian-MC/lyvune/blob/master/CODE_OF_CONDUCT.md).
 
 ## Issues
 Found any issue or bug in our codebase? Have a great idea you want to propose or discuss with 
-the developers? You can help by submitting an [issue](https://github.com/navidrome/navidrome/issues/new/choose)
+the developers? You can help by submitting an [issue](https://github.com/Tian-MC/lyvune/issues/new/choose)
 to the GitHub repository. 
 
 **Before opening a new issue, please check if the issue has not been already made by searching 
-the [issues](https://github.com/navidrome/navidrome/issues)**
+the [issues](https://github.com/Tian-MC/lyvune/issues)**
+
+Lyvune is built on [Navidrome](https://github.com/navidrome/navidrome), and the server, the APIs and library scanning come from it. A bug there may also belong in Navidrome's tracker; if you are not sure, report it here.
 
 ## Pull requests
 Before submitting a pull request, ensure that you go through the following:
 - Open a corresponding issue for the Pull Request, if not existing. The issue can be opened following [these guidelines](#issues)
 - Ensure that there is no open or closed Pull Request corresponding to your submission to avoid duplication of effort.
-- Setup the [development environment](https://www.navidrome.org/docs/developers/dev-environment/)
+- Set up the [development environment](README.md#development)
 - Create a new branch on your forked repo and make the changes in it. Naming conventions for branch are: `<Issue Title>/<Issue Number>`. Example:
 ```
     git checkout -b adding-docs/834 master

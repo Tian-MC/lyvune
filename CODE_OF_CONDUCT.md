@@ -60,8 +60,9 @@ representative at an online or offline event.
 ## Enforcement
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported to the community leaders responsible for enforcement at
-navidrome@navidrome.org.
+reported to the community leaders responsible for enforcement, privately, through GitHub: open the **Security** tab of
+this repository, choose **Report a vulnerability** (a private report that only the maintainers can read), and say that
+it is about the Code of Conduct.
 All complaints will be reviewed and investigated promptly and fairly.
 
 All community leaders are obligated to respect the privacy and security of the
