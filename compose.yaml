@@ -1,11 +1,13 @@
 # Lyvune with Docker Compose. The guide is docs/DOCKER.md.
 #
 #   cp .env.example .env        # then set LYVUNE_MUSIC_DIR to your music folder
-#   docker compose up -d --build
-#   open http://localhost:4533
 #
-# This builds the image from this repository. Once an image is published, LYVUNE_IMAGE can name it
-# (ghcr.io/tian-mc/lyvune is where it will be) and `docker compose pull` fetches it.
+# The published image: add LYVUNE_IMAGE=ghcr.io/tian-mc/lyvune:0.1.0-alpha.1 to .env, then
+#   docker compose pull && docker compose up -d --no-build
+# From source: leave LYVUNE_IMAGE out, and the image is built from this repository
+#   docker compose up -d --build
+#
+# Then open http://localhost:4533
 name: lyvune
 
 services:

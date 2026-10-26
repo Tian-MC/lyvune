@@ -1,0 +1,155 @@
+{
+  "note": "Everything in this file is original and invented for Lyvune's demo library: the artists, albums, titles and lyrics are fictional, and any resemblance to a real name is a coincidence. Released under CC0 1.0 (see README.md).",
+  "albums": [
+    {
+      "artist": "Copper Weather", "album": "Paper Lanterns", "year": 2025, "genre": "Indie pop",
+      "motif": "lanterns", "palette": ["#1b1233", "#4a1d5c", "#ff8a3d", "#ffc15e", "#ff5d73"],
+      "tracks": [
+        {"title": "Paper Lanterns", "style": "pop", "bpm": 108, "key": "D", "mode": "major", "lang": "eng",
+         "lyrics": [
+           ["We ", "folded ", "up ", "the ", "evening ", "into ", "boats"],
+           ["And ", "set ", "them ", "on ", "the ", "river, ", "one ", "by ", "one"],
+           ["Each ", "little ", "light ", "a ", "promise, ", "soft ", "and ", "slow"],
+           ["Drifting ", "under ", "bridges ", "toward ", "the ", "sun"],
+           [],
+           ["Paper ", "lanterns, ", "carry ", "me ", "home"],
+           ["Through ", "the ", "cold ", "and ", "the ", "quiet ", "air"],
+           ["Paper ", "lanterns, ", "I'm ", "not ", "alone"],
+           ["While ", "there's ", "a ", "flame, ", "I'll ", "find ", "you ", "there"],
+           [],
+           ["The ", "city ", "hums ", "a ", "song ", "I ", "almost ", "know"],
+           ["Windows ", "glow ", "like ", "embers ", "in ", "the ", "rain"],
+           ["I ", "count ", "the ", "stars ", "we ", "never ", "learned ", "to ", "name"],
+           ["And ", "hum ", "it ", "back ", "until ", "it ", "sounds ", "the ", "same"],
+           [],
+           ["Paper ", "lanterns, ", "carry ", "me ", "home"],
+           ["Through ", "the ", "cold ", "and ", "the ", "quiet ", "air"],
+           ["Paper ", "lanterns, ", "I'm ", "not ", "alone"],
+           ["While ", "there's ", "a ", "flame, ", "I'll ", "find ", "you ", "there"]
+         ]},
+        {"title": "Half Past Seven", "style": "pop", "bpm": 116, "key": "G", "mode": "major", "bars": 36},
+        {"title": "Tangerine Sky", "style": "pop", "bpm": 100, "key": "A", "mode": "major", "bars": 32},
+        {"title": "The Long Way Round", "style": "soft", "bpm": 92, "key": "E", "mode": "minor", "bars": 32},
+        {"title": "Porch Light", "style": "soft", "bpm": 84, "key": "C", "mode": "major", "bars": 28}
+      ]
+    },
+    {
+      "artist": "Copper Weather", "album": "Half Moon Cafe", "year": 2024, "genre": "Indie folk",
+      "motif": "halfmoon", "palette": ["#f4e6cf", "#d96c4a", "#8c3b2a", "#2f4858", "#f2b84b"],
+      "tracks": [
+        {"title": "Saturday Mornings", "style": "soft", "bpm": 96, "key": "F", "mode": "major", "bars": 32},
+        {"title": "Two Sugars", "style": "soft", "bpm": 88, "key": "Bb", "mode": "major", "bars": 28},
+        {"title": "Rain on the Awning", "style": "soft", "bpm": 80, "key": "D", "mode": "minor", "bars": 28}
+      ]
+    },
+    {
+      "artist": "Copper Weather", "album": "Ferris Wheel Season", "year": 2023, "genre": "Indie pop",
+      "motif": "ferris", "palette": ["#0c2d3a", "#127c8a", "#f7c548", "#ef476f", "#8be0c9"],
+      "tracks": [
+        {"title": "Boardwalk", "style": "pop", "bpm": 120, "key": "E", "mode": "major", "bars": 32},
+        {"title": "Cotton Candy Clouds", "style": "pop", "bpm": 112, "key": "A", "mode": "major", "bars": 32},
+        {"title": "Last Ride", "style": "soft", "bpm": 90, "key": "B", "mode": "minor", "bars": 28}
+      ]
+    },
+    {
+      "artist": "Tiny Harbor Club", "album": "Night Ferry", "year": 2025, "genre": "Synthwave",
+      "motif": "ferry", "palette": ["#1a0b3b", "#6a1b9a", "#e91e8c", "#ff8a3d", "#2ee6d6"],
+      "tracks": [
+        {"title": "Midnight Pier", "style": "synth", "bpm": 100, "key": "A", "mode": "minor", "lang": "jpn",
+         "lyrics": [
+           ["夜の ", "桟橋で ", "君を ", "待っている"],
+           ["月の ", "光が ", "海に ", "揺れてる"],
+           ["遠くの ", "汽笛が ", "胸に ", "響いて"],
+           ["今夜は ", "誰にも ", "言えない ", "想い"],
+           [],
+           ["夢の ", "続きを ", "見ていたいから"],
+           ["星の ", "海を ", "渡って ", "行こう"],
+           ["光る ", "波間に ", "想いを ", "乗せて"],
+           ["朝が ", "来るまで ", "ここに ", "いよう"],
+           [],
+           ["ねえ ", "聞こえるでしょう"],
+           ["出会えて ", "よかった ", "ありがとう"],
+           [],
+           ["夢の ", "続きを ", "見ていたいから"],
+           ["星の ", "海を ", "渡って ", "行こう"],
+           ["光る ", "波間に ", "想いを ", "乗せて"],
+           ["朝が ", "来るまで ", "ここに ", "いよう"]
+         ]},
+        {"title": "Neon Wake", "style": "synth", "bpm": 108, "key": "E", "mode": "minor", "bars": 36},
+        {"title": "Harbor Lights", "style": "synth", "bpm": 96, "key": "D", "mode": "minor", "bars": 32}
+      ]
+    },
+    {
+      "artist": "Slow Cartography", "album": "Maps of Quiet", "year": 2024, "genre": "Ambient",
+      "motif": "contours", "palette": ["#0b1d33", "#17476b", "#3a8fb7", "#9bd1e5", "#e8f4f8"],
+      "tracks": [
+        {"title": "Contour Lines", "style": "ambient", "bpm": 64, "key": "C", "mode": "major", "bars": 24},
+        {"title": "Meridian", "style": "ambient", "bpm": 60, "key": "G", "mode": "major", "bars": 24},
+        {"title": "Blank Spaces", "style": "ambient", "bpm": 56, "key": "A", "mode": "minor", "bars": 20}
+      ]
+    },
+    {
+      "artist": "Orbit Laundry", "album": "Spin Cycle", "year": 2025, "genre": "Electronic",
+      "motif": "spin", "palette": ["#101828", "#1d4ed8", "#facc15", "#38bdf8", "#f8fafc"],
+      "tracks": [
+        {"title": "Rinse", "style": "electro", "bpm": 124, "key": "F", "mode": "minor", "bars": 40},
+        {"title": "Delicate", "style": "electro", "bpm": 118, "key": "C", "mode": "minor", "bars": 36},
+        {"title": "Tumble Dry", "style": "electro", "bpm": 128, "key": "G", "mode": "minor", "bars": 40}
+      ]
+    },
+    {
+      "artist": "Velvet Spreadsheet", "album": "Tab Delimited", "year": 2023, "genre": "Lo-fi",
+      "motif": "grid", "palette": ["#16231d", "#2f6f4f", "#9be15d", "#f06595", "#e9f5db"],
+      "tracks": [
+        {"title": "Column A", "style": "lofi", "bpm": 78, "key": "Eb", "mode": "major", "bars": 28},
+        {"title": "Pivot Table", "style": "lofi", "bpm": 82, "key": "Ab", "mode": "major", "bars": 28},
+        {"title": "Autosave", "style": "lofi", "bpm": 74, "key": "C", "mode": "minor", "bars": 24}
+      ]
+    },
+    {
+      "artist": "The Lantern Index", "album": "Brass and Rain", "year": 2024, "genre": "Jazz",
+      "motif": "brass", "palette": ["#1f1612", "#5a3a22", "#c98a2b", "#f2c14e", "#3b6978"],
+      "tracks": [
+        {"title": "Wet Pavement", "style": "jazz", "bpm": 104, "key": "F", "mode": "major", "bars": 32},
+        {"title": "Last Call", "style": "jazz", "bpm": 72, "key": "G", "mode": "minor", "bars": 28},
+        {"title": "Trumpet Weather", "style": "jazz", "bpm": 112, "key": "Bb", "mode": "major", "bars": 32}
+      ]
+    },
+    {
+      "artist": "Quiet Kilowatt", "album": "Static Bloom", "year": 2025, "genre": "Shoegaze",
+      "motif": "bloom", "palette": ["#220b2e", "#7b2d8e", "#d946ef", "#22d3ee", "#fda4af"],
+      "tracks": [
+        {"title": "Feedback Garden", "style": "dream", "bpm": 98, "key": "E", "mode": "major", "bars": 36},
+        {"title": "Pedalboard", "style": "dream", "bpm": 104, "key": "B", "mode": "minor", "bars": 32},
+        {"title": "Soft Clip", "style": "dream", "bpm": 90, "key": "F#", "mode": "minor", "bars": 32}
+      ]
+    },
+    {
+      "artist": "Lowland Kettle", "album": "Field Notes", "year": 2022, "genre": "Folk",
+      "motif": "field", "palette": ["#1f2d1a", "#4f772d", "#90a955", "#ecf39e", "#a47148"],
+      "tracks": [
+        {"title": "Hedgerow", "style": "soft", "bpm": 94, "key": "G", "mode": "major", "bars": 28},
+        {"title": "Mud Season", "style": "soft", "bpm": 86, "key": "A", "mode": "minor", "bars": 28},
+        {"title": "Kettle Song", "style": "soft", "bpm": 100, "key": "D", "mode": "major", "bars": 28}
+      ]
+    },
+    {
+      "artist": "Pale Estuary", "album": "Low Water", "year": 2024, "genre": "Chillwave",
+      "motif": "tide", "palette": ["#06222e", "#0e6f7e", "#2ec4b6", "#9ef0e0", "#fff3d6"],
+      "tracks": [
+        {"title": "Tide Table", "style": "synth", "bpm": 92, "key": "F#", "mode": "major", "bars": 32},
+        {"title": "Sandbar", "style": "synth", "bpm": 88, "key": "B", "mode": "major", "bars": 28},
+        {"title": "Salt Light", "style": "synth", "bpm": 96, "key": "E", "mode": "minor", "bars": 32}
+      ]
+    },
+    {
+      "artist": "North Platform", "album": "Last Train Home", "year": 2023, "genre": "Post-rock",
+      "motif": "platform", "palette": ["#12161f", "#2b3445", "#5c6b85", "#ff9f43", "#ffe0b2"],
+      "tracks": [
+        {"title": "Platform Four", "style": "rock", "bpm": 110, "key": "D", "mode": "minor", "bars": 40},
+        {"title": "Signal Fault", "style": "rock", "bpm": 120, "key": "A", "mode": "minor", "bars": 36},
+        {"title": "Timetable", "style": "rock", "bpm": 100, "key": "E", "mode": "minor", "bars": 36}
+      ]
+    }
+  ]
+}
