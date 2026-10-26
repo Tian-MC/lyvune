@@ -180,6 +180,7 @@ Configuration options are the same as Navidrome's, as `ND_` environment variable
 - **A question, an idea, or feedback?** Start a [discussion](https://github.com/Tian-MC/lyvune/discussions).
 - **Want to change the code?** Read the [contributing guide](CONTRIBUTING.md) and the
   [code of conduct](CODE_OF_CONDUCT.md).
+- **Found a security problem?** Report it privately: see the [security policy](SECURITY.md).
 
 **Please try Lyvune on a Raspberry Pi, a NAS or another `arm64` machine,** and tell us how it went in
 [Discussions](https://github.com/Tian-MC/lyvune/discussions): the device, the operating system, the Docker version, and
