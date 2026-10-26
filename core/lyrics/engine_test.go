@@ -153,7 +153,7 @@ var _ = Describe("Lyrics engine", func() {
 	dir := func() string { return filepath.Join(root, "Artist", "Album") }
 	write := func(name, content string) string {
 		p := filepath.Join(dir(), name)
-		Expect(os.WriteFile(p, []byte(content), 0o644)).To(Succeed())
+		Expect(os.WriteFile(p, []byte(content), 0o600)).To(Succeed())
 		return p
 	}
 	envFile := func() string { return filepath.Join(dir(), "01 - Song.lyrics.json") }
@@ -367,9 +367,7 @@ var _ = Describe("Lyrics engine", func() {
 		})
 
 		It("reports a read-only library instead of failing", func() {
-			if os.Geteuid() == 0 {
-				Skip("root ignores directory permissions")
-			}
+			skipWithoutDirectoryPermissions()
 			Expect(os.Chmod(dir(), 0o555)).To(Succeed())
 			DeferCleanup(func() { _ = os.Chmod(dir(), 0o755) })
 			fake.set(remote("fake", "1", syncedOf("fetched"), 0.97))
@@ -817,7 +815,7 @@ var _ = Describe("Lyrics engine", func() {
 			repo := tests.CreateMockMediaFileRepo()
 			for _, id := range []string{"t1", "t2", "t3"} {
 				base := id + ".flac"
-				Expect(os.WriteFile(filepath.Join(dir(), base), []byte("AUDIO"), 0o644)).To(Succeed())
+				Expect(os.WriteFile(filepath.Join(dir(), base), []byte("AUDIO"), 0o600)).To(Succeed())
 				files = append(files, model.MediaFile{ID: id, Title: "Song", Artist: "Band", Album: "Album", Duration: 200, Path: "Artist/Album/" + base, LibraryPath: root})
 			}
 			repo.SetData(files)
@@ -826,7 +824,7 @@ var _ = Describe("Lyrics engine", func() {
 				for i := len(files) + 1; i <= n; i++ {
 					id := fmt.Sprintf("t%d", i)
 					base := id + ".flac"
-					Expect(os.WriteFile(filepath.Join(dir(), base), []byte("AUDIO"), 0o644)).To(Succeed())
+					Expect(os.WriteFile(filepath.Join(dir(), base), []byte("AUDIO"), 0o600)).To(Succeed())
 					files = append(files, model.MediaFile{ID: id, Title: "Song", Artist: "Band", Album: "Album", Duration: 200, Path: "Artist/Album/" + base, LibraryPath: root})
 				}
 				repo.SetData(files)
@@ -869,7 +867,7 @@ var _ = Describe("Lyrics engine", func() {
 		})
 
 		It("skips tracks that already have lyrics, so a rerun resumes where it stopped", func() {
-			Expect(os.WriteFile(filepath.Join(dir(), "t1.lrc"), []byte("[00:01.00]mine"), 0o644)).To(Succeed())
+			Expect(os.WriteFile(filepath.Join(dir(), "t1.lrc"), []byte("[00:01.00]mine"), 0o600)).To(Succeed())
 			fake.set(remote("fake", "1", syncedOf("fetched"), 0.97))
 			st, _ := engine.StartBulk(ctx, lyrics.BulkRequest{Action: lyrics.BulkMissing, TrackIDs: []string{"t1", "t2", "t3"}})
 			done := wait(st.ID)
@@ -884,7 +882,7 @@ var _ = Describe("Lyrics engine", func() {
 		})
 
 		It("upgrades only downloaded lyrics unless manual replacement is confirmed", func() {
-			Expect(os.WriteFile(filepath.Join(dir(), "t1.lrc"), []byte("plain sidecar"), 0o644)).To(Succeed())
+			Expect(os.WriteFile(filepath.Join(dir(), "t1.lrc"), []byte("plain sidecar"), 0o600)).To(Succeed())
 			fake.set(remote("fake", "k", karaokeOf("karaoke"), 0.97))
 			st, _ := engine.StartBulk(ctx, lyrics.BulkRequest{Action: lyrics.BulkUpgrade, TrackIDs: []string{"t1"}})
 			done := wait(st.ID)
@@ -896,7 +894,7 @@ var _ = Describe("Lyrics engine", func() {
 			_, err := engine.StartBulk(ctx, lyrics.BulkRequest{Action: lyrics.BulkReplaceManual, TrackIDs: []string{"t1"}})
 			Expect(err).To(MatchError(lyrics.ErrConfirmRequired))
 
-			Expect(os.WriteFile(filepath.Join(dir(), "t1.lrc"), []byte("plain sidecar"), 0o644)).To(Succeed())
+			Expect(os.WriteFile(filepath.Join(dir(), "t1.lrc"), []byte("plain sidecar"), 0o600)).To(Succeed())
 			fake.set(remote("fake", "k", karaokeOf("karaoke"), 0.97))
 			st, err := engine.StartBulk(ctx, lyrics.BulkRequest{Action: lyrics.BulkReplaceManual, TrackIDs: []string{"t1"}, Confirm: true})
 			Expect(err).ToNot(HaveOccurred())

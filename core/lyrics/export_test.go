@@ -7,6 +7,12 @@ import (
 	"github.com/Tian-MC/lyvune/model"
 )
 
+// TrimDriveSlashForTest exposes the Windows file URL handling, which only runs on Windows.
+func TrimDriveSlashForTest(p string) string { return trimDriveSlash(p) }
+
+// IsRootedForTest exposes the check for paths that start at a root.
+func IsRootedForTest(p string) bool { return isRooted(p) }
+
 // Test hooks: make the pacing and retry delays negligible.
 func FastForTest(p OnlineProvider) {
 	switch v := p.(type) {

@@ -33,7 +33,7 @@ var _ = Describe("Storage rights and display", func() {
 	dir := func() string { return filepath.Join(root, "Artist", "Album") }
 	write := func(name, content string) string {
 		p := filepath.Join(dir(), name)
-		Expect(os.WriteFile(p, []byte(content), 0o644)).To(Succeed())
+		Expect(os.WriteFile(p, []byte(content), 0o600)).To(Succeed())
 		return p
 	}
 	sidecar := func() string { return filepath.Join(dir(), "01 - Song.lyrics.json") }
@@ -206,7 +206,7 @@ var _ = Describe("Storage rights and display", func() {
 		}
 
 		It("records an authorization as 'granted' and verified, with its basis, and makes saving the default", func() {
-			Expect(os.WriteFile(rights, []byte(granted), 0o644)).To(Succeed())
+			Expect(os.WriteFile(rights, []byte(granted), 0o600)).To(Succeed())
 			build("kugou", "netease")
 			kg := status("kugou")
 			Expect(kg.StoreStatus).To(Equal(lyrics.RightsGranted))
@@ -218,7 +218,7 @@ var _ = Describe("Storage rights and display", func() {
 		})
 
 		It("refuses to save a provider whose recorded terms restrict it, whatever the preference", func() {
-			Expect(os.WriteFile(rights, []byte(restricted), 0o644)).To(Succeed())
+			Expect(os.WriteFile(rights, []byte(restricted), 0o600)).To(Succeed())
 			build("kugou")
 			s := engine.Settings(ctx)
 			s.StorePref = map[string]bool{"kugou": true}
@@ -249,7 +249,7 @@ var _ = Describe("Storage rights and display", func() {
 		})
 
 		It("is withdrawn when the record is removed", func() {
-			Expect(os.WriteFile(rights, []byte(granted), 0o644)).To(Succeed())
+			Expect(os.WriteFile(rights, []byte(granted), 0o600)).To(Succeed())
 			build("kugou")
 			Expect(status("kugou").StoreVerified).To(BeTrue())
 			Expect(os.Remove(rights)).To(Succeed())
@@ -259,7 +259,7 @@ var _ = Describe("Storage rights and display", func() {
 
 		DescribeTable("changes nothing unless it names a known provider, a known status and its basis",
 			func(content string) {
-				Expect(os.WriteFile(rights, []byte(content), 0o644)).To(Succeed())
+				Expect(os.WriteFile(rights, []byte(content), 0o600)).To(Succeed())
 				build("kugou", "musixmatch")
 				Expect(status("kugou").StoreStatus).To(Equal(lyrics.RightsUnclear))
 				Expect(status("musixmatch").StoreStatus).To(Equal(lyrics.RightsUnclear))
@@ -275,7 +275,7 @@ var _ = Describe("Storage rights and display", func() {
 		)
 
 		It("ignores a huge file", func() {
-			Expect(os.WriteFile(rights, []byte(strings.Repeat(" ", 70<<10)+granted), 0o644)).To(Succeed())
+			Expect(os.WriteFile(rights, []byte(strings.Repeat(" ", 70<<10)+granted), 0o600)).To(Succeed())
 			build("kugou")
 			Expect(status("kugou").StoreStatus).To(Equal(lyrics.RightsUnclear))
 		})
@@ -381,6 +381,7 @@ var _ = Describe("Storage rights and display", func() {
 			build("kugou")
 			wantPref("kugou")
 			fakes["kugou"].set(remote("kugou", "1", karaoke(), 0.99))
+			skipWithoutDirectoryPermissions()
 			Expect(os.Chmod(dir(), 0o555)).To(Succeed())
 			DeferCleanup(func() { _ = os.Chmod(dir(), 0o755) })
 			res, err := engine.Resolve(ctx, mf, lyrics.ResolveOptions{})

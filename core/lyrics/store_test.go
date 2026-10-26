@@ -35,7 +35,7 @@ var _ = Describe("Store", func() {
 		hist = GinkgoT().TempDir()
 		Expect(os.MkdirAll(filepath.Join(root, "Artist", "Album"), 0o755)).To(Succeed())
 		audio = filepath.Join(root, "Artist", "Album", audioFn)
-		Expect(os.WriteFile(audio, []byte("FLACDATA"), 0o644)).To(Succeed())
+		Expect(os.WriteFile(audio, []byte("FLACDATA"), 0o600)).To(Succeed())
 		store = lyrics.NewStore(hist, 3)
 		target = lyrics.Target{Root: root, AudioRel: "Artist/Album/" + audioFn}
 	})
@@ -151,7 +151,7 @@ var _ = Describe("Store", func() {
 	})
 
 	It("will not delete or overwrite a .lyrics.json that is not a Lyvune envelope", func() {
-		Expect(os.WriteFile(sidecar(), []byte(`{"someone":"else"}`), 0o644)).To(Succeed())
+		Expect(os.WriteFile(sidecar(), []byte(`{"someone":"else"}`), 0o600)).To(Succeed())
 		_, err := store.Save(target, envelopeFor("mine", lyrics.OriginManaged))
 		Expect(err).To(MatchError(lyrics.ErrNotManaged))
 		_, err = store.Delete(target)
@@ -162,7 +162,7 @@ var _ = Describe("Store", func() {
 
 	It("never touches other lyrics files such as .lrc", func() {
 		lrc := filepath.Join(root, "Artist", "Album", "01 - Song.lrc")
-		Expect(os.WriteFile(lrc, []byte("[00:01.00]hand written"), 0o644)).To(Succeed())
+		Expect(os.WriteFile(lrc, []byte("[00:01.00]hand written"), 0o600)).To(Succeed())
 		_, err := store.Save(target, envelopeFor("downloaded", lyrics.OriginManaged))
 		Expect(err).ToNot(HaveOccurred())
 		data, _ := os.ReadFile(lrc)
@@ -180,7 +180,7 @@ var _ = Describe("Store", func() {
 	Describe("name collisions", func() {
 		It("uses the audio extension when two audio files share a base name", func() {
 			other := filepath.Join(root, "Artist", "Album", "01 - Song.mp3")
-			Expect(os.WriteFile(other, []byte("MP3"), 0o644)).To(Succeed())
+			Expect(os.WriteFile(other, []byte("MP3"), 0o600)).To(Succeed())
 			_, err := store.Save(target, envelopeFor("flac lyrics", lyrics.OriginManaged))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(filepath.Join(root, "Artist", "Album", "01 - Song.flac.lyrics.json")).To(BeAnExistingFile())
@@ -197,7 +197,7 @@ var _ = Describe("Store", func() {
 		It("finds an existing sidecar under either name", func() {
 			_, _ = store.Save(target, envelopeFor("first", lyrics.OriginManaged))
 			other := filepath.Join(root, "Artist", "Album", "01 - Song.mp3")
-			Expect(os.WriteFile(other, []byte("MP3"), 0o644)).To(Succeed())
+			Expect(os.WriteFile(other, []byte("MP3"), 0o600)).To(Succeed())
 			// the file written before the mp3 existed is still the flac's
 			_, name, err := store.Read(target)
 			Expect(err).ToNot(HaveOccurred())
@@ -206,6 +206,15 @@ var _ = Describe("Store", func() {
 	})
 
 	Describe("path safety", func() {
+		// file:///C:/music on Windows, file:///music elsewhere
+		fileURL := func(p string) string {
+			p = filepath.ToSlash(p)
+			if !strings.HasPrefix(p, "/") {
+				p = "/" + p
+			}
+			return "file://" + p
+		}
+
 		DescribeTable("refuses paths that leave the library",
 			func(rel string) {
 				_, err := store.Save(lyrics.Target{Root: root, AudioRel: rel}, envelopeFor("x", lyrics.OriginManaged))
@@ -220,7 +229,7 @@ var _ = Describe("Store", func() {
 
 		It("refuses a symlink at the sidecar path", func() {
 			outside := filepath.Join(GinkgoT().TempDir(), "victim.txt")
-			Expect(os.WriteFile(outside, []byte("precious"), 0o644)).To(Succeed())
+			Expect(os.WriteFile(outside, []byte("precious"), 0o600)).To(Succeed())
 			Expect(os.Symlink(outside, sidecar())).To(Succeed())
 			_, err := store.Save(target, envelopeFor("x", lyrics.OriginManaged))
 			Expect(err).To(MatchError(lyrics.ErrUnsafePath))
@@ -244,22 +253,32 @@ var _ = Describe("Store", func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
+		It("reads the path of a Windows file URL", func() {
+			Expect(lyrics.TrimDriveSlashForTest("/C:/music/Rock")).To(Equal("C:/music/Rock"))
+			Expect(lyrics.TrimDriveSlashForTest("/music/Rock")).To(Equal("/music/Rock"))
+			Expect(lyrics.TrimDriveSlashForTest("")).To(Equal(""))
+		})
+
+		It("tells a rooted path from a relative one", func() {
+			Expect(lyrics.IsRootedForTest("/etc/passwd")).To(BeTrue())
+			Expect(lyrics.IsRootedForTest(`\etc\passwd`)).To(Equal(filepath.Separator == '\\'))
+			Expect(lyrics.IsRootedForTest("Artist/Album/x.flac")).To(BeFalse())
+		})
+
 		It("only writes to local libraries", func() {
 			_, err := store.Save(lyrics.Target{Root: "s3://bucket/music", AudioRel: "a/b.flac"}, envelopeFor("x", lyrics.OriginManaged))
 			Expect(err).To(MatchError(lyrics.ErrNotLocal))
 		})
 
 		It("accepts a file:// library URL", func() {
-			_, err := store.Save(lyrics.Target{Root: "file://" + root, AudioRel: "Artist/Album/" + audioFn}, envelopeFor("x", lyrics.OriginManaged))
+			_, err := store.Save(lyrics.Target{Root: fileURL(root), AudioRel: "Artist/Album/" + audioFn}, envelopeFor("x", lyrics.OriginManaged))
 			Expect(err).ToNot(HaveOccurred())
 		})
 	})
 
 	Describe("failure handling", func() {
 		It("keeps the old file intact when the folder cannot be written", func() {
-			if os.Geteuid() == 0 {
-				Skip("root ignores directory permissions")
-			}
+			skipWithoutDirectoryPermissions()
 			_, err := store.Save(target, envelopeFor("good", lyrics.OriginManaged))
 			Expect(err).ToNot(HaveOccurred())
 			dir := filepath.Dir(audio)

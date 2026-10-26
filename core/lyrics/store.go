@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
 	"sync"
@@ -116,7 +117,25 @@ func localRoot(root string) (string, error) {
 	if err != nil || u.Scheme != "file" {
 		return "", ErrNotLocal
 	}
-	return filepath.Clean(filepath.FromSlash(u.Path)), nil
+	path := u.Path
+	if runtime.GOOS == "windows" {
+		path = trimDriveSlash(path)
+	}
+	return filepath.Clean(filepath.FromSlash(path)), nil
+}
+
+// trimDriveSlash turns the path of a Windows file URL (file:///C:/music, whose path is /C:/music) into C:/music.
+func trimDriveSlash(p string) string {
+	if len(p) >= 3 && p[0] == '/' && p[2] == ':' {
+		return p[1:]
+	}
+	return p
+}
+
+// isRooted tells a path that starts at a root, or on a drive, from one that is relative to the library. On Windows
+// "/etc/passwd" is not absolute for filepath.IsAbs, and it must be refused all the same.
+func isRooted(rel string) bool {
+	return filepath.IsAbs(rel) || filepath.VolumeName(rel) != "" || strings.HasPrefix(rel, "/") || strings.HasPrefix(rel, string(filepath.Separator))
 }
 
 // SidecarName is the file name used for a track's envelope. Tracks that share a
@@ -156,7 +175,7 @@ func (s *Store) resolve(t Target) (resolved, error) {
 		return resolved{}, err
 	}
 	rel := filepath.FromSlash(t.AudioRel)
-	if rel == "" || filepath.IsAbs(rel) || rel != filepath.Clean(rel) || strings.HasPrefix(rel, "..") {
+	if rel == "" || isRooted(rel) || rel != filepath.Clean(rel) || strings.HasPrefix(rel, "..") {
 		return resolved{}, fmt.Errorf("%w: %q", ErrUnsafePath, t.AudioRel)
 	}
 	realRoot, err := filepath.EvalSymlinks(root)
@@ -474,7 +493,7 @@ func verify(path string, want []byte) error {
 func mapWriteErr(err error) error {
 	// EROFS has no portable constant, so match its message
 	if errors.Is(err, fs.ErrPermission) || strings.Contains(err.Error(), "read-only file system") {
-		return fmt.Errorf("%w: %v", ErrReadOnly, err)
+		return fmt.Errorf("%w: %w", ErrReadOnly, err)
 	}
 	return err
 }
