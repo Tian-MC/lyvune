@@ -1,27 +1,34 @@
-name: "Release (DISABLED)"
+name: "Release: Docker image to GHCR"
 
-# THIS WORKFLOW PUBLISHES, AND EVERY JOB IN IT IS SWITCHED OFF (`if: ${{ false }}`).
+# THE ONLY WORKFLOW THAT PUBLISHES, AND IT PUBLISHES ONE THING: the Docker image ghcr.io/tian-mc/lyvune.
 #
-# It is the only place in the repository where anything may be pushed to a registry or released, and it does nothing
-# until the Docker image has been built and tested on a real Docker host (docs/RELEASING.md lists what has to be
-# true first). Until then:
-#   - the only trigger is a manual run, and a manual run starts jobs that are all skipped;
-#   - a version tag starts no workflow that publishes (the tag trigger is the commented block below);
-#   - scripts/check_no_publishing.py, which the pipeline runs, fails if another workflow gains a publishing step or if
-#     a job here loses its `if: ${{ false }}`.
+# It does nothing by itself. There is no push or tag trigger: a person starts it by hand, from `master`, naming a tag
+# that already exists, and types `publish` to confirm. A tag is created by a person, never by a workflow. A manual run
+# only appears in the Actions tab once this file is on `master`.
 #
-# To switch it on, see "Enabling publication" in docs/RELEASING.md. That is a decision to make in a reviewed commit,
-# not a setting to flip.
+# What it does, in order, and it stops at the first thing that is wrong:
+#   1. plan: the tag looks like a version, it exists, its commit is on `master`, and the Pipeline passed on that commit
+#   2. verify: the image built from that tag is tested (docs/RELEASING.md, scripts/docker-smoke-test.sh) on amd64 and,
+#      on an ARM runner, on arm64, without being pushed
+#   3. publish-image: only then it is pushed, as exactly one tag (the version), for amd64 and arm64
+#   4. verify-published: the image that was pushed is pulled by its digest and tested again on both architectures
+#
+# What it never does: tag `latest`, push to Docker Hub or anywhere but ghcr.io, run GoReleaser, or create a GitHub
+# release (a person creates the pre-release, with the notes, after the image has been checked). The jobs for Linux
+# tarballs are switched off (`if: ${{ false }}`) until they are wanted.
+#
+# scripts/check_no_publishing.py, which the Pipeline runs, fails if this file does more than the above.
 on:
   workflow_dispatch:
     inputs:
       tag:
-        description: "The version tag to publish, such as v0.1.0-alpha. The workflow never creates tags"
+        description: "The version tag to publish, such as v0.1.0-alpha.1. It must already exist; this workflow never creates tags"
         required: true
         type: string
-  # push:
-  #   tags:
-  #     - "v*"
+      confirm:
+        description: "Type publish to confirm"
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -29,20 +36,103 @@ permissions:
 env:
   IMAGE: ghcr.io/tian-mc/lyvune
 
+concurrency:
+  group: release-image
+  cancel-in-progress: false
+
 jobs:
+  plan:
+    name: Check the request
+    if: ${{ github.repository == 'Tian-MC/lyvune' && github.ref == 'refs/heads/master' && inputs.confirm == 'publish' }}
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      version: ${{ steps.plan.outputs.version }}
+      sha: ${{ steps.plan.outputs.sha }}
+    env:
+      TAG: ${{ inputs.tag }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: The tag looks like a version
+        run: |
+          if ! printf '%s' "$TAG" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z]+(\.[0-9A-Za-z]+)*)?$'; then
+            echo "::error::'$TAG' is not a version tag such as v0.1.0-alpha.1"
+            exit 1
+          fi
+
+      - uses: actions/checkout@v7
+        with:
+          ref: refs/tags/${{ inputs.tag }}
+          fetch-depth: 0
+
+      - name: The tag is on master, and the Pipeline passed on its commit
+        id: plan
+        run: |
+          sha=$(git rev-parse HEAD)
+          git fetch --quiet origin master
+          if ! git merge-base --is-ancestor "$sha" origin/master; then
+            echo "::error::$TAG ($sha) is not a commit of master"
+            exit 1
+          fi
+          ok=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow pipeline.yml --commit "$sha" --json conclusion --jq '[.[] | select(.conclusion == "success")] | length')
+          if [ "${ok:-0}" -lt 1 ]; then
+            echo "::error::the Pipeline has not passed on $sha"
+            exit 1
+          fi
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "Publishing $TAG ($sha) as $IMAGE:${TAG#v}" >> "$GITHUB_STEP_SUMMARY"
+
+  verify:
+    name: Test the image (${{ matrix.platform }})
+    needs: plan
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-24.04
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.plan.outputs.sha }}
+
+      - uses: docker/setup-buildx-action@v4
+
+      # load: true keeps the image on the runner
+      - name: Build the image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          platforms: ${{ matrix.platform }}
+          load: true
+          tags: lyvune:smoke
+          build-args: |
+            GIT_SHA=${{ needs.plan.outputs.sha }}
+            GIT_TAG=v${{ needs.plan.outputs.version }}
+          cache-from: type=gha,scope=${{ matrix.platform }}
+
+      - name: Test the image
+        run: scripts/docker-smoke-test.sh --image lyvune:smoke
+
   publish-image:
-    name: Publish the Docker image (amd64, arm64) to ghcr.io/tian-mc/lyvune
-    # DISABLED. When enabled it should be:
-    #   github.repository == 'Tian-MC/lyvune' && startsWith(github.ref, 'refs/tags/v')
-    if: ${{ false }}
+    name: Push the image to ghcr.io/tian-mc/lyvune
+    needs: [plan, verify]
     runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: write
+    outputs:
+      digest: ${{ steps.push.outputs.digest }}
     steps:
       - uses: actions/checkout@v7
-
-      - uses: docker/setup-qemu-action@v4
+        with:
+          ref: ${{ needs.plan.outputs.sha }}
 
       - uses: docker/setup-buildx-action@v4
 
@@ -52,23 +142,23 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Image name, tags and labels
+      - name: Image name, tag and labels
         id: meta
         uses: docker/metadata-action@v6
         with:
           images: ${{ env.IMAGE }}
-          # Only a plain version (v1.2.3) is also the stable tags; v0.1.0-alpha and the like get their own tag only
+          # exactly one tag, the version; nothing here ever moves `latest`
           flavor: latest=false
           tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}},enable=${{ !contains(github.ref_name, '-') }}
-            type=raw,value=latest,enable=${{ !contains(github.ref_name, '-') }}
+            type=raw,value=${{ needs.plan.outputs.version }}
           labels: |
             org.opencontainers.image.title=Lyvune
             org.opencontainers.image.description=A self-hosted music server and streamer, with word-by-word karaoke lyrics
             org.opencontainers.image.licenses=GPL-3.0
+            org.opencontainers.image.source=https://github.com/Tian-MC/lyvune
 
       - name: Build and push
+        id: push
         uses: docker/build-push-action@v7
         with:
           context: .
@@ -77,54 +167,70 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            GIT_SHA=${{ github.sha }}
-            GIT_TAG=${{ github.ref_name }}
-          cache-from: type=gha,scope=publish
-          cache-to: type=gha,mode=max,scope=publish
+            GIT_SHA=${{ needs.plan.outputs.sha }}
+            GIT_TAG=v${{ needs.plan.outputs.version }}
+          cache-from: |
+            type=gha,scope=linux/amd64
+            type=gha,scope=linux/arm64
           provenance: true
           sbom: true
 
-  publish-binaries:
-    name: Create a draft GitHub release with the Linux binaries
-    needs: publish-image
-    # DISABLED, like the job above. Only Linux tarballs for now: the .deb, .rpm and Windows installers that came with
-    # Navidrome's packaging are not Lyvune's yet (release/goreleaser.yml, release/linux, release/wix), and are
-    # not published
-    if: ${{ false }}
-    runs-on: ubuntu-24.04
+      - name: The pushed image has both platforms
+        env:
+          DIGEST: ${{ steps.push.outputs.digest }}
+        run: |
+          docker buildx imagetools inspect "$IMAGE@$DIGEST" | tee inspect.txt
+          for p in linux/amd64 linux/arm64; do
+            grep -q "Platform:[[:space:]]*$p\$" inspect.txt || { echo "::error::$p is missing from $IMAGE@$DIGEST"; exit 1; }
+          done
+          {
+            echo "Pushed \`$IMAGE:${{ needs.plan.outputs.version }}\`"
+            echo ""
+            echo "Digest: \`$DIGEST\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  verify-published:
+    name: Test the pushed image (${{ matrix.platform }})
+    needs: [plan, publish-image]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-24.04
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
     permissions:
-      contents: write
+      contents: read
+      packages: read
     env:
-      TAG: ${{ inputs.tag }}
-      GH_TOKEN: ${{ github.token }}
+      REF: ghcr.io/tian-mc/lyvune@${{ needs.publish-image.outputs.digest }}
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: ${{ inputs.tag }}
+          ref: ${{ needs.plan.outputs.sha }}
 
       - uses: docker/setup-buildx-action@v4
 
-      - name: Build the binaries
-        run: |
-          docker buildx build --target binary --platform linux/amd64,linux/arm64 \
-            --build-arg GIT_SHA="$GITHUB_SHA" --build-arg GIT_TAG="$TAG" --output type=local,dest=out .
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Package them as lyvune
-        run: |
-          mkdir -p dist
-          for arch in amd64 arm64; do
-            dir="lyvune_${TAG#v}_linux_${arch}"
-            mkdir -p "$dir"
-            # the build stages still call the binary navidrome
-            cp "out/linux_${arch}/navidrome" "$dir/lyvune"
-            cp LICENSE README.md "$dir/"
-            tar czf "dist/${dir}.tar.gz" "$dir"
-          done
-          (cd dist && sha256sum ./*.tar.gz > lyvune_checksums.txt)
+      - name: Pull the image by its digest
+        run: docker pull --platform ${{ matrix.platform }} "$REF"
 
-      - name: Create the draft release
-        run: |
-          prerelease=""
-          case "$TAG" in *-*) prerelease="--prerelease" ;; esac
-          gh release create "$TAG" --draft $prerelease --verify-tag --generate-notes \
-            --title "Lyvune $TAG" dist/*
+      - name: Test the pushed image
+        run: scripts/docker-smoke-test.sh --platform ${{ matrix.platform }} --image "$REF"
+
+  publish-binaries:
+    name: Linux tarballs (not wanted yet)
+    needs: verify-published
+    # DISABLED. The first alpha is the Docker image only. The .deb, .rpm and Windows installers that came with
+    # Navidrome's packaging are not Lyvune's (release/goreleaser.yml, release/linux, release/wix), and are not published
+    if: ${{ false }}
+    runs-on: ubuntu-24.04
+    steps:
+      - run: echo "switched off"

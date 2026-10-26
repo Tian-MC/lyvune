@@ -4,9 +4,11 @@
     scripts/check_no_publishing.py [REPO_DIR]
 
 Publishing means a login to a registry, an image or package push, a release, a pull request opened by a bot, or the
-use of a secret other than the workflow's own token. All of it may exist only in .github/workflows/release.yml, where
-every job must be switched off (`if: ${{ false }}`) and the only trigger is a manual run. The other workflows verify:
-they build, test and lint, and the packaging step runs GoReleaser as a snapshot with publishing skipped.
+use of a secret other than the workflow's own token. All of it may exist only in .github/workflows/release.yml, and
+there only as far as pushing the Docker image to ghcr.io: the only trigger is a manual run that has to be confirmed, the
+jobs are chained behind a check of the request, nothing is tagged `latest`, nothing goes to another registry, GoReleaser
+and the other jobs are switched off. The other workflows verify: they build, test and lint, and the packaging step runs
+GoReleaser as a snapshot with publishing skipped.
 
 This is a text check, on purpose: it needs no YAML library, and it fails closed, so a new line that looks like
 publishing fails it until someone looks at it. It exits with 0 when the repository is clean.
@@ -17,6 +19,22 @@ import re
 import sys
 
 RELEASE = "release.yml"
+
+# The jobs of release.yml that may be on, with what each of them may do beyond the common rules, and what they wait for
+RELEASE_JOBS = {
+    "plan": {"may": (), "needs": ()},
+    "verify": {"may": (), "needs": ("plan",)},
+    "publish-image": {"may": ("a registry login", "an image push", "write access to packages"), "needs": ("plan", "verify")},
+    "verify-published": {"may": ("a registry login",), "needs": ("publish-image",)},
+}
+# the request is only served from master, in this repository, when it has been confirmed
+RELEASE_GUARD = ("github.repository == 'Tian-MC/lyvune'", "github.ref == 'refs/heads/master'", "inputs.confirm == 'publish'")
+# true everywhere in release.yml, whichever job: nothing but ghcr.io, no `latest`, no GoReleaser
+RELEASE_NEVER = [
+    ("a registry other than ghcr.io", re.compile(r"docker\.io|hub\.docker|registry:\s*(?!ghcr\.io\b)\S+|quay\.io|gcr\.io(?<!ghcr\.io)", re.I)),
+    ("the `latest` tag", re.compile(r"value=latest|latest=true|:latest\b", re.I)),
+    ("GoReleaser", re.compile(r"goreleaser", re.I)),
+]
 
 # These write comments and labels on this repository's own pull requests and issues, and nothing else
 MAY_WRITE_PULL_REQUESTS = {"coverage-on-pr.yml", "stale.yml"}
@@ -81,6 +99,53 @@ def triggers_of(lines):
     return events
 
 
+def check_release(name, lines, text, events, problems):
+    if events != ["workflow_dispatch"]:
+        problems.append(f"{name}: the only trigger of the publishing workflow is a manual run, found {events}")
+    jobs = jobs_of(lines)
+    if not jobs:
+        problems.append(f"{name}: no jobs found, the check cannot tell what it protects")
+    first_job = min((n for n, _ in jobs.values()), default=len(lines) + 1)
+
+    def scan(first, body, job):
+        allowed = RELEASE_JOBS.get(job, {}).get("may", ())
+        for i, line in enumerate(body):
+            line = strip(line)
+            if not line.strip() or line.lstrip().startswith("#"):
+                continue
+            n = first + i
+            for what, rx in RELEASE_NEVER:
+                if rx.search(line):
+                    problems.append(f"{name}:{n}: {what}: {line.strip()}")
+            for what, rx in FORBIDDEN:
+                if what not in allowed and rx.search(line):
+                    problems.append(f"{name}:{n}: {what} {'outside the job that pushes the image' if what in sum((j['may'] for j in RELEASE_JOBS.values()), ()) else ''}: {line.strip()}".replace("  ", " "))
+
+    scan(1, lines[: first_job - 1], None)  # triggers, permissions, env: no exceptions
+    for job, (n, body) in jobs.items():
+        scan(n + 1, body, job)
+        ifs = [strip(l).strip() for l in body if re.match(r"^    if:", l)]
+        cond = ifs[0] if ifs else ""
+        if job not in RELEASE_JOBS:
+            if not re.fullmatch(r"if:\s*(\$\{\{\s*false\s*\}\}|false)", cond):
+                problems.append(f"{name}:{n}: job '{job}' is not one of the jobs that may run, so it must be switched off (`if: ${{{{ false }}}}`)")
+            continue
+        rule = RELEASE_JOBS[job]
+        needs = " ".join(strip(l) for l in body if re.match(r"^    needs:", l))
+        for dep in rule["needs"]:
+            if dep not in needs:
+                problems.append(f"{name}:{n}: job '{job}' must wait for '{dep}', so that nothing runs before the request has been checked")
+        if job == "plan":
+            for part in RELEASE_GUARD:
+                if part not in cond:
+                    problems.append(f"{name}:{n}: job 'plan' must be guarded by `{part}`")
+        elif cond and not re.fullmatch(r"if:\s*(\$\{\{\s*false\s*\}\}|false)", cond):
+            problems.append(f"{name}:{n}: job '{job}' has its own condition; only 'plan' decides whether the workflow runs")
+    for job in RELEASE_JOBS:
+        if job not in jobs:
+            problems.append(f"{name}: job '{job}' is missing, and the check expects the whole chain")
+
+
 def check_workflow(path, problems):
     name = os.path.basename(path)
     with open(path, encoding="utf-8") as f:
@@ -102,15 +167,7 @@ def check_workflow(path, problems):
 
     events = triggers_of(lines)
     if is_release:
-        if events != ["workflow_dispatch"]:
-            problems.append(f"{name}: the only trigger of the publishing workflow is a manual run, found {events}")
-        jobs = jobs_of(lines)
-        if not jobs:
-            problems.append(f"{name}: no jobs found, the check cannot tell what it protects")
-        for job, (n, body) in jobs.items():
-            ifs = [strip(l).strip() for l in body if re.match(r"^    if:", l)]
-            if not ifs or not re.fullmatch(r"if:\s*(\$\{\{\s*false\s*\}\}|false)", ifs[0]):
-                problems.append(f"{name}:{n}: job '{job}' is not switched off (it needs `if: ${{{{ false }}}}`)")
+        check_release(name, lines, text, events, problems)
     else:
         for ev in events:
             if ev == "workflow_run":
@@ -155,7 +212,7 @@ def main():
     print(f"checked {len(names)} workflows and release/goreleaser.yml")
     for p in problems:
         print("PROBLEM  " + p)
-    print("clean: nothing here can publish" if not problems else f"{len(problems)} problem(s)")
+    print("clean: only release.yml publishes, and only the image to ghcr.io, by hand" if not problems else f"{len(problems)} problem(s)")
     return 1 if problems else 0
 
 
