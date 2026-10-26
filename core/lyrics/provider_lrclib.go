@@ -263,5 +263,5 @@ func (l *lrclib) do(ctx context.Context, endpoint string, out any) (status int, 
 }
 
 func userAgent() string {
-	return "NavidromeReimagined/" + consts.Version + " (https://github.com/Tian-MC/navidrome-reimagined)"
+	return "Lyvune/" + consts.Version + " (https://github.com/Tian-MC/lyvune)"
 }

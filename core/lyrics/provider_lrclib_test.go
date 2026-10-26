@@ -113,8 +113,9 @@ var _ = Describe("LRCLIB provider", func() {
 		serve(func(w http.ResponseWriter, r *http.Request) { writeJSON(w, 404, map[string]any{}) })
 		_, _ = p.Search(context.Background(), rec)
 		Expect(got()).ToNot(BeEmpty())
-		Expect(got()[0].Header.Get("User-Agent")).To(HavePrefix("NavidromeReimagined/"))
-		Expect(got()[0].Header.Get("User-Agent")).To(ContainSubstring("github.com"))
+		Expect(got()[0].Header.Get("User-Agent")).To(HavePrefix("Lyvune/"))
+		Expect(got()[0].Header.Get("User-Agent")).To(ContainSubstring("(https://github.com/Tian-MC/lyvune)"))
+		Expect(got()[0].Header.Get("User-Agent")).ToNot(ContainSubstring("Reimagined"))
 	})
 
 	It("tries the exact lookup first, with the rounded duration, then searches", func() {
