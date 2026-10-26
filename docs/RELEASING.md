@@ -78,9 +78,9 @@ Not tested anywhere: the `.deb`, `.rpm` and Windows installers (they are not pub
 2. **What is published is Lyvune's.** Only the image is. The `.deb`, `.rpm` and Windows installers still carry
    Navidrome's names, paths and users (`/etc/navidrome`, the `navidrome` user, `navidrome.wxs`); they are built as
    snapshots and **not** published until they have been rebranded and tried on a real system.
-3. **The package can be pulled.** A package pushed from a private repository is private. Make the repository, or the
-   package (*Packages*, then *Package settings*, then *Change visibility*; GitHub offers no API for that), public
-   before telling anyone to pull it.
+3. **The package can be pulled.** A new package is private, whatever the repository is. Make the repository public, and
+   then the package (your profile, *Packages*, the package, *Package settings*, *Danger Zone*, *Change visibility*; it
+   is done in the web interface and cannot be undone once the package is public) before telling anyone to pull it.
 
 ## Release strategy
 
