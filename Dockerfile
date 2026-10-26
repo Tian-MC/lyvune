@@ -1,7 +1,7 @@
 # Node major used to build the UI: the one in .nvmrc, so the image and a local build agree
 ARG NODE_VERSION=24
 
-FROM --platform=$BUILDPLATFORM ghcr.io/crazy-max/osxcross:14.5-debian AS osxcross
+FROM --platform=$BUILDPLATFORM ghcr.io/crazy-max/osxcross:26.1-debian AS osxcross
 
 ########################################################################################################################
 ### Build xx (original image: tonistiigi/xx)
