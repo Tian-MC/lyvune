@@ -284,11 +284,10 @@ that off; Lyvune then contacts no other host. The lyrics providers can also be s
 | Image | What it is |
 | --- | --- |
 | `lyvune:local` | what `docker compose up --build` builds from your copy of the repository. Yours to keep or rebuild |
-| `ghcr.io/tian-mc/lyvune:<version>` | **not published, and publishing is switched off** until the image has been tested on a real Docker host. When it is on, a pre-release such as `v0.1.0-alpha` publishes exactly its own tag; see [RELEASING.md](RELEASING.md) |
-| `ghcr.io/tian-mc/lyvune:latest`, `:0.1` | will exist only for stable versions (no `-alpha`, `-beta` or `-rc`) |
+| `ghcr.io/tian-mc/lyvune:<version>` | **not published yet.** The first one will be `0.1.0-alpha.1`; the release notes say when it is out. Each release is exactly one tag, and nothing is ever tagged `latest` automatically. See [RELEASING.md](RELEASING.md) |
 
 The image is built for two platforms, `linux/amd64` and `linux/arm64` (Raspberry Pi 4 and 5, many NAS), and Docker picks
-the right one. The `amd64` image has been built and tested on a Docker host (`scripts/docker-smoke-test.sh`); the `arm64` one has only been compiled, not started. To build for another platform than yours, `docker buildx build --platform linux/arm64 -t lyvune:arm64 .`
+the right one. What was actually run on each is in [Tested on](RELEASING.md#tested-on). To build for another platform than yours, `docker buildx build --platform linux/arm64 -t lyvune:arm64 .`
 
 ## Building and testing it yourself
 
