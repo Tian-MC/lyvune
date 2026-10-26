@@ -75,7 +75,8 @@ licence and copyright notices kept. See [Credits and licence](#credits-and-licen
 
 ## Screenshots
 
-The karaoke view is at the top of this page. The rest of the player:
+The karaoke view is at the top of this page. The rest of the player. All the screenshots use a demo library, with music,
+covers and lyrics created for this project and released under CC0 (see [`scripts/demo-library`](scripts/demo-library/README.md)).
 
 **Home**
 
