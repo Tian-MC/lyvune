@@ -66,8 +66,8 @@ SIGTERM, a Navidrome migration, an unwritable data folder, `mpv`, `libwebp`, no 
 | | Where | Result |
 | --- | --- | --- |
 | `linux/amd64` | the maintainer's Docker host (Arch Linux), before the audit fixes | all checks passed |
-| `linux/amd64` | GitHub runner (`ubuntu-24.04`), `docker.yml` on PR #16, commit `8fd8799c` | all checks passed |
-| `linux/arm64` | GitHub ARM runner (`ubuntu-24.04-arm`, native, not emulated), `docker.yml` on PR #16, commit `8fd8799c` | all checks passed, the same ones as amd64 |
+| `linux/amd64` | GitHub runner (`ubuntu-24.04`), `docker.yml` run by hand on `master`, on the commit that is tagged | all checks passed |
+| `linux/arm64` | GitHub ARM runner (`ubuntu-24.04-arm`, native, not emulated), `docker.yml` run by hand on `master`, on the commit that is tagged | all checks passed, the same ones as amd64 |
 | the published image | `verify-published` in `release.yml` | not run: nothing is published |
 
 Not tested anywhere: the `.deb`, `.rpm` and Windows installers (they are not published), a real ARM board (a Raspberry Pi or a NAS), and the published image (nothing is published yet).
