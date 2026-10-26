@@ -28,7 +28,7 @@ var _ = Describe("Saving lyrics: defaults and local files", func() {
 	dir := func() string { return filepath.Join(root, "Artist", "Album") }
 	write := func(name, content string) string {
 		p := filepath.Join(dir(), name)
-		Expect(os.WriteFile(p, []byte(content), 0o644)).To(Succeed())
+		Expect(os.WriteFile(p, []byte(content), 0o600)).To(Succeed())
 		return p
 	}
 	sidecar := func() string { return filepath.Join(dir(), "01 - Song.lyrics.json") }

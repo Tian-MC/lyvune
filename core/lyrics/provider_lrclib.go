@@ -235,7 +235,7 @@ func (l *lrclib) getJSON(ctx context.Context, path string, q url.Values, out any
 			}
 		}
 	}
-	return fmt.Errorf("%w: %v", ErrProviderUnavailable, lastErr)
+	return fmt.Errorf("%w: %w", ErrProviderUnavailable, lastErr)
 }
 
 func (l *lrclib) do(ctx context.Context, endpoint string, out any) (status int, retryAfter string, err error) {

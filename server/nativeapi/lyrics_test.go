@@ -96,7 +96,7 @@ var _ = Describe("Lyrics API", func() {
 
 		root = GinkgoT().TempDir()
 		Expect(os.MkdirAll(filepath.Join(root, "Artist", "Album"), 0o755)).To(Succeed())
-		Expect(os.WriteFile(filepath.Join(root, "Artist", "Album", "01.flac"), audioContent, 0o644)).To(Succeed())
+		Expect(os.WriteFile(filepath.Join(root, "Artist", "Album", "01.flac"), audioContent, 0o600)).To(Succeed())
 
 		repo := tests.CreateMockMediaFileRepo()
 		repo.SetData(model.MediaFiles{{ID: "song-1", Title: "Song", Artist: "Band", Album: "Album", Duration: 200, Path: "Artist/Album/01.flac", LibraryPath: root}})
@@ -330,7 +330,7 @@ var _ = Describe("Lyrics API", func() {
 		})
 
 		It("asks for confirmation before superseding a sidecar", func() {
-			Expect(os.WriteFile(filepath.Join(root, "Artist", "Album", "01.lrc"), []byte("[00:01.00]mine"), 0o644)).To(Succeed())
+			Expect(os.WriteFile(filepath.Join(root, "Artist", "Album", "01.lrc"), []byte("[00:01.00]mine"), 0o600)).To(Succeed())
 			fake.cands = []lyrics.Candidate{syncedCandidate("fake:1", "chosen", 0.97, true)}
 			search()
 			w := do("POST", "/lyrics/song/song-1/apply", adminTok, map[string]any{"candidateId": "fake:1"})

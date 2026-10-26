@@ -57,12 +57,12 @@ func DecodeKRC(data []byte) (string, error) {
 	}
 	zr, err := zlib.NewReader(bytes.NewReader(buf))
 	if err != nil {
-		return "", fmt.Errorf("%w: %v", ErrNotKRC, err)
+		return "", fmt.Errorf("%w: %w", ErrNotKRC, err)
 	}
 	defer zr.Close()
 	out, err := io.ReadAll(io.LimitReader(zr, maxKRCBytes+1))
 	if err != nil {
-		return "", fmt.Errorf("%w: %v", ErrNotKRC, err)
+		return "", fmt.Errorf("%w: %w", ErrNotKRC, err)
 	}
 	if len(out) > maxKRCBytes {
 		return "", fmt.Errorf("%w: too large", ErrNotKRC)

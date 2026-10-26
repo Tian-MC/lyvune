@@ -109,6 +109,7 @@ type musixmatchTrack struct {
 // musixmatchFreeMarker is appended to the truncated lyrics of free keys.
 const musixmatchFreeMarker = "NOT for Commercial use"
 
+//nolint:gocyclo // Musixmatch answers in many shapes, and each branch handles one of them
 func (m *musixmatch) Search(ctx context.Context, rec Recording) ([]Candidate, error) {
 	if m.apiKey == "" {
 		return nil, ErrProviderDisabled

@@ -346,7 +346,6 @@ var _ = Describe("synthetic word timing", func() {
 	build := func(starts ...int64) model.Line {
 		words := make([]model.Cue, len(starts))
 		for i, s := range starts {
-			s := s
 			words[i] = model.Cue{Start: &s, Value: "ab "}
 		}
 		return model.Line{Cue: words}

@@ -41,7 +41,7 @@ func ParseRichSync(body string) (model.LyricList, error) {
 	}
 	var in []richSyncLine
 	if err := json.Unmarshal([]byte(body), &in); err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrNotRichSync, err)
+		return nil, fmt.Errorf("%w: %w", ErrNotRichSync, err)
 	}
 	if len(in) > maxLyricLines {
 		return nil, fmt.Errorf("%w: too many lines", ErrLyricsTooLarge)

@@ -88,10 +88,3 @@ func (d *displayCache) removeLocked(trackID string) {
 		}
 	}
 }
-
-// size is used by tests.
-func (d *displayCache) size() int {
-	d.mu.Lock()
-	defer d.mu.Unlock()
-	return len(d.m)
-}

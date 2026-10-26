@@ -517,7 +517,7 @@ func (l *lyricsService) Import(ctx context.Context, mf *model.MediaFile, req Imp
 		var err error
 		list, err = model.ParseLyrics(ctx, suffix, "xxx", req.Content)
 		if err != nil {
-			return ApplyResult{}, fmt.Errorf("%w: %v", ErrEmptyLyrics, err)
+			return ApplyResult{}, fmt.Errorf("%w: %w", ErrEmptyLyrics, err)
 		}
 	}
 	cand := Candidate{
@@ -759,6 +759,7 @@ func (l *lyricsService) showAuto(ctx context.Context, mf *model.MediaFile, c Can
 	}
 }
 
+//nolint:gocyclo // a single list of upgrade rules; splitting it would scatter them
 func (l *lyricsService) upgrade(ctx context.Context, mf *model.MediaFile, s Settings, cur current, opts ResolveOptions) (ResolveResult, error) {
 	if cur.state.Locked {
 		return ResolveResult{Result: ResolveLocked}, nil

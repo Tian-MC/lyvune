@@ -14,7 +14,7 @@ const (
 	// StatusReady means the provider can be searched.
 	StatusReady = "ready"
 	// StatusNeedsCredentials means it works once an API key is configured.
-	StatusNeedsCredentials = "needs-credentials"
+	StatusNeedsCredentials = "needs-credentials" //nolint:gosec // a status name, not a credential
 	// StatusDisabled means it is turned off in the settings.
 	StatusDisabled = "disabled"
 	// StatusUnavailable means there is no authorized way to use it.

@@ -93,7 +93,7 @@ func ParseEnvelope(data []byte) (Envelope, error) {
 		return env, fmt.Errorf("%w: file too large", ErrInvalidEnvelope)
 	}
 	if err := json.Unmarshal(data, &env); err != nil {
-		return env, fmt.Errorf("%w: %v", ErrInvalidEnvelope, err)
+		return env, fmt.Errorf("%w: %w", ErrInvalidEnvelope, err)
 	}
 	if err := env.Validate(); err != nil {
 		return Envelope{}, err

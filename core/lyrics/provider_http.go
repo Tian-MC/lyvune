@@ -66,7 +66,7 @@ func (h *httpProvider) getJSON(ctx context.Context, endpoint string, out any) er
 			}
 		}
 	}
-	return fmt.Errorf("%w: %v", ErrProviderUnavailable, lastErr)
+	return fmt.Errorf("%w: %w", ErrProviderUnavailable, lastErr)
 }
 
 func (h *httpProvider) do(ctx context.Context, endpoint string, out any) (int, string, error) {

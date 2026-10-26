@@ -259,7 +259,7 @@ func (q *qq) directCandidate(ctx context.Context, rec Recording, s qqSong) (*Can
 	}
 	list, err := model.ParseLyrics(ctx, ".lrc", "xxx", []byte(text))
 	if err != nil || len(list) == 0 {
-		return nil, nil
+		return nil, nil //nolint:nilerr // text that does not parse is the same as no lyrics: not an error for the caller
 	}
 	for i := range list {
 		if list[i].Kind == "" {
