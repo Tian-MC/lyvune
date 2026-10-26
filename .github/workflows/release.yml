@@ -18,6 +18,9 @@ name: "Release: Docker image to GHCR"
 # tarballs are switched off (`if: ${{ false }}`) until they are wanted.
 #
 # scripts/check_no_publishing.py, which the Pipeline runs, fails if this file does more than the above.
+#
+# GitHub only lists a workflow that has a manual trigger and nothing else after a push that changes its file. If this one
+# is missing from the Actions tab (or `gh workflow run release.yml` says 404), change a comment here and push.
 on:
   workflow_dispatch:
     inputs:
