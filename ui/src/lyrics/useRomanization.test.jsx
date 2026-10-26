@@ -14,6 +14,9 @@ vi.mock('kuromoji/build/kuromoji.js', async () => {
 
 import { useRomanization } from './useRomanization'
 
+// Japanese loads a 17 MB dictionary; on a busy machine that takes longer than waitFor's default second
+const DICTIONARY = { timeout: 20000 }
+
 const lyrics = (texts, extra = {}) => ({
   synced: false,
   lang: '',
@@ -39,7 +42,7 @@ describe('useRomanization', () => {
   it('adds a romanization line when enabled', async () => {
     const l = lyrics(['안녕하세요', 'hello'])
     const { result, waitFor } = renderHook(() => useRomanization(l, true))
-    await waitFor(() => expect(result.current.status).toBe('ready'))
+    await waitFor(() => expect(result.current.status).toBe('ready'), DICTIONARY)
     expect(result.current.lyrics.hasPronunciation).toBe(true)
     expect(result.current.lyrics.lines[0].pronunciation).toBe('annyeonghaseyo')
     expect(result.current.lyrics.lines[1].pronunciation).toBeNull()
@@ -50,7 +53,7 @@ describe('useRomanization', () => {
     const l = lyrics(['안녕하세요'])
     l.lines[0].words = words
     const { result, waitFor } = renderHook(() => useRomanization(l, true))
-    await waitFor(() => expect(result.current.status).toBe('ready'))
+    await waitFor(() => expect(result.current.status).toBe('ready'), DICTIONARY)
     const [line] = result.current.lyrics.lines
     expect(line.words).toBe(words)
     expect(line.text).toBe('안녕하세요')
@@ -74,7 +77,7 @@ describe('useRomanization', () => {
     l.lines[2].pronunciation = '고마워요'
     const { result, waitFor } = renderHook(() => useRomanization(l, true))
     expect(result.current.available).toBe(true)
-    await waitFor(() => expect(result.current.status).toBe('ready'))
+    await waitFor(() => expect(result.current.status).toBe('ready'), DICTIONARY)
     const got = result.current.lyrics.lines.map((x) => x.pronunciation)
     expect(got[0]).toBe('provider one')
     expect(got[1]).toBe('saranghaeyo')
@@ -88,11 +91,15 @@ describe('useRomanization', () => {
       ({ style }) => useRomanization(l, true, { style }),
       { initialProps: { style: 'ascii' } },
     )
-    await waitFor(() => expect(result.current.status).toBe('ready'))
+    await waitFor(() => expect(result.current.status).toBe('ready'), DICTIONARY)
     expect(result.current.lyrics.lines[0].pronunciation).toBe('toukyou e ikou')
     rerender({ style: 'macron' })
-    await waitFor(() =>
-      expect(result.current.lyrics.lines[0].pronunciation).toBe('tōkyō e ikō'),
+    await waitFor(
+      () =>
+        expect(result.current.lyrics.lines[0].pronunciation).toBe(
+          'tōkyō e ikō',
+        ),
+      DICTIONARY,
     )
     expect(result.current.status).toBe('ready')
   })
@@ -103,11 +110,15 @@ describe('useRomanization', () => {
       ({ style }) => useRomanization(l, true, { style }),
       { initialProps: { style: 'ascii' } },
     )
-    await waitFor(() => expect(result.current.status).toBe('ready'))
+    await waitFor(() => expect(result.current.status).toBe('ready'), DICTIONARY)
     const before = result.all.length
     rerender({ style: 'macron' })
-    await waitFor(() =>
-      expect(result.current.lyrics.lines[0].pronunciation).toBe('tōkyō e ikō'),
+    await waitFor(
+      () =>
+        expect(result.current.lyrics.lines[0].pronunciation).toBe(
+          'tōkyō e ikō',
+        ),
+      DICTIONARY,
     )
     // every render after the switch still had a romanization on every line
     result.all.slice(before).forEach((r) => {
@@ -126,7 +137,7 @@ describe('useRomanization', () => {
       { initialProps: { han: 'auto' } },
     )
     expect(result.current.ambiguous).toBe(true)
-    await waitFor(() => expect(result.current.status).toBe('ready'))
+    await waitFor(() => expect(result.current.status).toBe('ready'), DICTIONARY)
     expect(result.current.engines).toEqual(['zh'])
     expect(result.current.lyrics.lines[0].pronunciation).toMatch(/dōng jīng/)
   })
