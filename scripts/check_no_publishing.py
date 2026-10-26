@@ -37,7 +37,7 @@ RELEASE_NEVER = [
 ]
 
 # These write comments and labels on this repository's own pull requests and issues, and nothing else
-MAY_WRITE_PULL_REQUESTS = {"coverage-on-pr.yml", "stale.yml"}
+MAY_WRITE_PULL_REQUESTS = {"coverage-on-pr.yml", "download-link-on-pr.yml", "stale.yml"}
 
 # (what it is, regular expression) for lines that publish or authenticate to publish
 FORBIDDEN = [

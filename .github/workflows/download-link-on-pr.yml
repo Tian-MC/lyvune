@@ -7,6 +7,11 @@ jobs:
   pr_comment:
     if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
+    # It lists pull requests and artifacts and writes one comment; it checks out and runs nothing from the pull request.
+    # Without this block it gets the repository's default token, which is read-only here, and fails with a 403.
+    permissions:
+      actions: read
+      pull-requests: write
     steps:
       - uses: actions/github-script@v9
         with:
