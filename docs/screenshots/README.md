@@ -1,8 +1,9 @@
 # Screenshots
 
 These images show Lyvune with its **demo library**: music, covers and lyrics that were created for the project and
-released under CC0 1.0. See [`scripts/demo-library`](../../scripts/demo-library/README.md) for what it is, how to make it
-again and its licence. They were taken in an isolated Lyvune with its own empty database; no personal library or data
+dedicated to the public domain under CC0 1.0, to the extent of the maintainer's rights. The interface in them is Lyvune's,
+under the GPL-3.0; only the demo content shown is CC0. See [`scripts/demo-library`](../../scripts/demo-library/README.md)
+for what it is, how to make it again and its licence. They were taken in an isolated Lyvune with its own empty database; no personal library or data
 appears in them.
 
 | File | Shows | Size |

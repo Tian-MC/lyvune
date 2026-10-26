@@ -44,7 +44,16 @@ personal library or at a real database.
 
 ## Licence and provenance
 
-The data in `demo-library.json` and everything the script produces (the audio, the covers and the lyrics) are released
-under **CC0 1.0**, a public domain dedication: <https://creativecommons.org/publicdomain/zero/1.0/>. They were made for
-Lyvune by its maintainer with the help of an AI assistant (Claude), and nothing in them comes from anywhere else. The
-script itself is part of Lyvune and under the GPL-3.0, like the rest of the repository.
+**The demo content.** The data in `demo-library.json` and what the script makes from it (the synthesised audio, the covers
+and the lyrics) is dedicated to the public domain by the maintainer under **CC0 1.0**
+(<https://creativecommons.org/publicdomain/zero/1.0/>), **to the extent of the rights the maintainer holds in it**.
+
+It was created for Lyvune, at the maintainer's request, with an AI assistant (Claude) writing the script, the music data
+and the lyrics, and none of it is taken from anyone else's work. Whether copyright exists in material made this way
+depends on the country: the dedication covers whatever rights the maintainer holds, and **claims none that do not
+exist**. It claims no right over anything that belongs to someone else.
+
+**Everything else stays as it was.** `make_demo_library.py` and the rest of the repository are under the **GPL-3.0**. The
+screenshots in `docs/screenshots` show Lyvune's interface, which is part of the GPL-3.0 project, so only the demo content
+shown in them is CC0. The tools used to make the library (Python, numpy, Pillow, ffmpeg) keep their own licences and are
+not part of the dedication. Nothing here changes Lyvune's licence or the credits to Navidrome.
