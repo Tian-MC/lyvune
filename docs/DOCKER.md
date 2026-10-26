@@ -3,14 +3,16 @@
 This guide takes you from nothing to a working Lyvune in a container, keeps your music and your data safe, and
 covers the questions that come next: permissions, a reverse proxy, backups, updates, coming from Navidrome.
 
-> **There is no published image yet.** Until one is, you build the image from this repository (one command, below).
-> `ghcr.io/tian-mc/lyvune` is where published images will live; see [Images](#images) and [RELEASING.md](RELEASING.md).
+> **The first alpha is out, and its image is published:** `ghcr.io/tian-mc/lyvune:0.1.0-alpha.1`, for `amd64` and `arm64`.
+> It is an alpha, so read the [release notes](https://github.com/Tian-MC/lyvune/releases/tag/v0.1.0-alpha.1) for what to expect. You can also
+> [build the image yourself](#build-it-from-source-instead). See [Images](#images) for the tags.
 
 ## What you need
 
-- A recent Docker Engine (24 or newer) with the Compose plugin (`docker compose version` should work) **and the
-  Buildx plugin** (`docker buildx version`). The image is built with BuildKit, and without Buildx Docker uses its legacy
-  builder, which cannot read the Dockerfile. On Arch Linux: `sudo pacman -S docker-buildx docker-compose`.
+- A recent Docker Engine (24 or newer) with the Compose plugin (`docker compose version` should work). The **Buildx
+  plugin** (`docker buildx version`) is needed only to build the image yourself, or to inspect a published image with
+  `docker buildx imagetools inspect`: without Buildx, Docker uses its legacy builder, which cannot read the Dockerfile.
+  On Arch Linux: `sudo pacman -S docker-buildx docker-compose`.
 - A computer with 64-bit Intel/AMD (`amd64`) or ARM (`arm64`) processors.
 - A folder with your music.
 - Disk space for the image, and for the database and cache, which grow with your library.
@@ -18,19 +20,29 @@ covers the questions that come next: permissions, a reverse proxy, backups, upda
 ## Quick start
 
 ```sh
-git clone https://github.com/Tian-MC/lyvune.git
+git clone --branch v0.1.0-alpha.1 https://github.com/Tian-MC/lyvune.git
 cd lyvune
 cp .env.example .env
 ```
 
-Open `.env` and set `LYVUNE_MUSIC_DIR` to your music folder, for example `LYVUNE_MUSIC_DIR=/srv/music`. Then:
+Open `.env`, change the `LYVUNE_MUSIC_DIR` line to your music folder and add a `LYVUNE_IMAGE` line, so that Compose runs
+the published image:
 
-```sh
-docker compose up -d --build
+```env
+LYVUNE_MUSIC_DIR=/srv/music
+LYVUNE_IMAGE=ghcr.io/tian-mc/lyvune:0.1.0-alpha.1
 ```
 
-The first build takes a few minutes. When it is done, open <http://localhost:4533>. The first person to open Lyvune
-creates the administrator account. Lyvune then scans your library and the music appears.
+Then:
+
+```sh
+docker compose pull
+docker compose up -d --no-build
+```
+
+`--no-build` makes sure nothing is built on your computer: the image you pulled is the one that runs. Open
+<http://localhost:4533>. The first person to open Lyvune creates the administrator account. Lyvune then scans your
+library and the music appears. There is no `latest` tag: always name the version.
 
 Useful commands:
 
@@ -41,13 +53,24 @@ docker compose stop                # stop it; your data stays
 docker compose down                # remove the container; your data stays (it is in a volume)
 ```
 
+## Build it from source instead
+
+Leave `LYVUNE_IMAGE` out of `.env` and Compose builds the image from the repository you cloned, as `lyvune:local`. Use
+`git clone https://github.com/Tian-MC/lyvune.git` (the development branch) or the tag you want, and:
+
+```sh
+docker compose up -d --build
+```
+
+The first build takes a few minutes and needs the Buildx plugin (see above).
+
 ## What the Compose file does
 
 `compose.yaml` runs one service, `lyvune`:
 
 | | |
 | --- | --- |
-| Image | built from this repository as `lyvune:local` (or `LYVUNE_IMAGE`) |
+| Image | the one `LYVUNE_IMAGE` names; with nothing set, built from this repository as `lyvune:local` |
 | Port | `4533` on your computer (`LYVUNE_PORT` changes it) |
 | `/data` | Lyvune's database, cache, backups and the history of replaced lyrics. A Docker volume named `lyvune-data` unless `LYVUNE_DATA` says otherwise |
 | `/music` | your music, mounted **read-only** |
@@ -64,7 +87,7 @@ The settings in `.env`:
 | `LYVUNE_PORT` | the port on this computer | `4533` |
 | `LYVUNE_USER` | `uid:gid` the server runs as | `1000:1000` |
 | `TZ` | time zone, for the scan schedule and log times | `UTC` |
-| `LYVUNE_IMAGE` | the image to run | `lyvune:local`, built here |
+| `LYVUNE_IMAGE` | the image to run, for example `ghcr.io/tian-mc/lyvune:0.1.0-alpha.1` | `lyvune:local`, built here |
 
 Everything else Lyvune can be told is an `ND_` environment variable, exactly as in Navidrome (`ND_LOGLEVEL`,
 `ND_BASEURL`, `ND_SCANNER_SCHEDULE`, ...), or a line in `lyvune.toml` in the data folder. Add them under
@@ -210,12 +233,13 @@ A name without a folder is looked for in `/data/backups`. It asks for confirmati
 
 ```sh
 docker compose exec lyvune lyvune backup create        # first, a backup
-docker tag lyvune:local lyvune:previous                # keep the image you have
-git pull
-docker compose up -d --build                           # new image, same data
+# in .env, set LYVUNE_IMAGE to the new version (note the old one: it is how you go back), then:
+docker compose pull
+docker compose up -d --no-build                        # new image, same data
 ```
 
-When a published image exists, an update is `docker compose pull && docker compose up -d`.
+If you build from source instead: `docker tag lyvune:local lyvune:previous` to keep the image you have, `git pull`, and
+`docker compose up -d --build`.
 
 Going back: a new version may change the database, and running the old version on it is not safe.
 To go back, restore the backup you made first (above) and run the old image:
@@ -223,7 +247,8 @@ To go back, restore the backup you made first (above) and run the old image:
 ```sh
 docker compose stop
 docker compose run --rm lyvune backup restore -b <the backup from before the update>
-LYVUNE_IMAGE=lyvune:previous docker compose up -d --no-build
+# in .env, set LYVUNE_IMAGE back to the old version (with a source build: lyvune:previous), then:
+docker compose up -d --no-build
 ```
 
 ## Coming from Navidrome
@@ -246,7 +271,7 @@ still tells them it is a `navidrome` server.
    ```
 4. In `.env`: `LYVUNE_MUSIC_DIR` is the same music folder Navidrome used and `LYVUNE_DATA=/srv/lyvune`. Bring your
    `ND_` variables across under `environment:`.
-5. `docker compose up -d --build`. Sign in with your Navidrome account.
+5. `docker compose pull && docker compose up -d --no-build`, with `LYVUNE_IMAGE` set as in the quick start. Sign in with your Navidrome account.
 
 Lyvune updates the database to its own version the first time it opens it. **Count on that being one-way**, so
 Navidrome should not be pointed at it again: keep the folder you copied from untouched, and going back is starting Navidrome on
@@ -283,8 +308,8 @@ that off; Lyvune then contacts no other host. The lyrics providers can also be s
 
 | Image | What it is |
 | --- | --- |
-| `lyvune:local` | what `docker compose up --build` builds from your copy of the repository. Yours to keep or rebuild |
-| `ghcr.io/tian-mc/lyvune:<version>` | **not published yet.** The first one will be `0.1.0-alpha.1`; the release notes say when it is out. Each release is exactly one tag, and nothing is ever tagged `latest` automatically. See [RELEASING.md](RELEASING.md) |
+| `ghcr.io/tian-mc/lyvune:0.1.0-alpha.1` | **published**: the image of [v0.1.0-alpha.1](https://github.com/Tian-MC/lyvune/releases/tag/v0.1.0-alpha.1), for `linux/amd64` and `linux/arm64`. Its digest is `sha256:9faa644f6a3f805c201a765bd145048005e60764f23da5fcd4af1811c1d8511c`. Each release is exactly one tag, and **there is no `latest`**. See [RELEASING.md](RELEASING.md) |
+| `lyvune:local` | what `docker compose up --build` builds from your copy of the repository when `LYVUNE_IMAGE` is not set. Yours to keep or rebuild |
 
 The image is built for two platforms, `linux/amd64` and `linux/arm64` (Raspberry Pi 4 and 5, many NAS), and Docker picks
 the right one. What was actually run on each is in [Tested on](RELEASING.md#tested-on). To build for another platform than yours, `docker buildx build --platform linux/arm64 -t lyvune:arm64 .`
@@ -294,6 +319,7 @@ the right one. What was actually run on each is in [Tested on](RELEASING.md#test
 ```sh
 docker build -t lyvune:local .                       # the image, without Compose
 scripts/docker-smoke-test.sh                          # builds it and tests it end to end
+scripts/docker-smoke-test.sh --image ghcr.io/tian-mc/lyvune:0.1.0-alpha.1   # tests the published image instead
 python3 scripts/smoke_test.py check http://localhost:4533   # the same checks, against a server that is running
 ```
 
