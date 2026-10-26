@@ -54,3 +54,9 @@ func ReadEnvelopeForTest(ctx context.Context, mf *model.MediaFile) (*Envelope, s
 
 // CueCountForTest counts the word cues of the main lyrics.
 func CueCountForTest(l model.LyricList) int { return cueCount(l) }
+
+// AutomaticCandidatesForTest exposes the policy applied to provider results
+// before automatic retrieval and upgrades choose one.
+func AutomaticCandidatesForTest(cands []Candidate, includeTranslations bool) []Candidate {
+	return automaticCandidates(cands, Settings{IncludeProviderTranslations: includeTranslations})
+}

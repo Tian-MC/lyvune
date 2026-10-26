@@ -265,6 +265,37 @@ var _ = Describe("KuGou provider", func() {
 		Expect(f.downloads).To(Equal([]string{"krc"}), "LRC is not fetched when KRC worked")
 	})
 
+	It("drops the embedded KRC translation when translations are off, keeping the words and the romanization", func() {
+		f := newFake()
+		got, err := serve(f, true).Search(context.Background(), rec)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(got).To(HaveLen(1))
+		kind := func(l model.Lyrics) string { return l.EffectiveKind() }
+
+		kept := lyrics.AutomaticCandidatesForTest(got, true)
+		Expect(kept[0].Lyrics).To(HaveLen(3), "on: unchanged")
+
+		off := lyrics.AutomaticCandidatesForTest(got, false)
+		Expect(off).To(HaveLen(1))
+		Expect(off[0].Lyrics).To(HaveLen(2))
+		Expect(kind(off[0].Lyrics[0])).To(Equal("main"))
+		Expect(kind(off[0].Lyrics[1])).To(Equal("pronunciation"))
+		Expect(off[0].Quality).To(Equal(lyrics.QualityKaraoke))
+		Expect(off[0].Provider).To(Equal(got[0].Provider))
+		Expect(off[0].Attribution).To(Equal(got[0].Attribution))
+
+		main := off[0].Lyrics[0]
+		Expect(main.Line[0].Value).To(Equal("こんにちは"))
+		Expect(main.Line[0].Cue).To(HaveLen(4))
+		Expect(*main.Line[0].Cue[1].Start).To(Equal(int64(1300)))
+		Expect(off[0].Lyrics[1].Line[0].Value).To(ContainSubstring("ko"))
+
+		// the provider's own result is not changed by the filter
+		Expect(got[0].Lyrics).To(HaveLen(3))
+		Expect(kind(got[0].Lyrics[1])).To(Equal("translation"))
+		Expect(got[0].Lyrics[1].Line[0].Value).To(Equal("Hello"))
+	})
+
 	It("falls back to plain LRC and classifies it by what it contains", func() {
 		f := newFake()
 		f.krc, f.lrc = "", "[00:01.00]こんにちは\n[00:03.00]さようなら"
