@@ -26,6 +26,8 @@ the [issues](https://github.com/Tian-MC/lyvune/issues)**
 
 Lyvune is built on [Navidrome](https://github.com/navidrome/navidrome), and the server, the APIs and library scanning come from it. A bug there may also belong in Navidrome's tracker; if you are not sure, report it here.
 
+**Do not report a security problem in a public issue.** See the [security policy](SECURITY.md) for how to report it privately.
+
 ## Pull requests
 Before submitting a pull request, ensure that you go through the following:
 - Open a corresponding issue for the Pull Request, if not existing. The issue can be opened following [these guidelines](#issues)
@@ -36,7 +38,7 @@ Before submitting a pull request, ensure that you go through the following:
     git checkout -b adding-docs/834 master
 ```
 - The commits should follow a [specific convention](#commit-conventions)
-- Ensure that a DCO sign-off for commits is provided via `--signoff` option of git commit
+- Signing off your commits (`git commit --signoff`, which adds a `Signed-off-by:` line) is welcome but optional. By contributing you agree that your contribution is licensed under the project's licence, GPL-3.0 (see [LICENSE](LICENSE)), like the Navidrome code it builds on. A sign-off is one way of saying that you have the right to submit it.
 - Provide a link to the issue that will be closed via your Pull request.
 
 ### Commit Conventions
@@ -77,7 +79,7 @@ The body is optional. It may contain short description of changes made.
 
 Following all the guidelines an ideal commit will look like:
 ```
-    git commit --signoff -m "feat(themes): New-theme - #834"
+    git commit -m "feat(themes): New-theme - #834"
 ```
 
 After committing, push your commits to your forked branch and create a Pull Request from there.
