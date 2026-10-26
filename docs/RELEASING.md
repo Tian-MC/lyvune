@@ -60,13 +60,28 @@ build `navidrome/ffmpeg-windows-builds`.
      Subsonic, scan, streaming and lyrics work; users and saved lyrics survive a restart; SIGTERM stops it with exit
      code 0; a read-only library refuses to save lyrics; a copied `navidrome.db` and `navidrome.toml` are used; an
      unwritable data folder fails loudly; Compose files are valid.
-   - *Not done yet:* `linux/arm64` (the binary has been compiled, never started); the checks added after that run
-     (`mpv`, the `libwebp` libraries, and an MP3 transcode through ffmpeg) on Docker; and `docker.yml` in CI.
+   - *Also done on amd64:* `mpv`, the `libwebp` libraries, no `curl`, and an MP3 transcode through ffmpeg.
+   - *Not done yet:* `linux/arm64` (the binary has been compiled, never started), and `docker.yml` in CI.
 2. **What is published is Lyvune's.** Today only the image and the Linux binaries are. The `.deb`, `.rpm` and Windows
    installers still carry Navidrome's names, paths and users (`/etc/navidrome`, the `navidrome` user, `navidrome.wxs`);
    they are built as snapshots and **not** published until they have been rebranded and tried on a real system.
 3. **The first image has a plan to be tried.** After publishing, `docker pull` it on a clean host and run the smoke test
    against the published image.
+
+## The first alpha: Docker only
+
+`v0.1.0-alpha.1` can be an image and nothing else, because the image is the one thing that is Lyvune's end to end and
+has been run on a real Docker host. Still to do before it, in this order:
+
+1. Merge this work into `master` and see the pipeline and `docker.yml` pass there. `docker.yml` has not run in CI yet,
+   and its `arm64` leg is the first time the arm64 image is started anywhere.
+2. Make the repository public, or the image private. A private repository publishes a private package that nobody can
+   pull; decide it before enabling anything.
+3. Enable `publish-image` only (see below). `publish-binaries` stays off.
+4. Pull the published image on a clean host and run `scripts/docker-smoke-test.sh --image ghcr.io/tian-mc/lyvune:0.1.0-alpha.1`.
+
+An alpha is for people who accept that: say in the release notes that arm64 is new, that the `.deb`, `.rpm` and Windows
+installers are not part of it, and that the server still reports itself to Subsonic clients as `navidrome`.
 
 ## Release strategy
 
