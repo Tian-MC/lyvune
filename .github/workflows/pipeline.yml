@@ -45,12 +45,12 @@ jobs:
         id: git-version
         run: |
           GIT_TAG=$(git describe --tags --abbrev=0 2>/dev/null || true)
-          if [ -n "$GIT_TAG" ]; then
-            if [[ "$GITHUB_REF" != refs/tags/* ]]; then
-              GIT_TAG=${GIT_TAG}-SNAPSHOT
-            fi
-            echo "GIT_TAG=$GIT_TAG" >> $GITHUB_OUTPUT
+          # Until the first release is tagged there is no tag to describe, and the Windows installer needs a version
+          GIT_TAG=${GIT_TAG:-v0.0.0}
+          if [[ "$GITHUB_REF" != refs/tags/* ]]; then
+            GIT_TAG=${GIT_TAG}-SNAPSHOT
           fi
+          echo "GIT_TAG=$GIT_TAG" >> $GITHUB_OUTPUT
           GIT_SHA=$(git rev-parse --short HEAD)
           PR_NUM=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
           if [[ $PR_NUM != "null" ]]; then
