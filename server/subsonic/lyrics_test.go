@@ -1,6 +1,7 @@
 package subsonic
 
 import (
+	"context"
 	"encoding/json"
 	"path/filepath"
 
@@ -255,8 +256,56 @@ var _ = Describe("GetLyricsBySongId", func() {
 		})
 	})
 
+	Describe("translation tracks", func() {
+		var kinds func(*responses.LyricsList) []string
+		setTTMLFixture := func() {
+			conf.Server.LyricsPriority = ".ttml,embedded"
+			fixturesDir, err := filepath.Abs("tests/fixtures")
+			Expect(err).ToNot(HaveOccurred())
+			mockRepo.SetData(model.MediaFiles{{
+				ID: "1", LibraryPath: fixturesDir, Path: "test-metadata.mp3",
+				Artist: "Rick Astley", Title: "Never Gonna Give You Up", Lyrics: "[]",
+			}})
+		}
+		BeforeEach(func() {
+			kinds = func(l *responses.LyricsList) []string {
+				var out []string
+				for _, s := range l.StructuredLyrics {
+					out = append(out, s.Kind)
+				}
+				return out
+			}
+		})
+
+		It("leaves translations out of an enhanced response by default, keeping main and pronunciation", func() {
+			setTTMLFixture()
+			response, err := router.GetLyricsBySongId(newGetRequest("id=1&enhanced=true"))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(kinds(response.LyricsList)).To(Equal([]string{"main", "pronunciation"}))
+			Expect(response.LyricsList.StructuredLyrics[0].Line).To(HaveLen(2), "the original lines are kept")
+		})
+
+		It("leaves translations out of the plain response too", func() {
+			setTTMLFixture()
+			response, err := router.GetLyricsBySongId(newGetRequest("id=1"))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(response.LyricsList.StructuredLyrics).To(HaveLen(1))
+		})
+
+		It("sends them when the administrator turns that on", func() {
+			setTTMLFixture()
+			Expect(ds.Property().Put(context.Background(), "Lyrics.Settings", `{"exposeTranslationsToClients":true}`)).To(Succeed())
+			router = New(ds, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, lyrics.NewLyrics(ds, nil), nil, nil)
+			response, err := router.GetLyricsBySongId(newGetRequest("id=1&enhanced=true"))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(kinds(response.LyricsList)).To(ContainElement("translation"))
+		})
+	})
+
 	It("should return metadata-linked translation and pronunciation tracks from TTML", func() {
 		conf.Server.LyricsPriority = ".ttml,embedded"
+		Expect(ds.Property().Put(context.Background(), "Lyrics.Settings", `{"exposeTranslationsToClients":true}`)).To(Succeed())
+		router = New(ds, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, lyrics.NewLyrics(ds, nil), nil, nil)
 		r := newGetRequest("id=1&enhanced=true")
 
 		fixturesDir, err := filepath.Abs("tests/fixtures")

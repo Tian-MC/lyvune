@@ -807,6 +807,90 @@ var _ = Describe("Lyrics engine", func() {
 		})
 	})
 
+	Describe("translation tracks", func() {
+		withTranslation := func() model.LyricList {
+			list := karaokeOf("hello")
+			list = append(list, model.Lyrics{Kind: model.LyricKindPronunciation, Lang: "xxx", Synced: true, Line: []model.Line{{Start: i64(1000), Value: "heroo"}}})
+			return append(list, model.Lyrics{Kind: model.LyricKindTranslation, Lang: "xxx", Synced: true, Line: []model.Line{{Start: i64(1000), Value: "bonjour"}}})
+		}
+		kinds := func(list model.LyricList) []string {
+			var out []string
+			for _, l := range list {
+				out = append(out, l.EffectiveKind())
+			}
+			return out
+		}
+
+		It("defaults both preferences to off, also for settings stored before they existed", func() {
+			s := lyrics.DefaultSettings()
+			Expect(s.IncludeProviderTranslations).To(BeFalse())
+			Expect(s.ExposeTranslationsToClients).To(BeFalse())
+
+			Expect(props.Put(ctx, "Lyrics.Settings", `{"preferLocal":false,"providers":["fake"],"autoReplaceManual":true}`)).To(Succeed())
+			newService()
+			got := engine.Settings(ctx)
+			Expect(got.IncludeProviderTranslations).To(BeFalse())
+			Expect(got.ExposeTranslationsToClients).To(BeFalse())
+			Expect(got.PreferLocal).To(BeFalse(), "unrelated settings are kept")
+			Expect(got.AutoReplaceManual).To(BeTrue())
+			Expect(got.Providers).To(Equal([]string{"fake"}))
+			Expect(got.AutoRetrieve).To(BeTrue(), "a missing value takes the recommended default")
+		})
+
+		It("persists both preferences", func() {
+			setSettings(func(s *lyrics.Settings) { s.IncludeProviderTranslations, s.ExposeTranslationsToClients = true, true })
+			newService()
+			got := engine.Settings(ctx)
+			Expect(got.IncludeProviderTranslations).To(BeTrue())
+			Expect(got.ExposeTranslationsToClients).To(BeTrue())
+		})
+
+		It("does not keep a provider translation by default, but keeps word timing and romanization", func() {
+			fake.set(remote("fake", "1", withTranslation(), 0.97))
+			Expect(resolve(lyrics.ResolveOptions{}).Result).To(Equal(lyrics.ResolveFound))
+			raw, err := os.ReadFile(envFile())
+			Expect(err).ToNot(HaveOccurred())
+			Expect(string(raw)).ToNot(ContainSubstring("bonjour"))
+			Expect(string(raw)).To(ContainSubstring("heroo"))
+			setSettings(func(s *lyrics.Settings) { s.ExposeTranslationsToClients = true })
+			got := get()
+			Expect(kinds(got)).To(Equal([]string{"main", "pronunciation"}))
+			Expect(got[0].Line[0].Cue).To(HaveLen(1))
+			Expect(*got[0].Line[0].Cue[0].Start).To(Equal(int64(1000)))
+		})
+
+		It("keeps the provider translation when asked to", func() {
+			setSettings(func(s *lyrics.Settings) { s.IncludeProviderTranslations, s.ExposeTranslationsToClients = true, true })
+			fake.set(remote("fake", "1", withTranslation(), 0.97))
+			resolve(lyrics.ResolveOptions{})
+			Expect(kinds(get())).To(Equal([]string{"main", "pronunciation", "translation"}))
+		})
+
+		It("does not send translations to players by default, and changes nothing stored", func() {
+			setSettings(func(s *lyrics.Settings) { s.IncludeProviderTranslations = true })
+			fake.set(remote("fake", "1", withTranslation(), 0.97))
+			resolve(lyrics.ResolveOptions{})
+			before, err := os.ReadFile(envFile())
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(kinds(get())).To(Equal([]string{"main", "pronunciation"}))
+			Expect(kinds(get())).To(Equal([]string{"main", "pronunciation"}))
+			after, err := os.ReadFile(envFile())
+			Expect(err).ToNot(HaveOccurred())
+			Expect(after).To(Equal(before), "the saved file keeps its translation")
+			Expect(string(after)).To(ContainSubstring("bonjour"))
+
+			setSettings(func(s *lyrics.Settings) { s.ExposeTranslationsToClients = true })
+			Expect(kinds(get())).To(Equal([]string{"main", "pronunciation", "translation"}))
+		})
+
+		It("applies to lyrics imported by hand, and to a saved file", func() {
+			write("01 - Song.lrc", "[00:01.00]hello\n")
+			Expect(kinds(get())).To(Equal([]string{"main"}))
+			Expect(get()[0].Line[0].Value).To(Equal("hello"))
+		})
+	})
+
 	Describe("bulk operations", func() {
 		var files model.MediaFiles
 		var addTracks func(n int)

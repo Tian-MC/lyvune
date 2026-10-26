@@ -123,6 +123,25 @@ It never delays playback. Requests for the same track share one search; leaving 
 
 A clean "nothing found" is remembered for a week. An outage, a timeout or a rate limit is **not** remembered, so the track is tried again later.
 
+## Translation tracks
+
+Providers such as QQ Music, KuGou and NetEase return a machine translation next
+to the original lyrics. Two administrator settings, both off by default (also
+for settings saved before they existed), decide what happens to it:
+
+- `includeProviderTranslations`: when off, automatic retrieval and upgrades drop
+  the translation track of a result before choosing or saving it. The original,
+  its word timing, romanization and the provider attribution are kept.
+  Searches made by hand in the lyrics manager still show the whole result.
+- `exposeTranslationsToClients`: when off, `GetLyrics` and
+  `GetLyricsByArtistTitle` (OpenSubsonic `getLyricsBySongId`, `getLyrics` and
+  Jellyfin) leave `translation` tracks out, whatever the source: a saved
+  sidecar, a `.lrc`/`.ttml` file or an import. It builds a new list on each
+  request. Nothing stored is changed, so turning it on brings translations back
+  at once. The web player reads the same endpoint, so it follows the same switch.
+
+Existing `.lyrics.json` files are never rewritten by either setting.
+
 ## Providers
 
 | Provider | Access | What it reads | Shown while playing | Kept on disk |

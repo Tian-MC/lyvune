@@ -44,6 +44,20 @@ const SWITCHES = [
     'ui.lyrics.settings.autoReplaceManualHint',
     'Lets an upgrade supersede a .lrc or embedded lyrics. Your files stay untouched, and locked tracks are skipped. Off by default.',
   ],
+  [
+    'includeProviderTranslations',
+    'ui.lyrics.settings.includeProviderTranslations',
+    'Include provider translations automatically',
+    'ui.lyrics.settings.includeProviderTranslationsHint',
+    'Keep the translation that QQ Music, KuGou or NetEase send with the original lyrics when lyrics are found or upgraded automatically. Original lyrics, word timing and romanization are always kept. Saved files are not changed. Off by default.',
+  ],
+  [
+    'exposeTranslationsToClients',
+    'ui.lyrics.settings.exposeTranslationsToClients',
+    'Send translations to external players',
+    'ui.lyrics.settings.exposeTranslationsToClientsHint',
+    'External players such as Symfonium show whatever the server sends, and often cannot hide translations. Off, they receive the original lyrics and romanization only. This also applies to this web player. Saved lyrics are not changed. Off by default.',
+  ],
 ]
 
 const BULK = [

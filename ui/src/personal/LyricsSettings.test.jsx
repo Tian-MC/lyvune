@@ -183,6 +183,32 @@ describe('<LyricsSettings />', () => {
     )
   })
 
+  it('shows both translation preferences off by default and saves each on its own', async () => {
+    await load()
+    const provider = toggle('Include provider translations automatically')
+    const external = toggle('Send translations to external players')
+    expect(provider).not.toBeChecked()
+    expect(external).not.toBeChecked()
+    fireEvent.click(external)
+    await waitFor(() =>
+      expect(api.saveSettings).toHaveBeenCalledWith({
+        ...settings,
+        exposeTranslationsToClients: true,
+      }),
+    )
+    expect(
+      screen.getByText('External players such as Symfonium', { exact: false }),
+    ).toBeInTheDocument()
+    fireEvent.click(provider)
+    await waitFor(() =>
+      expect(api.saveSettings).toHaveBeenLastCalledWith({
+        ...settings,
+        exposeTranslationsToClients: true,
+        includeProviderTranslations: true,
+      }),
+    )
+  })
+
   it('reverts and says so when saving fails', async () => {
     api.saveSettings.mockRejectedValue(new Error('down'))
     await load()

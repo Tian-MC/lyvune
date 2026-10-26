@@ -303,6 +303,10 @@ var _ = Describe("Storage rights and display", func() {
 		It("saves genuine word timing, translation and provenance, and reloads it after a restart with no provider asked", func() {
 			build("kugou")
 			wantPref("kugou")
+			keep := engine.Settings(ctx)
+			keep.IncludeProviderTranslations = true
+			_, err := engine.SaveSettings(ctx, keep)
+			Expect(err).ToNot(HaveOccurred())
 			fakes["kugou"].set(remote("kugou", "42", karaoke(), 0.99))
 			res, err := engine.Resolve(ctx, mf, lyrics.ResolveOptions{})
 			Expect(err).ToNot(HaveOccurred())

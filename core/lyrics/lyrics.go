@@ -3,6 +3,7 @@ package lyrics
 import (
 	"context"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -128,8 +129,35 @@ func NewService(o Options) Lyrics {
 // order specified by conf.Server.LyricsPriority.
 func (l *lyricsService) GetLyrics(ctx context.Context, mf *model.MediaFile) (model.LyricList, error) {
 	cur, err := l.resolveCurrent(ctx, []*model.MediaFile{mf})
-	return cur.list, err
+	return l.forClients(ctx, cur.list), err
 }
+
+// forClients applies the administrator's policy on translation tracks to lyrics
+// about to be sent to a player. It returns a new list and leaves the stored
+// lyrics untouched.
+func (l *lyricsService) forClients(ctx context.Context, list model.LyricList) model.LyricList {
+	if l.settings(ctx).ExposeTranslationsToClients {
+		return list
+	}
+	return withoutTranslations(list)
+}
+
+// withoutTranslations returns the list without its translation tracks. The
+// input is not modified; it is returned as is when there is nothing to drop.
+func withoutTranslations(list model.LyricList) model.LyricList {
+	if !slices.ContainsFunc(list, isTranslation) {
+		return list
+	}
+	out := make(model.LyricList, 0, len(list))
+	for _, l := range list {
+		if !isTranslation(l) {
+			out = append(out, l)
+		}
+	}
+	return out
+}
+
+func isTranslation(l model.Lyrics) bool { return l.EffectiveKind() == model.LyricKindTranslation }
 
 // GetLyricsByArtistTitle resolves lyrics for the legacy artist/title lookup,
 // scanning a bounded window of duplicate matches so source priority still wins
@@ -149,7 +177,7 @@ func (l *lyricsService) GetLyricsByArtistTitle(ctx context.Context, artist, titl
 		candidates = append(candidates, &mediaFiles[i])
 	}
 	cur, err := l.resolveCurrent(ctx, candidates)
-	return cur.list, err
+	return l.forClients(ctx, cur.list), err
 }
 
 func songsByArtistTitleWithLyricsFirst(artist, title string) model.QueryOptions {

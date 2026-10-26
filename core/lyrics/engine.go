@@ -644,6 +644,21 @@ func (l *lyricsService) policy(s Settings) Policy {
 	return Policy{MinConfidence: s.MinConfidence, ProviderOrder: s.Providers}
 }
 
+// automaticCandidates drops the translation tracks of provider results before
+// automatic retrieval or upgrade chooses or saves one, unless the administrator
+// wants them. The candidates are copied, not changed.
+func automaticCandidates(cands []Candidate, s Settings) []Candidate {
+	if s.IncludeProviderTranslations {
+		return cands
+	}
+	out := make([]Candidate, len(cands))
+	for i, c := range cands {
+		c.Lyrics = withoutTranslations(c.Lyrics)
+		out[i] = c
+	}
+	return out
+}
+
 func rateLimitOf(outcomes []ProviderOutcome) (int, bool) {
 	retry := 0
 	for _, o := range outcomes {
@@ -675,6 +690,7 @@ func (l *lyricsService) retrieveMissing(ctx context.Context, mf *model.MediaFile
 		return ResolveResult{Result: ResolveUnavailable, Message: "No lyrics provider is enabled"}, nil
 	}
 	cands, outcomes := l.searchAll(ctx, mf, providers)
+	cands = automaticCandidates(cands, s)
 	if retry, limited := rateLimitOf(outcomes); limited {
 		return ResolveResult{Result: ResolveUnavailable, RetryAfter: retry, Message: "A provider asked to slow down"}, nil
 	}
@@ -803,6 +819,7 @@ func (l *lyricsService) upgrade(ctx context.Context, mf *model.MediaFile, s Sett
 		return ResolveResult{Result: ResolveUnavailable, Message: "No lyrics provider is enabled"}, nil
 	}
 	cands, outcomes := l.searchAll(ctx, mf, providers)
+	cands = automaticCandidates(cands, s)
 	if retry, limited := rateLimitOf(outcomes); limited {
 		return ResolveResult{Result: ResolveUnavailable, RetryAfter: retry, Message: "A provider asked to slow down"}, nil
 	}

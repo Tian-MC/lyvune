@@ -53,6 +53,14 @@ type Settings struct {
 	Ack []string `json:"ack,omitempty"`
 	// MinConfidence is the lowest recording match accepted automatically.
 	MinConfidence float64 `json:"minConfidence"`
+	// IncludeProviderTranslations keeps the translation tracks that providers
+	// return with the original lyrics when lyrics are retrieved or upgraded
+	// automatically. Default false. A missing value in stored settings is false.
+	IncludeProviderTranslations bool `json:"includeProviderTranslations"`
+	// ExposeTranslationsToClients lets the Subsonic/OpenSubsonic and Jellyfin
+	// lyrics endpoints return translation tracks, which some players show with no
+	// way to turn them off. Default false. Stored lyrics are never changed by it.
+	ExposeTranslationsToClients bool `json:"exposeTranslationsToClients"`
 }
 
 // Where an effective save preference comes from.
