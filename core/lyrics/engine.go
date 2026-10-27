@@ -4,10 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"hash/fnv"
 	"io/fs"
 	"path/filepath"
 	"slices"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -109,7 +111,7 @@ func (l *lyricsService) Status(ctx context.Context, mf *model.MediaFile) (SongSt
 		st.History = append(st.History, l.store.Versions(t)...)
 	}
 	if l.ds != nil {
-		st.MissingRecently = l.props.recentMiss(ctx, mf.ID, l.now())
+		st.MissingRecently = l.props.recentMiss(ctx, mf.ID, l.now(), l.automaticKey(l.settings(ctx)))
 	}
 	return st, nil
 }
@@ -268,8 +270,34 @@ func usable(cands []Candidate, opts ResolveOptions) []Candidate {
 }
 
 func (l *lyricsService) Search(ctx context.Context, mf *model.MediaFile, opts SearchOptions) (SearchResult, error) {
+	ids := slices.Clone(opts.Providers)
+	slices.Sort(ids)
+	key := fmt.Sprintf("%s|%t|%s", mf.ID, opts.ShowAll, strings.Join(ids, ","))
+	// The search outlives a caller that goes away, so the one still waiting gets it
+	v, err, _ := l.searchFlight.Do(key, func() (any, error) {
+		return l.search(context.WithoutCancel(ctx), mf, opts)
+	})
+	if err != nil {
+		return SearchResult{}, err
+	}
+	return v.(SearchResult), nil
+}
+
+func (l *lyricsService) search(ctx context.Context, mf *model.MediaFile, opts SearchOptions) (SearchResult, error) {
 	cands, outcomes := l.searchAll(ctx, mf, l.searchProviders(opts))
 	l.searches.put(mf.ID, cands, l.now())
+
+	// Say, for each result, what playing the track would do with it
+	s := l.settings(ctx)
+	gate, current := "", QualityNone
+	if cur, err := l.resolveCurrent(ctx, []*model.MediaFile{mf}); err == nil && cur.list != nil {
+		gate, current = upgradeGate(cur, s, ResolveOptions{}), ParseQuality(cur.info.Quality)
+	} else if !s.AutoRetrieve {
+		gate = AutoOff
+	}
+	for i, v := range autoVerdicts(cands, l.policy(s), current, gate, s.Providers) {
+		cands[i].Auto = v
+	}
 
 	shown := make([]Candidate, 0, len(cands))
 	for _, c := range cands {
@@ -682,8 +710,9 @@ func (l *lyricsService) retrieveMissing(ctx context.Context, mf *model.MediaFile
 	if !s.AutoRetrieve && !opts.Explicit {
 		return ResolveResult{Result: ResolveDisabled}, nil
 	}
-	if l.ds != nil && !opts.Recheck && l.props.recentMiss(ctx, mf.ID, l.now()) {
-		return ResolveResult{Result: ResolveNotFound, Message: "Providers found nothing recently"}, nil
+	key := l.automaticKey(s)
+	if l.ds != nil && !opts.Recheck && l.props.recentMiss(ctx, mf.ID, l.now(), key) {
+		return ResolveResult{Result: ResolveNotFound, Message: "Providers were asked recently and had nothing that can be used"}, nil
 	}
 	providers := l.enabledProviders(s)
 	if len(providers) == 0 {
@@ -696,20 +725,23 @@ func (l *lyricsService) retrieveMissing(ctx context.Context, mf *model.MediaFile
 	}
 	pol := l.policy(s)
 	best, ok := Choose(usable(cands, opts), pol)
+	skipped := l.noteSkipped(ctx, mf, cands, pol, QualityNone, s)
 	if !ok {
 		// Something good may exist that is not allowed to be kept or shown here
-		if _, any := Choose(cands, pol); any && !anyFailed(outcomes) {
-			return ResolveResult{Result: ResolveNotSaved, Message: "A result was found that may not be kept"}, nil
-		}
 		if !anyFailed(outcomes) && l.ds != nil {
-			// Only a clean "nothing there" is remembered; an outage must not hide the track
-			l.props.recordMiss(ctx, mf.ID, l.now())
+			// Only a clean answer is remembered; an outage must not hide the track.
+			// A result that may be neither kept nor shown is remembered too, or
+			// every play would ask every provider again for it
+			l.props.recordMiss(ctx, mf.ID, l.now(), key)
+		}
+		if _, any := Choose(cands, pol); any && !anyFailed(outcomes) {
+			return ResolveResult{Result: ResolveNotSaved, Message: "A result was found that may not be kept", Skipped: skipped}, nil
 		}
 		result := ResolveNotFound
 		if anyFailed(outcomes) {
 			result = ResolveUnavailable
 		}
-		return ResolveResult{Result: result}, nil
+		return ResolveResult{Result: result, Skipped: skipped}, nil
 	}
 	persisted := false
 	// An ignored sidecar is Lyvune's own file that is no longer used. Nothing
@@ -743,7 +775,12 @@ func (l *lyricsService) retrieveMissing(ctx context.Context, mf *model.MediaFile
 		info.Origin = originAuto
 	}
 	info.Provider, info.Match = best.Provider, best.Match.Confidence
-	res := ResolveResult{Result: ResolveFound, Applied: &info, Persisted: persisted}
+	if !anyFailed(outcomes) {
+		// Every provider answered and the best was taken: the next play has no
+		// reason to search again for an upgrade
+		l.markChecked(ctx, mf, key)
+	}
+	res := ResolveResult{Result: ResolveFound, Applied: &info, Persisted: persisted, Skipped: skipped}
 	if blocked {
 		res.Message = "Shown, not saved: a saved file next to this track is ignored; remove it in the lyrics manager to let lyrics be saved"
 	}
@@ -775,30 +812,53 @@ func (l *lyricsService) showAuto(ctx context.Context, mf *model.MediaFile, c Can
 	}
 }
 
-//nolint:gocyclo // a single list of upgrade rules; splitting it would scatter them
-func (l *lyricsService) upgrade(ctx context.Context, mf *model.MediaFile, s Settings, cur current, opts ResolveOptions) (ResolveResult, error) {
-	if cur.state.Locked {
-		return ResolveResult{Result: ResolveLocked}, nil
+// noteSkipped finds a word-timed result the automatic search did not take, and
+// logs why: it is the question an administrator asks when karaoke exists for a
+// song and plain or line-synced lyrics are shown.
+func (l *lyricsService) noteSkipped(ctx context.Context, mf *model.MediaFile, cands []Candidate, p Policy, current Quality, s Settings) *SkippedKaraoke {
+	sk := skippedKaraoke(cands, autoVerdicts(cands, p, current, "", s.Providers))
+	if sk != nil {
+		log.Debug(ctx, "Word-timed lyrics found but not used automatically", "track", mf.ID, "provider", sk.Provider, "reason", sk.Reason, "confidence", sk.Confidence)
 	}
-	// Lyrics the user chose are never replaced automatically. Sidecar and
-	// embedded lyrics are only superseded when that was allowed.
-	allowManual := s.AutoReplaceManual || opts.ReplaceManual
+	return sk
+}
+
+// upgradeGate is why the current lyrics of a track may not be replaced by an
+// automatic upgrade at all, or "" when they may: a lock, lyrics the user chose
+// (also a plugin's, and ones the administrator chose to show), a lyrics file or
+// embedded lyrics when replacing those is not allowed, or upgrades turned off.
+func upgradeGate(cur current, s Settings, opts ResolveOptions) string {
+	if cur.state.Locked {
+		return AutoLocked
+	}
 	switch cur.info.Source {
 	case SourceManaged.String():
 	case SourceSidecar.String(), SourceEmbedded.String():
-		if !allowManual {
-			return ResolveResult{Result: ResolveHave}, nil
+		if !s.AutoReplaceManual && !opts.ReplaceManual {
+			return AutoManual
 		}
 	case SourceRemote.String():
-		// Only lyrics shown after an automatic retrieval are upgraded; a plugin's
-		// lyrics and ones the administrator chose to show are never replaced automatically
+		// Only lyrics shown after an automatic retrieval are upgraded
 		if cur.info.Origin != originAuto {
-			return ResolveResult{Result: ResolveHave}, nil
+			return AutoUserChoice
 		}
 	default:
-		return ResolveResult{Result: ResolveHave}, nil
+		return AutoUserChoice
 	}
 	if !s.AutoUpgrade && !opts.Explicit {
+		return AutoOff
+	}
+	return ""
+}
+
+//nolint:gocyclo // a single list of upgrade rules; splitting it would scatter them
+func (l *lyricsService) upgrade(ctx context.Context, mf *model.MediaFile, s Settings, cur current, opts ResolveOptions) (ResolveResult, error) {
+	switch upgradeGate(cur, s, opts) {
+	case AutoLocked:
+		return ResolveResult{Result: ResolveLocked}, nil
+	case AutoUserChoice, AutoManual:
+		return ResolveResult{Result: ResolveHave}, nil
+	case AutoOff:
 		return ResolveResult{Result: ResolveDisabled}, nil
 	}
 	curQuality := ParseQuality(cur.info.Quality)
@@ -810,7 +870,8 @@ func (l *lyricsService) upgrade(ctx context.Context, mf *model.MediaFile, s Sett
 		// A better result that may only be shown is lost when the server restarts;
 		// the track is then looked at again instead of waiting for the next check
 		lostShown := st.Shown && l.display.get(mf.ID, l.now()) == nil
-		if at := st.CheckedAt; at > 0 && l.now().Sub(time.Unix(at, 0)) < upgradeEvery && !lostShown {
+		sameRules := st.CheckedWith == l.automaticKey(s)
+		if at := st.CheckedAt; at > 0 && sameRules && l.now().Sub(time.Unix(at, 0)) < upgradeEvery && !lostShown {
 			return ResolveResult{Result: ResolveSkipped, Message: "Checked recently"}, nil
 		}
 	}
@@ -831,6 +892,7 @@ func (l *lyricsService) upgrade(ctx context.Context, mf *model.MediaFile, s Sett
 			break
 		}
 	}
+	skipped := l.noteSkipped(ctx, mf, cands, l.policy(s), curQuality, s)
 	if l.ds != nil && !anyFailed(outcomes) && (best == nil || best.AutoSave) {
 		if st := l.props.state(ctx, mf.ID); st.Shown {
 			st.Shown = false
@@ -838,21 +900,21 @@ func (l *lyricsService) upgrade(ctx context.Context, mf *model.MediaFile, s Sett
 		}
 	}
 	if !anyFailed(outcomes) {
-		l.markChecked(ctx, mf)
+		l.markChecked(ctx, mf, l.automaticKey(s))
 	}
 	if best == nil {
 		// A provider that did not answer is not the same as "nothing better exists"
 		if anyFailed(outcomes) {
-			return ResolveResult{Result: ResolveUnavailable}, nil
+			return ResolveResult{Result: ResolveUnavailable, Skipped: skipped}, nil
 		}
-		return ResolveResult{Result: ResolveKept}, nil
+		return ResolveResult{Result: ResolveKept, Skipped: skipped}, nil
 	}
 	if !best.AutoSave {
 		// Better, but it is not to be saved automatically: it is shown from memory, and what is saved stays as it was
 		l.showAuto(ctx, mf, *best)
 		info := sourceInfoOf("display", SourceRemote, best.Lyrics)
 		info.Origin, info.Provider, info.Match = originAuto, best.Provider, best.Match.Confidence
-		return ResolveResult{Result: ResolveUpgraded, Applied: &info}, nil
+		return ResolveResult{Result: ResolveUpgraded, Applied: &info, Skipped: skipped}, nil
 	}
 	// Replacing a manual sidecar goes in the user layer, so it outranks it
 	origin := OriginManaged
@@ -867,16 +929,46 @@ func (l *lyricsService) upgrade(ctx context.Context, mf *model.MediaFile, s Sett
 	}
 	info := sourceInfoOf("managed", SourceManaged, best.Lyrics)
 	info.Provider, info.Match = best.Provider, best.Match.Confidence
-	return ResolveResult{Result: ResolveUpgraded, Applied: &info}, nil
+	return ResolveResult{Result: ResolveUpgraded, Applied: &info, Skipped: skipped}, nil
 }
 
-func (l *lyricsService) markChecked(ctx context.Context, mf *model.MediaFile) {
+func (l *lyricsService) markChecked(ctx context.Context, mf *model.MediaFile, key string) {
 	if l.ds == nil {
 		return
 	}
 	st := l.props.state(ctx, mf.ID)
-	st.CheckedAt = l.now().Unix()
+	st.CheckedAt, st.CheckedWith = l.now().Unix(), key
 	_ = l.props.putState(ctx, mf.ID, st)
+}
+
+// matcherRev changes when the matching rules change in a way that can turn a
+// miss into a find (rev 2: featuring credits outside brackets, artist names
+// with "&", the duration rule). Misses and checks made before are looked at again.
+const matcherRev = 2
+
+// automaticKey identifies what an automatic search could find and use: the
+// providers that are on and ready, what may be kept or shown from each, the
+// matching threshold and the matching rules. A miss or an upgrade check only
+// stands for the key it was made with, so turning a provider on, allowing it
+// to be saved or relaxing the threshold looks again at once.
+func (l *lyricsService) automaticKey(s Settings) string {
+	h := fnv.New64a()
+	fmt.Fprintf(h, "rev=%d;min=%.3f;persist=%t", matcherRev, s.MinConfidence, s.AutoPersist)
+	ids := make([]string, 0, len(s.Providers))
+	for _, p := range l.enabledProviders(s) {
+		ids = append(ids, p.Info().ID)
+	}
+	slices.Sort(ids)
+	now := l.now()
+	for _, id := range ids {
+		save, show := false, false
+		if r, ok := l.rights.get(id, now); ok {
+			pref, _ := s.savePreference(id, r)
+			save, show = pref && r.allowed(), r.Display == DisplaySession
+		}
+		fmt.Fprintf(h, ";%s:%t:%t", id, save, show)
+	}
+	return strconv.FormatUint(h.Sum64(), 36)
 }
 
 // dropCreditOnly removes candidates whose lyrics are only credits. Such an

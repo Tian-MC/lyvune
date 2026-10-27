@@ -51,7 +51,10 @@ type lyricsService struct {
 	display   *displayCache
 	rights    *rightsTable
 	flight    singleflight.Group
-	now       func() time.Time
+	// searchFlight lets identical manual searches made at the same time (a
+	// double click, two tabs) share one round of provider requests.
+	searchFlight singleflight.Group
+	now          func() time.Time
 
 	settingsMu    sync.Mutex
 	settingsCache Settings

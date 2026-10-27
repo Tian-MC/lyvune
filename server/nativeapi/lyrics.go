@@ -203,6 +203,8 @@ type candidateDTO struct {
 	Romanization bool          `json:"romanization"`
 	Preview      []previewLine `json:"preview"`
 	Truncated    bool          `json:"truncated,omitempty"`
+	// Auto is what playing the track would do with this result: "chosen", or why not
+	Auto string `json:"auto,omitempty"`
 }
 
 type previewLine struct {
@@ -214,7 +216,7 @@ func toCandidateDTO(c lyrics.Candidate) candidateDTO {
 	dto := candidateDTO{
 		ID: c.ID, Provider: c.Provider, Source: c.Source.String(), Quality: c.Quality.String(),
 		Verified: c.Match.Verified(), Match: c.Match, Meta: c.Meta, Storable: c.Storable, DisplayOnly: c.DisplayOnly, AutoSave: c.AutoSave, CanShow: c.CanShow, Rights: c.Rights,
-		Attribution: c.Attribution, Preview: []previewLine{},
+		Attribution: c.Attribution, Preview: []previewLine{}, Auto: c.Auto,
 	}
 	for _, l := range c.Lyrics {
 		switch l.EffectiveKind() {

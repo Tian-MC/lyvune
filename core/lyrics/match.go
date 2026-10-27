@@ -138,6 +138,30 @@ var versionNoise = regexp.MustCompile(`(?i)\b(remaster(ed)?|mono|stereo|deluxe|v
 
 var featMarker = regexp.MustCompile(`(?i)^(feat\.?|ft\.?|featuring|with)\b`)
 
+// featClause starts a featuring credit written after the title or the artist
+// without brackets: "Song feat. Guest", "Main ft. Guest". It needs the dot (or
+// the whole word), so a title such as "Great Feat" keeps its last word.
+var featClause = regexp.MustCompile(`(?i)\s+(?:feat\.|ft\.|featuring)\s+`)
+
+// stripFeat removes an unbracketed featuring credit. The credit ends where a
+// bracket or a " - " suffix begins, so "Song feat. Guest (Live)" keeps "(Live)"
+// and is still told apart from the studio recording.
+func stripFeat(s string) string {
+	loc := featClause.FindStringIndex(s)
+	if loc == nil {
+		return s
+	}
+	rest := s[loc[1]:]
+	end := len(rest)
+	if i := strings.IndexAny(rest, "([（【"); i >= 0 {
+		end = i
+	}
+	if i := strings.Index(rest[:end], " - "); i >= 0 {
+		end = i
+	}
+	return s[:loc[0]] + " " + rest[end:]
+}
+
 var bracketed = regexp.MustCompile(`[\(\[（【]([^\)\]）】]*)[\)\]）】]`)
 
 // splitTitle returns the title without version/featuring decorations and the
@@ -152,7 +176,7 @@ func splitTitle(title string) (string, map[string]bool) {
 		}
 	}
 
-	core := bracketed.ReplaceAllStringFunc(title, func(group string) string {
+	core := bracketed.ReplaceAllStringFunc(stripFeat(title), func(group string) string {
 		inner := strings.TrimSpace(trimDelims(group))
 		if featMarker.MatchString(inner) {
 			return " "

@@ -6,16 +6,21 @@ import (
 	"errors"
 	"slices"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Tian-MC/lyvune/model"
 )
 
 const (
-	settingsKey  = "Lyrics.Settings"
-	stateKeyFmt  = "Lyrics.State."
-	missKeyFmt   = "Lyrics.Miss."
-	missTTL      = 7 * 24 * time.Hour
+	settingsKey = "Lyrics.Settings"
+	stateKeyFmt = "Lyrics.State."
+	missKeyFmt  = "Lyrics.Miss."
+	// missTTL is how long "providers found nothing" stands for a track before
+	// they are asked again. New lyrics appear on community services every day;
+	// a change of the providers or of the matching rules re-checks at once
+	// (automaticKey).
+	missTTL      = 3 * 24 * time.Hour
 	upgradeEvery = 7 * 24 * time.Hour
 )
 
@@ -150,6 +155,9 @@ type SongState struct {
 	Locked    bool  `json:"locked,omitempty"`
 	OffsetMs  int64 `json:"offsetMs,omitempty"`
 	CheckedAt int64 `json:"checkedAt,omitempty"`
+	// CheckedWith is the automaticKey the check was made with. A check made with
+	// other providers, preferences or matching rules is not a reason to wait.
+	CheckedWith string `json:"checkedWith,omitempty"`
 	// Shown is true when a better result was found that may only be shown, so a
 	// restart (which empties what is shown) does not hide it behind the last check.
 	Shown bool `json:"shown,omitempty"`
@@ -208,18 +216,24 @@ func (p propertyStore) putState(ctx context.Context, id string, st SongState) er
 }
 
 // recentMiss reports whether providers recently found nothing for the track, so
-// they are not asked again for every play.
-func (p propertyStore) recentMiss(ctx context.Context, id string, now time.Time) bool {
+// they are not asked again for every play. A miss recorded with another
+// automaticKey (other providers, preferences or matching rules), or by a version
+// that did not record one, does not count.
+func (p propertyStore) recentMiss(ctx context.Context, id string, now time.Time, key string) bool {
 	raw, err := p.ds.Property().Get(ctx, missKeyFmt+id)
 	if err != nil {
 		return false
 	}
-	at, err := strconv.ParseInt(raw, 10, 64)
+	stamp, with, ok := strings.Cut(raw, "|")
+	if !ok || with != key {
+		return false
+	}
+	at, err := strconv.ParseInt(stamp, 10, 64)
 	return err == nil && now.Sub(time.Unix(at, 0)) < missTTL
 }
 
-func (p propertyStore) recordMiss(ctx context.Context, id string, now time.Time) {
-	_ = p.ds.Property().Put(ctx, missKeyFmt+id, strconv.FormatInt(now.Unix(), 10))
+func (p propertyStore) recordMiss(ctx context.Context, id string, now time.Time, key string) {
+	_ = p.ds.Property().Put(ctx, missKeyFmt+id, strconv.FormatInt(now.Unix(), 10)+"|"+key)
 }
 
 func (p propertyStore) clearMiss(ctx context.Context, id string) {

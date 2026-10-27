@@ -280,6 +280,8 @@ type ResolveResult struct {
 	// Persisted is true when something was saved next to the audio. A result
 	// that was only shown has Applied set and Persisted false.
 	Persisted bool `json:"persisted"`
+	// Skipped names a word-timed result the search found and did not take, and why.
+	Skipped *SkippedKaraoke `json:"skipped,omitempty"`
 }
 
 // Bulk actions.
