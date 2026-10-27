@@ -20,7 +20,7 @@ guaranteed response time. Please give a reasonable time for a fix before you mak
 
 ## Supported versions
 
-Only the latest release gets fixes. Today that is `0.1.0-alpha.2`; there is no long-term support.
+Only the latest release gets fixes. Today that is `0.1.0-alpha.3`; there is no long-term support.
 
 ## Navidrome
 
