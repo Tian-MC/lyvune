@@ -2,6 +2,7 @@ package lyrics
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 )
@@ -10,10 +11,11 @@ import (
 // usual pace as requests go through again.
 func TestPacerSlowsDownAfterARefusalAndRecovers(t *testing.T) {
 	p := newPacer("p", 100*time.Millisecond)
-	for _, want := range []time.Duration{200, 400, 800, 800} {
+	for _, ms := range []int{200, 400, 800, 800} {
+		want := time.Duration(ms) * time.Millisecond
 		p.coolDown(0)
-		if p.interval != want*time.Millisecond {
-			t.Fatalf("after a refusal the spacing is %s, want %s", p.interval, want*time.Millisecond)
+		if p.interval != want {
+			t.Fatalf("after a refusal the spacing is %s, want %s", p.interval, want)
 		}
 	}
 	p.next = time.Time{}
@@ -33,8 +35,8 @@ func TestPacerFailsFastDuringACoolDown(t *testing.T) {
 	p := newPacer("p", 0)
 	p.coolDown(time.Hour)
 	err := p.wait(context.Background())
-	rl, ok := err.(*RateLimitedError)
-	if !ok || rl.Provider != "p" || rl.RetryAfter <= 59*time.Minute {
+	var rl *RateLimitedError
+	if !errors.As(err, &rl) || rl.Provider != "p" || rl.RetryAfter <= 59*time.Minute {
 		t.Fatalf("got %v", err)
 	}
 }
