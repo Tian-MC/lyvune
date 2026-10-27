@@ -109,21 +109,37 @@ Then:
 
 - A weak title or artist caps the score at 0.4, and a length more than 15 s off at 0.45, so one good field cannot rescue a wrong recording.
 - A different **version** (live, remix, acoustic, instrumental/karaoke/off vocal, cover, demo, sped up/slowed) halves the score. Remasters, mono mixes and "deluxe" notes are ignored.
+- A featuring credit is not part of the title, in brackets or not: "Song (feat. Guest)", "Song feat. Guest" and "Song ft. Guest" are all "Song". The unbracketed form needs the dot or the whole word ("featuring"), so "Great Feat" keeps its last word, and it ends at a bracket or a " - " suffix, so "Song feat. Guest (Live)" is still the live version.
+- Providers are asked for the first artist the library lists (artists are joined with the scanner's artist joiner, ` • ` by default), without a featuring credit. A name is never split on `&`, `,`, `/` or `+`: "Simon & Garfunkel", "Earth, Wind & Fire" and "AC/DC" are names, and LRCLIB asked for "Simon" returns twenty other Simons. When the whole credit ("Main, Guest") finds nothing that fits, LRCLIB is asked once more for its first name.
 - Text is compared after Unicode compatibility folding (full-width, case, punctuation). Diacritics are folded for Latin text only, so Japanese voiced marks (が / か) are never merged.
 
-**Verified** means a score of at least 0.85 *and* a length within 5 s of the track. Only verified results are stored automatically. A result that is plausible but not verified (0.5–0.85, or a length 5–15 s off) is shown in manual search as "Uncertain match" and never stored without your choice. The 5-second rule exists because a real LRCLIB result 8 s longer than the track scored 0.85 and would otherwise have been accepted.
+**Verified** means a score of at least 0.85 *and* a length within 5 s of the track. Only verified results are taken automatically, saved or shown: better synchronization never makes up for a length that points to another recording. A result that is plausible but not verified (0.5–0.85, or a length 5–15 s off) is shown in manual search as "Uncertain match" and never stored without your choice. The 5-second rule exists because a real LRCLIB result 8 s longer than the track scored 0.85 and would otherwise have been accepted.
 
 ## Automatic retrieval and upgrades
 
 When a track starts playing, the interface asks the server to look at it (after 1.5 s, so skipping through a queue searches nothing). The server:
 
 1. Does nothing if the track already has local lyrics and upgrades do not apply.
-2. For a track without lyrics (and "find missing lyrics" on): searches the enabled providers, keeps verified results the provider allows to be saved, picks the best by quality, then match, then provider order, and saves it as `managed`.
+2. For a track without lyrics (and "find missing lyrics" on): searches the enabled providers, keeps verified results the provider allows to be saved or shown, picks the best by quality, then match, then provider order, and saves it as `managed` (or shows it from memory, when it may not be saved).
 3. For downloaded lyrics below karaoke (and "upgrade" on): does the same, accepts only a strictly better quality, and checks again at most once a week.
 
-It never delays playback. Requests for the same track share one search; leaving the track cancels the request and the next visit asks again.
+It never delays playback, and the lyrics panel keeps working while the search runs. Requests for the same track share one search; leaving the track cancels the request and the next visit asks again. Identical manual searches made at the same time share one round of provider requests too.
 
-A clean "nothing found" is remembered for a week. An outage, a timeout or a rate limit is **not** remembered, so the track is tried again later.
+### When providers are asked again
+
+- **After a find.** A retrieval in which every provider answered counts as the week's upgrade check, so the next play does not repeat the same search.
+- **After "nothing found".** Remembered for **3 days**, then the track is asked about again: community services gain lyrics every day. A result that may be neither saved nor shown is remembered the same way, instead of asking every provider on every play.
+- **Never for an outage.** A timeout, an error or a rate limit is **not** remembered, so the track is tried again later. In the browser, the next play of the track asks again after a minute, or after the wait a provider asked for.
+- **At once when the rules change.** A miss and an upgrade check stand only for what they were made with: the providers that are on and ready, what may be saved or shown from each, the matching threshold and a revision of the matching rules. Turning a provider on, letting it be saved, lowering the threshold or updating to matching rules that find more looks again on the next play. Misses and checks recorded by an earlier version carry none of that and are looked at again once.
+
+### Why a word-timed version is not taken
+
+The manual search says, for each result with word timing and for the one that would be taken, what playing the track does with it: taken, or not taken because another result ranks higher, the current lyrics are already as well synchronized, the match is uncertain, the length differs by more than 5 s, the provider's lyrics may be neither saved nor shown, the provider is not on, the lyrics are locked, they were chosen by hand, they are a file or embedded lyrics and replacing those is off, or automatic retrieval is off. These verdicts come from the same rules as the automatic retrieval. The resolve answer names the best word-timed result it did not take (`skipped`: provider, reason, confidence), and the server logs it at debug level.
+
+### In the browser
+
+- **Lyrics** of a track are kept for the page session, per version: changing them (saving, choosing, restoring, an upgrade) loads them again. "No lyrics" is kept for 5 minutes only, so lyrics found meanwhile by someone else appear.
+- **Manual search results**, empty ones included, are kept for 10 minutes (the server keeps them 15, so a result shown from memory can still be used), and are dropped when the track's lyrics change. Reopening the manager shows them again without asking; **Search again** always asks. A search already on its way is shared, not repeated. If the server no longer has a result, the results are dropped and a new search is asked for.
 
 ## Translation tracks
 
@@ -194,7 +210,7 @@ Three facts are kept apart and never merged:
 
 - Automatic retrieval picks the best candidate by match confidence first, then genuine karaoke > synced > plain. If its provider is saved, it is written as `<audio>.lyrics.json` with word timing, translation, romanization, provenance and history, and the result is **read back and compared** before it is reported as saved. If it is not saved, it is shown from memory ("Shown from X · not saved").
 - A saved sidecar is loaded without any network or provider call, so karaoke survives restarts, the browser being closed, a provider outage and no connection.
-- Automatic quality upgrades (for example LRCLIB synced to KuGou KRC karaoke) keep the previous version in history, never downgrade, respect locks and check at most once every seven days.
+- Automatic quality upgrades (for example LRCLIB synced to KuGou KRC karaoke) keep the previous version in history, never downgrade, respect locks and check at most once every seven days, unless the providers, what they may do or the matching rules changed.
 - Source priority: locked or chosen local > your sidecars > existing local > embedded > managed saved > remote. Your own `.lrc/.krc/.yrc/.qrc` are never overwritten; a credits-only managed sidecar is ignored and never overwritten automatically.
 - **Manual**: in the lyrics manager each result offers *Save lyrics locally* and, when allowed, *Show only*. Saving validates the result, checks locks and existing files, asks before replacing lyrics you supplied, writes atomically and confirms only after reading the file back. A restricted result offers *Show this version (not saved)*. The manager distinguishes shown temporarily, saved locally, storage restricted and save failed.
 - A **bulk job** never fills memory: it saves what the preferences allow and counts the rest as not saved. It runs four workers; each provider keeps its own pacing.

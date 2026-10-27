@@ -164,4 +164,7 @@ type Candidate struct {
 	Attribution string
 	// File is the sidecar file name for local candidates, relative to the audio folder.
 	File string
+	// Auto is what the automatic retrieval or upgrade would do with it (AutoChosen,
+	// or the reason it would not take it). Set by Search.
+	Auto string
 }

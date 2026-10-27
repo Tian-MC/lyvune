@@ -10,6 +10,7 @@ import { ManagerSearch } from './ManagerSearch'
 import { bumpLyrics } from './lyricsSignals'
 import { errorCode, lyricsApi } from './manageApi'
 import { sourceLabel } from './lyricsSource'
+import { forgetSearch, peekSearch, searchLyrics } from './searchCache'
 import { useLyricsStatus } from './useLyricsStatus'
 import styles from './LyricsManager.module.css'
 
@@ -108,9 +109,15 @@ export const LyricsManager = ({ trackId, title, onClose }) => {
   const [search, setSearch] = useState(emptySearch)
   const alive = useRef(true)
   useEffect(() => () => (alive.current = false), [])
-  // A different track means a different manager: forget its search and prompts
+  // The track a search answer is for: one that arrives after switching to
+  // another track is not shown for it
+  const shownTrack = useRef(trackId)
+  // A different track means a different manager: forget its prompts, and show
+  // the results of a search made for it earlier in this session, if any
   useEffect(() => {
-    setSearch(emptySearch)
+    shownTrack.current = trackId
+    const cached = peekSearch(trackId)
+    setSearch(cached ? { ...emptySearch, done: true, ...cached } : emptySearch)
     setPending(null)
     setNotice(null)
   }, [trackId])
@@ -205,6 +212,11 @@ export const LyricsManager = ({ trackId, title, onClose }) => {
       } catch (e) {
         if (!alive.current) return
         const code = errorCode(e)
+        if (code === 'no-candidate') {
+          // The server no longer has that search: so the results shown are stale
+          forgetSearch(trackId)
+          setSearch(emptySearch)
+        }
         if (code === 'confirm-required')
           setPending({ kind, payload, locked: false, mode: opts.mode })
         else if (code === 'locked')
@@ -220,25 +232,29 @@ export const LyricsManager = ({ trackId, title, onClose }) => {
     [changed, t, trackId],
   )
 
-  const doSearch = useCallback(async () => {
-    setTab('find')
-    setSearch({ ...emptySearch, loading: true })
-    try {
-      const res = await lyricsApi.search(trackId)
-      if (alive.current) {
-        setSearch({
-          loading: false,
-          done: true,
-          candidates: res.candidates || [],
-          providers: res.providers || [],
-          error: null,
-        })
+  // A search made earlier in this page session is shown again without asking
+  // the server; `refresh` (the "Search again" button) always asks
+  const doSearch = useCallback(
+    async (refresh = false) => {
+      setTab('find')
+      const id = trackId
+      const cached = !refresh && peekSearch(id)
+      if (cached) {
+        setSearch({ ...emptySearch, done: true, ...cached })
+        return
       }
-    } catch (e) {
-      if (alive.current)
-        setSearch({ ...emptySearch, done: true, error: errorText(t, e) })
-    }
-  }, [t, trackId])
+      setSearch({ ...emptySearch, loading: true })
+      try {
+        const res = await searchLyrics(id, { refresh })
+        if (alive.current && shownTrack.current === id)
+          setSearch({ ...emptySearch, done: true, ...res })
+      } catch (e) {
+        if (alive.current && shownTrack.current === id)
+          setSearch({ ...emptySearch, done: true, error: errorText(t, e) })
+      }
+    },
+    [t, trackId],
+  )
 
   const importFile = useCallback(
     async (file) => {
@@ -427,7 +443,7 @@ export const LyricsManager = ({ trackId, title, onClose }) => {
               ).catch(() => {})
             }
             onImport={importFile}
-            onFindBetter={doSearch}
+            onFindBetter={() => doSearch()}
           />
         )}
         {tab === 'find' && (

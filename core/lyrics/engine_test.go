@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -389,6 +390,7 @@ var _ = Describe("Lyrics engine", func() {
 		It("upgrades downloaded plain lyrics to synced, with a way back", func() {
 			saveManaged(ctx, engine, mf, fake, "plain", plainOf("plain version"))
 			Expect(firstLine(get())).To(Equal("plain version"))
+			clock = clock.Add(8 * 24 * time.Hour) // a week later, the provider has better
 			fake.set(remote("fake", "2", syncedOf("synced version"), 0.97))
 
 			res := resolve(lyrics.ResolveOptions{})
@@ -399,6 +401,7 @@ var _ = Describe("Lyrics engine", func() {
 
 		It("upgrades synced lyrics to karaoke", func() {
 			saveManaged(ctx, engine, mf, fake, "s", syncedOf("synced version"))
+			clock = clock.Add(8 * 24 * time.Hour)
 			fake.set(remote("fake", "2", karaokeOf("karaoke version"), 0.95))
 			Expect(resolve(lyrics.ResolveOptions{}).Result).To(Equal(lyrics.ResolveUpgraded))
 			Expect(status().Current.Quality).To(Equal("karaoke"))
@@ -406,6 +409,7 @@ var _ = Describe("Lyrics engine", func() {
 
 		It("never downgrades and never replaces equal quality", func() {
 			saveManaged(ctx, engine, mf, fake, "s", syncedOf("synced version"))
+			clock = clock.Add(8 * 24 * time.Hour)
 			fake.set(remote("fake", "p", plainOf("plain"), 0.99), remote("fake", "s2", syncedOf("another synced"), 0.99))
 			Expect(resolve(lyrics.ResolveOptions{}).Result).To(Equal(lyrics.ResolveKept))
 			Expect(firstLine(get())).To(Equal("synced version"))
@@ -413,6 +417,7 @@ var _ = Describe("Lyrics engine", func() {
 
 		It("says the provider did not answer, rather than 'nothing better', during an outage", func() {
 			saveManaged(ctx, engine, mf, fake, "p", plainOf("plain version"))
+			clock = clock.Add(8 * 24 * time.Hour)
 			fake.mu.Lock()
 			fake.err = lyrics.ErrProviderUnavailable
 			fake.mu.Unlock()
@@ -992,6 +997,178 @@ var _ = Describe("Lyrics engine", func() {
 			Expect(get()).To(Equal(in))
 			saved("kugou", in, false)
 			Expect(get()).To(Equal(in))
+		})
+	})
+
+	Describe("asking providers only when it can change something", func() {
+		calls := func() int32 { return fake.calls.Load() }
+
+		It("does not search again on the next play after lyrics were found", func() {
+			fake.set(remote("fake", "1", syncedOf("found"), 0.97))
+			Expect(resolve(lyrics.ResolveOptions{}).Result).To(Equal(lyrics.ResolveFound))
+			before := calls()
+			res := resolve(lyrics.ResolveOptions{})
+			Expect(res.Result).To(Equal(lyrics.ResolveSkipped))
+			Expect(calls()).To(Equal(before))
+		})
+
+		It("still searches again after a provider failed during the retrieval", func() {
+			fake.mu.Lock()
+			fake.err = lyrics.ErrProviderUnavailable
+			fake.mu.Unlock()
+			Expect(resolve(lyrics.ResolveOptions{}).Result).To(Equal(lyrics.ResolveUnavailable))
+			fake.set(remote("fake", "1", syncedOf("found"), 0.97))
+			Expect(resolve(lyrics.ResolveOptions{}).Result).To(Equal(lyrics.ResolveFound))
+		})
+
+		It("remembers a miss for three days, not a week", func() {
+			fake.set()
+			Expect(resolve(lyrics.ResolveOptions{}).Result).To(Equal(lyrics.ResolveNotFound))
+			before := calls()
+			clock = clock.Add(2 * 24 * time.Hour)
+			resolve(lyrics.ResolveOptions{})
+			Expect(calls()).To(Equal(before), "still a recent miss")
+			clock = clock.Add(2 * 24 * time.Hour)
+			fake.set(remote("fake", "new", syncedOf("added since"), 0.97))
+			Expect(resolve(lyrics.ResolveOptions{}).Result).To(Equal(lyrics.ResolveFound))
+		})
+
+		It("looks again at once when the providers or the threshold change", func() {
+			setSettings(func(s *lyrics.Settings) { s.MinConfidence = 0.9 })
+			fake.set(remote("fake", "1", syncedOf("good enough at 0.85"), 0.87))
+			Expect(resolve(lyrics.ResolveOptions{}).Result).To(Equal(lyrics.ResolveNotFound))
+			before := calls()
+			resolve(lyrics.ResolveOptions{})
+			Expect(calls()).To(Equal(before))
+			Expect(status().MissingRecently).To(BeTrue())
+
+			setSettings(func(s *lyrics.Settings) { s.MinConfidence = 0.85 })
+			Expect(status().MissingRecently).To(BeFalse(), "a miss made with other rules is not shown as one")
+			Expect(resolve(lyrics.ResolveOptions{}).Result).To(Equal(lyrics.ResolveFound))
+		})
+
+		It("looks again at a miss recorded by an earlier version", func() {
+			Expect(props.Put(ctx, "Lyrics.Miss."+mf.ID, strconv.FormatInt(clock.Unix(), 10))).To(Succeed())
+			fake.set(remote("fake", "1", syncedOf("found"), 0.97))
+			Expect(resolve(lyrics.ResolveOptions{}).Result).To(Equal(lyrics.ResolveFound))
+		})
+
+		It("checks again for an upgrade when the providers or the threshold change, not otherwise", func() {
+			saveManaged(ctx, engine, mf, fake, "s", syncedOf("synced"))
+			fake.set(remote("fake", "k", karaokeOf("karaoke"), 0.87))
+			before := calls()
+			Expect(resolve(lyrics.ResolveOptions{}).Result).To(Equal(lyrics.ResolveSkipped))
+			Expect(calls()).To(Equal(before))
+
+			setSettings(func(s *lyrics.Settings) { s.MinConfidence = 0.86 })
+			Expect(resolve(lyrics.ResolveOptions{}).Result).To(Equal(lyrics.ResolveUpgraded))
+			Expect(status().Current.Quality).To(Equal("karaoke"))
+		})
+
+		It("does not ask every provider on every play for a result that may not be used", func() {
+			c := remote("fake", "1", syncedOf("may not be kept"), 0.97)
+			c.Storable = false
+			fake.set(c)
+			Expect(resolve(lyrics.ResolveOptions{}).Result).To(Equal(lyrics.ResolveNotSaved))
+			before := calls()
+			resolve(lyrics.ResolveOptions{})
+			Expect(calls()).To(Equal(before))
+			Expect(resolve(lyrics.ResolveOptions{Recheck: true}).Result).To(Equal(lyrics.ResolveNotSaved), "asking explicitly still searches")
+			Expect(calls()).To(Equal(before + 1))
+		})
+
+		It("lets identical searches made at the same time share one request", func() {
+			fake.set(remote("fake", "1", syncedOf("x"), 0.97))
+			fake.delay = 150 * time.Millisecond
+			before := calls()
+			var wg sync.WaitGroup
+			for range 3 {
+				wg.Add(1)
+				go func() {
+					defer GinkgoRecover()
+					defer wg.Done()
+					res, err := engine.Search(ctx, mf, lyrics.SearchOptions{})
+					Expect(err).ToNot(HaveOccurred())
+					Expect(res.Candidates).To(HaveLen(1))
+				}()
+			}
+			wg.Wait()
+			Expect(calls()).To(Equal(before + 1))
+		})
+	})
+
+	Describe("saying why a word-timed version is not taken", func() {
+		search := func() map[string]string {
+			res, err := engine.Search(ctx, mf, lyrics.SearchOptions{})
+			Expect(err).ToNot(HaveOccurred())
+			out := map[string]string{}
+			for _, c := range res.Candidates {
+				out[c.ID] = c.Auto
+			}
+			return out
+		}
+		results := func() []lyrics.Candidate {
+			far := remote("fake", "far", karaokeOf("another length"), 0.9)
+			far.Match.DurationDelta = 8
+			private := remote("fake", "private", karaokeOf("may not be used"), 0.88)
+			private.Storable = false
+			return []lyrics.Candidate{
+				remote("fake", "synced", syncedOf("synced"), 0.97),
+				remote("fake", "weak", karaokeOf("weak match"), 0.7),
+				far, private,
+			}
+		}
+
+		It("gives each result the verdict of the automatic retrieval", func() {
+			fake.set(results()...)
+			Expect(search()).To(Equal(map[string]string{
+				"fake:synced":  lyrics.AutoChosen,
+				"fake:weak":    lyrics.AutoMatch,
+				"fake:far":     lyrics.AutoDuration,
+				"fake:private": lyrics.AutoRights,
+			}))
+		})
+
+		It("names the best word-timed result it did not take, with the reason", func() {
+			fake.set(results()...)
+			res := resolve(lyrics.ResolveOptions{})
+			Expect(res.Result).To(Equal(lyrics.ResolveFound))
+			Expect(status().Current.Quality).To(Equal("synced"))
+			Expect(res.Skipped).ToNot(BeNil())
+			Expect(*res.Skipped).To(Equal(lyrics.SkippedKaraoke{Provider: "fake", Reason: lyrics.AutoDuration, Confidence: 0.9}))
+		})
+
+		It("names nothing when word timing was taken", func() {
+			fake.set(remote("fake", "k", karaokeOf("karaoke"), 0.95), remote("fake", "weak", karaokeOf("weak"), 0.6))
+			res := resolve(lyrics.ResolveOptions{})
+			Expect(res.Skipped).To(BeNil())
+		})
+
+		It("says the current lyrics are kept, and why", func() {
+			saveManaged(ctx, engine, mf, fake, "s", syncedOf("synced"))
+			fake.set(remote("fake", "k", karaokeOf("karaoke"), 0.95), remote("fake", "s2", syncedOf("other synced"), 0.99))
+			Expect(search()).To(Equal(map[string]string{"fake:k": lyrics.AutoChosen, "fake:s2": lyrics.AutoNotBetter}))
+
+			Expect(engine.SetLocked(ctx, mf, true)).To(Succeed())
+			Expect(search()).To(Equal(map[string]string{"fake:k": lyrics.AutoLocked, "fake:s2": lyrics.AutoLocked}))
+			Expect(engine.SetLocked(ctx, mf, false)).To(Succeed())
+
+			setSettings(func(s *lyrics.Settings) { s.AutoUpgrade = false })
+			Expect(search()["fake:k"]).To(Equal(lyrics.AutoOff))
+		})
+
+		It("says when lyrics the user added are kept", func() {
+			write("01 - Song.lrc", "[00:01.00]mine\n")
+			fake.set(remote("fake", "k", karaokeOf("karaoke"), 0.95))
+			Expect(search()["fake:k"]).To(Equal(lyrics.AutoManual))
+			setSettings(func(s *lyrics.Settings) { s.AutoReplaceManual = true })
+			Expect(search()["fake:k"]).To(Equal(lyrics.AutoChosen))
+		})
+
+		It("says when the provider is not one the automatic retrieval asks", func() {
+			setSettings(func(s *lyrics.Settings) { s.Providers = nil })
+			fake.set(remote("fake", "k", karaokeOf("karaoke"), 0.95))
+			Expect(search()["fake:k"]).To(Equal(lyrics.AutoProviderOff))
 		})
 	})
 

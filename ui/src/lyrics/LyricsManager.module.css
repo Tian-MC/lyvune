@@ -231,6 +231,10 @@
   color: var(--warning);
 }
 
+.autoSkipped {
+  color: var(--warning);
+}
+
 .preview {
   grid-column: 1 / -1;
   max-height: 220px;

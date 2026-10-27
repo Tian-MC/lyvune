@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Tian-MC/lyvune/conf"
 	"github.com/Tian-MC/lyvune/consts"
 	"github.com/Tian-MC/lyvune/log"
 	"github.com/Tian-MC/lyvune/model"
@@ -149,12 +150,56 @@ func (l *lrclib) Search(ctx context.Context, rec Recording) ([]Candidate, error)
 	for _, it := range items {
 		out = append(out, lrclibCandidate(ctx, rec, it))
 	}
+	// A credit list ("Main, Guest") may not be how LRCLIB names the artist: when
+	// the whole name found nothing that fits, ask once more with the first name
+	if alt := firstCredited(rec.Artist); alt != "" && alt != artist && !anyListed(out) {
+		var more []lrclibItem
+		err := l.getJSON(ctx, "/api/search", url.Values{"track_name": {title}, "artist_name": {alt}}, &more)
+		var rl *RateLimitedError
+		switch {
+		case errors.As(err, &rl) && len(out) == 0:
+			return nil, err
+		case err != nil:
+			log.Debug(ctx, "LRCLIB search by the first credited artist failed", err)
+		}
+		for _, it := range more {
+			if it.ID != 0 && !seen[it.ID] && len(out) < lrclibMaxItems {
+				seen[it.ID] = true
+				out = append(out, lrclibCandidate(ctx, rec, it))
+			}
+		}
+	}
 	return out, nil
 }
 
+func anyListed(cands []Candidate) bool {
+	for _, c := range cands {
+		if c.Match.Listed() {
+			return true
+		}
+	}
+	return false
+}
+
+// primaryArtist is the artist to search for: the first of several artists the
+// library lists (joined with the scanner's artist joiner), without a featuring
+// credit. A name is not split on "&", ",", "/" or "+": "Simon & Garfunkel",
+// "Earth, Wind & Fire" and "AC/DC" are names, and searching for "Simon" finds
+// other artists.
 func primaryArtist(artist string) string {
-	parts := artistSplit.Split(artist, 2)
-	return strings.TrimSpace(parts[0])
+	artist = stripFeat(artist)
+	for _, sep := range []string{conf.Server.Scanner.ArtistJoiner, " • ", ";"} {
+		if sep != "" {
+			artist, _, _ = strings.Cut(artist, sep)
+		}
+	}
+	return strings.TrimSpace(artist)
+}
+
+// firstCredited is the first name of a credit list ("Main, Guest & Other"
+// gives "Main"). It is only a second try, for when the whole name found nothing.
+func firstCredited(artist string) string {
+	return strings.TrimSpace(artistSplit.Split(primaryArtist(artist), 2)[0])
 }
 
 // lrclibCandidate converts one result. It keeps the best lyrics the result

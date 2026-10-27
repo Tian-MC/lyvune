@@ -492,6 +492,46 @@ describe('<LyricsManager />', () => {
       )
     })
 
+    it('shows the last search again when reopened, and asks only for "Search again"', async () => {
+      const track = id()
+      const first = render(<LyricsManager trackId={track} onClose={() => {}} />)
+      await screen.findByText('Showing now')
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Search for better lyrics' }),
+      )
+      await screen.findByText('Matches the track · 97%')
+      first.unmount()
+
+      render(<LyricsManager trackId={track} onClose={() => {}} />)
+      await screen.findByText('Showing now')
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Search for better lyrics' }),
+      )
+      expect(screen.getByText('Matches the track · 97%')).toBeInTheDocument()
+      expect(api.search).toHaveBeenCalledTimes(1)
+
+      fireEvent.click(screen.getByRole('button', { name: 'Search again' }))
+      await waitFor(() => expect(api.search).toHaveBeenCalledTimes(2))
+      expect(
+        await screen.findByText('Matches the track · 97%'),
+      ).toBeInTheDocument()
+    })
+
+    it('forgets results the server no longer has', async () => {
+      api.apply.mockRejectedValueOnce(httpError(404, 'no-candidate'))
+      await search()
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Save lyrics locally' }),
+      )
+      await waitFor(() =>
+        expect(
+          screen.queryByText('Matches the track · 97%'),
+        ).not.toBeInTheDocument(),
+      )
+      fireEvent.click(screen.getByRole('button', { name: 'Search online' }))
+      await waitFor(() => expect(api.search).toHaveBeenCalledTimes(2))
+    })
+
     it('uses a version: asks first, with nothing sent that is not the candidate id', async () => {
       api.apply.mockRejectedValueOnce(httpError(409, 'confirm-required'))
       await search()
@@ -888,6 +928,27 @@ describe('<LyricsManager />', () => {
       ])
         expect(accept).toContain(ext)
     })
+  })
+
+  it('does not show the answer of a search made for the previous track', async () => {
+    let answer
+    api.search.mockReturnValueOnce(new Promise((r) => (answer = r)))
+    const { rerender } = render(
+      <LyricsManager trackId={id()} onClose={() => {}} />,
+    )
+    await screen.findByText('Showing now')
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Search for better lyrics' }),
+    )
+    rerender(<LyricsManager trackId={`${id()}-next`} onClose={() => {}} />)
+    answer({
+      candidates: [candidate()],
+      providers: [{ id: 'lrclib', status: 'ok', count: 1 }],
+    })
+    await new Promise((r) => setTimeout(r, 20))
+    expect(
+      screen.queryByText('Matches the track · 97%'),
+    ).not.toBeInTheDocument()
   })
 
   it("forgets one track's search and prompts when the track changes", async () => {
