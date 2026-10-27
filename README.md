@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Tian-MC/lyvune/releases/tag/v0.1.0-alpha.3"><img alt="Release" src="https://img.shields.io/github/v/release/Tian-MC/lyvune?include_prereleases&label=release&color=1FAF8B"></a>
+  <a href="https://github.com/Tian-MC/lyvune/releases/tag/v0.1.0-alpha.4"><img alt="Release" src="https://img.shields.io/github/v/release/Tian-MC/lyvune?include_prereleases&label=release&color=1FAF8B"></a>
   <a href="LICENSE"><img alt="License: GPL-3.0" src="https://img.shields.io/github/license/Tian-MC/lyvune?color=1FAF8B"></a>
   <a href="https://github.com/Tian-MC/lyvune/pkgs/container/lyvune"><img alt="Docker image for amd64 and arm64" src="https://img.shields.io/badge/docker-amd64%20%7C%20arm64-1FAF8B?logo=docker&logoColor=white"></a>
   <a href="https://github.com/Tian-MC/lyvune/actions/workflows/pipeline.yml"><img alt="CI" src="https://github.com/Tian-MC/lyvune/actions/workflows/pipeline.yml/badge.svg?branch=master"></a>
@@ -20,7 +20,7 @@
 
 <p align="center">
   <a href="#get-started"><b>Get started</b></a> &nbsp;·&nbsp;
-  <a href="https://github.com/Tian-MC/lyvune/releases/tag/v0.1.0-alpha.3">Download v0.1.0-alpha.3</a> &nbsp;·&nbsp;
+  <a href="https://github.com/Tian-MC/lyvune/releases/tag/v0.1.0-alpha.4">Download v0.1.0-alpha.4</a> &nbsp;·&nbsp;
   <a href="#features">Features</a> &nbsp;·&nbsp;
   <a href="docs/DOCKER.md">Documentation</a> &nbsp;·&nbsp;
   <a href="https://github.com/Tian-MC/lyvune/discussions">Discussions</a>
@@ -36,7 +36,7 @@ karaoke, and romanization of lyrics in several scripts. It is free software unde
 licence and copyright notices kept. See [Credits and licence](#credits-and-licence).
 
 > [!NOTE]
-> **This is an alpha** (`v0.1.0-alpha.3`). It works, it is tested, and it will have rough edges. Read the
+> **This is an alpha** (`v0.1.0-alpha.4`). It works, it is tested, and it will have rough edges. Read the
 > [known limitations](#known-limitations) before you trust it with anything you cannot rebuild.
 
 ## Features
@@ -103,12 +103,12 @@ covers and lyrics created for this project and released under CC0 (see [`scripts
 ## Get started
 
 You need Docker with the Compose plugin, a folder with your music, and a 64-bit computer (`amd64` or `arm64`). The
-image is `ghcr.io/tian-mc/lyvune:0.1.0-alpha.3`.
+image is `ghcr.io/tian-mc/lyvune:0.1.0-alpha.4`.
 
 **1. Get the Compose files** for this release:
 
 ```sh
-git clone --branch v0.1.0-alpha.3 https://github.com/Tian-MC/lyvune.git
+git clone --branch v0.1.0-alpha.4 https://github.com/Tian-MC/lyvune.git
 cd lyvune
 cp .env.example .env
 ```
@@ -117,7 +117,7 @@ cp .env.example .env
 
 ```env
 LYVUNE_MUSIC_DIR=/path/to/your/music
-LYVUNE_IMAGE=ghcr.io/tian-mc/lyvune:0.1.0-alpha.3
+LYVUNE_IMAGE=ghcr.io/tian-mc/lyvune:0.1.0-alpha.4
 ```
 
 **3. Start it:**
@@ -159,7 +159,7 @@ has, by that name. The steps are in [Coming from Navidrome](docs/DOCKER.md#comin
 - **Subsonic compatibility is kept**, including the legacy `navidrome` server type that clients rely on.
 - **Moving from Navidrome is not automatically reversible.**
 
-The [release notes](https://github.com/Tian-MC/lyvune/releases/tag/v0.1.0-alpha.3) have the details, and what was tested
+The [release notes](https://github.com/Tian-MC/lyvune/releases/tag/v0.1.0-alpha.4) have the details, and what was tested
 on which platform.
 
 ## Documentation
@@ -167,7 +167,7 @@ on which platform.
 | | |
 | --- | --- |
 | [Docker guide](docs/DOCKER.md) | install, permissions, saving lyrics, a reverse proxy, backups, updating, going back, Navidrome |
-| [Release notes](https://github.com/Tian-MC/lyvune/releases/tag/v0.1.0-alpha.3) | what is in `v0.1.0-alpha.3`, its limits, and how it was tested |
+| [Release notes](https://github.com/Tian-MC/lyvune/releases/tag/v0.1.0-alpha.4) | what is in `v0.1.0-alpha.4`, its limits, and how it was tested |
 | [Lyrics engine](LYRICS_ENGINE.md) | providers, storage, romanization, the sidecar format and the API |
 | [Releasing](docs/RELEASING.md) | what runs in CI, what is published and how |
 | [Design system](DESIGN_SYSTEM.md), [redesign foundation](REDESIGN_FOUNDATION.md) | design decisions, architecture and the status of the work |
