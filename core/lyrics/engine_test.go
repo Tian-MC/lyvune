@@ -68,6 +68,8 @@ type fakeProvider struct {
 	err   error
 	calls atomic.Int32
 	delay time.Duration
+	// limited makes this many searches answer "slow down" before the others
+	limited atomic.Int32
 	// active and peak record how many searches ran at the same moment
 	active atomic.Int32
 	peak   atomic.Int32
@@ -88,6 +90,9 @@ func (f *fakeProvider) Search(_ context.Context, _ lyrics.Recording) ([]lyrics.C
 	}
 	defer f.active.Add(-1)
 	time.Sleep(f.delay)
+	if f.limited.Add(-1) >= 0 {
+		return nil, &lyrics.RateLimitedError{Provider: f.info.ID, RetryAfter: 300 * time.Millisecond}
+	}
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	return f.cands, f.err
@@ -1172,6 +1177,17 @@ var _ = Describe("Lyrics engine", func() {
 		})
 	})
 
+	Describe("a provider that asks to slow down", func() {
+		It("says which one, and never rounds a short wait down to none", func() {
+			fake.limited.Store(1)
+			res := resolve(lyrics.ResolveOptions{})
+			Expect(res.Result).To(Equal(lyrics.ResolveUnavailable))
+			Expect(res.RetryAfter).To(Equal(1), "300 ms is rounded up to a second")
+			Expect(res.LimitedBy).To(Equal([]string{"fake"}))
+			Expect(envFile()).ToNot(BeAnExistingFile(), "nothing is saved from the other providers' half of the answer")
+		})
+	})
+
 	Describe("bulk operations", func() {
 		var files model.MediaFiles
 		var addTracks func(n int)
@@ -1321,16 +1337,58 @@ var _ = Describe("Lyrics engine", func() {
 				Expect(fake.calls.Load()).To(BeNumerically("<", 12), "nothing new started after the cancel")
 			})
 
-			It("stops when a provider asks to slow down, without starting new tracks", func() {
-				fake.mu.Lock()
-				fake.err = &lyrics.RateLimitedError{Provider: "fake", RetryAfter: 45 * time.Second}
-				fake.mu.Unlock()
+			It("waits for a provider that asks to slow down, then does every track, none lost", func() {
+				DeferCleanup(lyrics.SetBulkWaitForTest(10*time.Millisecond, 400*time.Millisecond))
+				fake.set(remote("fake", "1", syncedOf("fetched"), 0.97))
+				fake.limited.Store(2)
+				st, _ := engine.StartBulk(ctx, lyrics.BulkRequest{Action: lyrics.BulkMissing, TrackIDs: all12})
+
+				// while it waits, it says for whom and until when
+				var waiting lyrics.BulkStatus
+				Eventually(func() string {
+					waiting, _ = engine.Bulk(st.ID)
+					return waiting.WaitingFor
+				}, 3*time.Second, 5*time.Millisecond).Should(Equal("fake"))
+				Expect(waiting.ResumeAt).ToNot(BeNil())
+				Expect(waiting.State).To(Equal("running"))
+
+				done := wait(st.ID)
+				Expect(done.State).To(Equal("done"))
+				Expect(done.Done).To(Equal(12))
+				Expect(done.Found).To(Equal(12), "the refused tracks were done after the wait")
+				Expect(done.Failed).To(BeZero())
+				Expect(done.RateLimited).To(BeNumerically(">=", 1))
+				Expect(done.Retried).To(Equal(done.RateLimited))
+				Expect(done.Message).To(BeEmpty())
+				Expect(done.WaitingFor).To(BeEmpty())
+				for _, id := range all12 {
+					Expect(filepath.Join(dir(), id+".lyrics.json")).To(BeAnExistingFile())
+				}
+			})
+
+			It("does not start new tracks while it waits", func() {
+				DeferCleanup(lyrics.SetBulkWaitForTest(400*time.Millisecond, 400*time.Millisecond))
+				fake.set(remote("fake", "1", syncedOf("fetched"), 0.97))
+				fake.limited.Store(1)
+				st, _ := engine.StartBulk(ctx, lyrics.BulkRequest{Action: lyrics.BulkMissing, TrackIDs: all12})
+				Eventually(func() string { s, _ := engine.Bulk(st.ID); return s.WaitingFor }, 3*time.Second, 5*time.Millisecond).Should(Equal("fake"))
+				during := fake.calls.Load()
+				time.Sleep(200 * time.Millisecond)
+				Expect(fake.calls.Load()).To(BeNumerically("<=", during+3), "only the searches already running go on")
+				Expect(wait(st.ID).Done).To(Equal(12))
+			})
+
+			It("stops, keeping what it did, when a provider keeps refusing", func() {
+				DeferCleanup(lyrics.SetBulkWaitForTest(time.Millisecond, 5*time.Millisecond))
+				fake.set(remote("fake", "1", syncedOf("fetched"), 0.97))
+				fake.limited.Store(1000)
 				st, _ := engine.StartBulk(ctx, lyrics.BulkRequest{Action: lyrics.BulkMissing, TrackIDs: all12})
 				done := wait(st.ID)
-				Expect(done.Done).To(BeNumerically("<=", 4), "only the tracks already running finished")
-				Expect(done.Done).To(BeNumerically(">=", 1))
+				Expect(done.State).To(Equal("done"))
+				Expect(done.Message).To(ContainSubstring("fake kept asking to slow down"))
+				Expect(done.Message).To(ContainSubstring("finished tracks are skipped"))
 				Expect(done.Done).To(BeNumerically("<", 12))
-				Expect(done.Message).To(ContainSubstring("slow down"))
+				Expect(done.RateLimited).To(BeNumerically(">", 8))
 			})
 		})
 
