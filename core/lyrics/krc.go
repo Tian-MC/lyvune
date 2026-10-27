@@ -192,19 +192,19 @@ func parseKRCLine(start, dur int64, body string) model.Line {
 		if !okO || !okD {
 			// Not a timing tag: it is part of the text
 			if len(words) > 0 {
-				words[len(words)-1].text += "<" + tag + ">" + word
+				words[len(words)-1].text += "<" + tag + ">" + decodeText(word)
 			}
 			rest = rest[len(word):]
 			continue
 		}
-		w := timedWord{start: start + off, text: word}
+		w := timedWord{start: start + off, text: decodeText(word)}
 		if wdur >= 0 {
 			w.end = i64(start + off + wdur)
 		}
 		words = append(words, w)
 	}
 	if len(words) == 0 {
-		return model.Line{Start: i64(start), End: i64(start + dur), Value: strings.TrimSpace(body)}
+		return model.Line{Start: i64(start), End: i64(start + dur), Value: decodeText(strings.TrimSpace(body))}
 	}
 	return wordLine(start, i64(start+dur), mergeBlankWords(words))
 }
@@ -235,7 +235,7 @@ func krcTranslation(orig []model.Line, content [][]string) *model.Lyrics {
 	for i, o := range orig {
 		var v string
 		if i < len(content) {
-			v = strings.TrimSpace(strings.Join(content[i], ""))
+			v = decodeText(strings.TrimSpace(strings.Join(content[i], "")))
 		}
 		if v != "" {
 			any = true
@@ -262,7 +262,7 @@ func krcRomanization(orig []model.Line, content [][]string) *model.Lyrics {
 		if len(parts) > 0 && len(parts) == len(o.Cue) {
 			words := make([]timedWord, len(parts))
 			for k, p := range parts {
-				words[k] = timedWord{start: *o.Cue[k].Start, text: p}
+				words[k] = timedWord{start: *o.Cue[k].Start, text: decodeText(p)}
 				if o.Cue[k].End != nil {
 					words[k].end = i64(*o.Cue[k].End)
 				}
@@ -274,7 +274,7 @@ func krcRomanization(orig []model.Line, content [][]string) *model.Lyrics {
 			out = append(out, line)
 			continue
 		}
-		v := strings.TrimSpace(strings.Join(parts, ""))
+		v := decodeText(strings.TrimSpace(strings.Join(parts, "")))
 		if v != "" {
 			any = true
 		}

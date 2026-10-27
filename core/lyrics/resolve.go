@@ -237,7 +237,7 @@ func (l *lyricsService) resolveCurrent(ctx context.Context, mediaFiles []*model.
 	}
 
 	if user != nil {
-		return finish(user.env.Lyrics, envelopeInfo(user.env, user.name), user.mf, user.env)
+		return finish(user.env.Display(), envelopeInfo(user.env, user.name), user.mf, user.env)
 	}
 
 	base := current{}
@@ -245,7 +245,7 @@ func (l *lyricsService) resolveCurrent(ctx context.Context, mediaFiles []*model.
 	preferLocal := l.settings(ctx).PreferLocal
 	switch {
 	case managed != nil && (!haveLocal || (!preferLocal && QualityOf(managed.env.Lyrics) > QualityOf(hit.list))):
-		base, _ = finish(managed.env.Lyrics, envelopeInfo(managed.env, managed.name), managed.mf, managed.env)
+		base, _ = finish(managed.env.Display(), envelopeInfo(managed.env, managed.name), managed.mf, managed.env)
 	case haveLocal:
 		base, _ = finish(hit.list, legacyInfo(hit), hit.mf, nil)
 	}
@@ -280,7 +280,7 @@ func (l *lyricsService) localCandidates(ctx context.Context, mf *model.MediaFile
 		if env.Origin == OriginUser {
 			src = SourceUser
 		}
-		add(Candidate{ID: info.ID, Provider: env.Provider, Source: src, Lyrics: env.Lyrics, Meta: env.Recording,
+		add(Candidate{ID: info.ID, Provider: env.Provider, Source: src, Lyrics: env.Display(), Meta: env.Recording,
 			Match: Match{Confidence: env.Confidence}, Storable: true, Attribution: env.Attribution, File: name})
 	}
 	for pattern := range strings.SplitSeq(conf.Server.LyricsPriority, ",") {

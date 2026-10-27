@@ -76,6 +76,7 @@ Writes are atomic (temporary file in the same folder, flushed, renamed), verifie
   "confidence": 1,
   "retrievedAt": "2026-10-25T00:11:24Z",
   "attribution": "Lyrics from LRCLIB (lrclib.net)",
+  "textDecoded": true,
   "recording": { "title": "…", "artist": "…", "album": "…", "duration": 199 },
   "lyrics": [ /* OpenSubsonic structured lyrics: kind, lang, synced, line[{start,value,cue[]}], offset */ ]
 }
@@ -83,6 +84,7 @@ Writes are atomic (temporary file in the same folder, flushed, renamed), verifie
 
 - `origin`: `managed` (downloaded automatically) or `user` (chosen or imported).
 - `lyrics` uses the same structure as the OpenSubsonic `structuredLyrics`, so word timing (`cue` with `start`, `end`, byte offsets), translations (`kind: "translation"`) and pronunciations (`kind: "pronunciation"`) survive unchanged.
+- `textDecoded` says the HTML character references of the text were decoded when the lyrics were parsed. Sidecars written by earlier versions do not have it (see [HTML character references](#html-character-references-in-lyrics)).
 - `offsetMs` is added on top of any offset in the lyrics; **positive shows lyrics sooner**. Timestamps in the file are never rewritten.
 - Readers reject newer versions, other formats, files over 4 MB, more than 5000 lines, lines over 4096 bytes, more than 512 cues in a line, negative timestamps and cues that end before they start.
 
@@ -141,6 +143,17 @@ for settings saved before they existed), decide what happens to it:
   at once. The web player reads the same endpoint, so it follows the same switch.
 
 Existing `.lyrics.json` files are never rewritten by either setting.
+
+## HTML character references in lyrics
+
+Some providers send escaped text: KuGou's word-timed KRC carries `eta&apos;` where the song says `eta'`.
+
+- **Where it came in.** LRC, enhanced LRC, TTML and SRT text is decoded when it is parsed (`str.SanitizeText`), before any byte offset is worked out. The KRC parser did not, so a KuGou KRC reached the line text and the karaoke cues as `eta&apos;`. LRCLIB (checked for this recording) and NetEase do not send references.
+- **The fix.** The KRC parser decodes each word, the translation and the romanization when it reads them (`decodeText`). The line text and the cues' `byteStart`/`byteEnd` are built from the decoded words, so they are right by construction; times, order and agents are not touched.
+- **What is decoded.** Complete references only (`&apos;`, `&#39;`, `&#x27;`, `&quot;`, `&amp;`, `&lt;`, `&gt;`, named letters such as `&eacute;`), in one pass: `&amp;apos;` gives `&apos;`, not `'`. A bare `&`, `R&B`, `AT&T`, a name without its semicolon and an unknown name stay as they are, and so does a reference that would become a control character or a broken one. The result is plain characters in JSON; the web player renders lyrics as text and never as HTML.
+- **Sidecars saved before.** They keep the text as KuGou sent it and are never rewritten. Where a sidecar without `textDecoded` from a provider that escapes (KuGou) is read, `ForDisplay` decodes it and moves every cue's `byteStart`/`byteEnd` with the text (a reference that a cue edge would cut in two, or a line whose offsets do not fit it, is left as it is). It is a copy: the stored lists are not changed. Sidecars written by this version say `textDecoded: true` and are read as they are, so nothing is decoded twice.
+- **Where it shows.** Every read of the current lyrics goes through the same place: the OpenSubsonic `getLyricsBySongId` (plain and `enhanced`), the legacy `getLyrics`, Jellyfin, the web player, and the sidecar listed in the lyrics manager. The policy on translation tracks applies after it, as before.
+- **Limitations.** Lyrics from local files, tags and imports are not changed by this (the LRC, TTML and SRT parsers already decode them). A legacy KuGou sidecar that came from KuGou's plain LRC was decoded once when it was parsed, so a text that KuGou escaped twice is decoded a second time when it is read. Providers other than KuGou are not repaired; NetEase's word-timed YRC was not seen to carry references and is not changed. Nothing de-duplicates repeated stanzas, fixes spelling or edits the words: those are the provider's content.
 
 ## Providers
 

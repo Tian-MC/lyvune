@@ -3,7 +3,9 @@ package subsonic
 import (
 	"context"
 	"encoding/json"
+	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/Tian-MC/lyvune/conf"
 	"github.com/Tian-MC/lyvune/conf/configtest"
@@ -299,6 +301,85 @@ var _ = Describe("GetLyricsBySongId", func() {
 			response, err := router.GetLyricsBySongId(newGetRequest("id=1&enhanced=true"))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(kinds(response.LyricsList)).To(ContainElement("translation"))
+		})
+	})
+
+	Describe("HTML character references in a saved KuGou sidecar", func() {
+		var libDir string
+		BeforeEach(func() {
+			libDir = GinkgoT().TempDir()
+			Expect(os.MkdirAll(filepath.Join(libDir, "a"), 0o755)).To(Succeed())
+			Expect(os.WriteFile(filepath.Join(libDir, "a", "song.mp3"), []byte("x"), 0o600)).To(Succeed())
+			start := func(ms int64) *int64 { return &ms }
+			line := model.Line{Start: start(1000), End: start(4000), Value: "senza eta&apos; caf\u00e9 poem&apos;s end", Cue: []model.Cue{
+				{Start: start(1000), End: start(1500), Value: "senza ", ByteStart: 0, ByteEnd: 5},
+				{Start: start(1500), End: start(2000), Value: "eta&apos; ", ByteStart: 6, ByteEnd: 15},
+				{Start: start(2000), End: start(2500), Value: "caf\u00e9 ", ByteStart: 16, ByteEnd: 21},
+				{Start: start(2500), End: start(3000), Value: "poem&apos;s ", ByteStart: 22, ByteEnd: 33},
+				{Start: start(3000), End: start(4000), Value: "end", ByteStart: 34, ByteEnd: 36},
+			}}
+			list := model.LyricList{
+				{Kind: model.LyricKindMain, Lang: "xxx", Synced: true, Line: []model.Line{line}},
+				{Kind: model.LyricKindPronunciation, Lang: "xxx", Synced: true, Line: []model.Line{{Start: start(1000), Value: "e&apos;ta"}}},
+				{Kind: model.LyricKindTranslation, Lang: "xxx", Synced: true, Line: []model.Line{{Start: start(1000), Value: "l&apos;et\u00e0"}}},
+			}
+			env := lyrics.NewEnvelope(lyrics.Candidate{ID: "kugou:H1", Provider: "kugou", Lyrics: list}, lyrics.OriginManaged, time.Now())
+			env.TextDecoded = false // as an earlier version wrote it
+			_, err := lyrics.NewStore(GinkgoT().TempDir(), 5).Save(lyrics.Target{Root: libDir, AudioRel: "a/song.mp3"}, env)
+			Expect(err).ToNot(HaveOccurred())
+			mockRepo.SetData(model.MediaFiles{{ID: "1", Artist: "Rhapsody", Title: "Tears of a Dying Angel", LibraryPath: libDir, Path: "a/song.mp3", Lyrics: "[]"}})
+		})
+		sidecar := func() []byte {
+			raw, err := os.ReadFile(filepath.Join(libDir, "a", "song.lyrics.json"))
+			Expect(err).ToNot(HaveOccurred())
+			return raw
+		}
+
+		It("sends the characters, with valid cue offsets, in the enhanced response, and keeps leaving translations out", func() {
+			before := sidecar()
+			response, err := router.GetLyricsBySongId(newGetRequest("id=1&enhanced=true"))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(sidecar()).To(Equal(before), "the file is not rewritten")
+
+			got := response.LyricsList.StructuredLyrics
+			Expect(got).To(HaveLen(2))
+			Expect(got[0].Kind).To(Equal("main"))
+			Expect(got[1].Kind).To(Equal("pronunciation"))
+			Expect(got[0].Line[0].Value).To(Equal("senza eta' caf\u00e9 poem's end"))
+			Expect(got[1].Line[0].Value).To(Equal("e'ta"))
+			Expect(got[0].CueLine).To(HaveLen(1))
+			cl := got[0].CueLine[0]
+			Expect(cl.Value).To(Equal("senza eta' caf\u00e9 poem's end"))
+			Expect(cl.Cue).To(HaveLen(5))
+			for _, c := range cl.Cue {
+				Expect(cl.Value[c.ByteStart : c.ByteEnd+1]).To(Equal(c.Value))
+			}
+			Expect(cl.Cue[1].Value).To(Equal("eta' "))
+			Expect(cl.Cue[3].Value).To(Equal("poem's "))
+			Expect(cl.Cue[3].Start).To(Equal(int64(2500)))
+			Expect(*cl.Cue[3].End).To(Equal(int64(3000)))
+		})
+
+		It("sends the characters in the plain response and in the legacy getLyrics", func() {
+			response, err := router.GetLyricsBySongId(newGetRequest("id=1"))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(response.LyricsList.StructuredLyrics).To(HaveLen(1))
+			Expect(response.LyricsList.StructuredLyrics[0].Line[0].Value).To(Equal("senza eta' caf\u00e9 poem's end"))
+
+			legacy, err := router.GetLyrics(newGetRequest("artist=Rhapsody", "title=Tears+of+a+Dying+Angel"))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(legacy.Lyrics.Value).To(Equal("senza eta' caf\u00e9 poem's end\n"))
+		})
+
+		It("sends the same text as before once the administrator wants translations, decoded as well", func() {
+			Expect(ds.Property().Put(context.Background(), "Lyrics.Settings", `{"exposeTranslationsToClients":true}`)).To(Succeed())
+			router = New(ds, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, lyrics.NewLyrics(ds, nil), nil, nil)
+			response, err := router.GetLyricsBySongId(newGetRequest("id=1&enhanced=true"))
+			Expect(err).ToNot(HaveOccurred())
+			got := response.LyricsList.StructuredLyrics
+			Expect(got).To(HaveLen(3))
+			Expect(got[2].Kind).To(Equal("translation"))
+			Expect(got[2].Line[0].Value).To(Equal("l'et\u00e0"))
 		})
 	})
 

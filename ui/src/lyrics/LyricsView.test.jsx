@@ -125,6 +125,25 @@ describe('<LyricsView /> (fixtures)', () => {
     expect(document.querySelectorAll('button[data-index]')).toHaveLength(0)
   })
 
+  it('shows text that looks like HTML as plain text, never as markup', () => {
+    show({
+      synced: true,
+      lang: '',
+      hasWords: false,
+      hasTranslation: false,
+      hasPronunciation: false,
+      lines: [
+        line("it's <b>bold</b> <img src=x onerror=alert(1)> & done", 1),
+        line('<script>alert(1)</script>', 2),
+      ],
+    })
+    expect(
+      screen.getByText("it's <b>bold</b> <img src=x onerror=alert(1)> & done"),
+    ).toBeInTheDocument()
+    expect(screen.getByText('<script>alert(1)</script>')).toBeInTheDocument()
+    expect(document.querySelector('b, img, script')).toBeNull()
+  })
+
   it('renders synchronized lines as buttons that seek and start playback', () => {
     mocks.time = 3
     show({

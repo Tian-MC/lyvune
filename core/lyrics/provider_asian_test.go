@@ -296,6 +296,25 @@ var _ = Describe("KuGou provider", func() {
 		Expect(got[0].Lyrics[1].Line[0].Value).To(Equal("Hello"))
 	})
 
+	It("gives the characters, not the HTML references KuGou sends, with the cue offsets of the decoded line", func() {
+		f := newFake()
+		f.krc = "\ufeff[id:$00000000]\n[ar:Test Artist]\n[ti:Test Song]\n[offset:0]\n" +
+			"[1000,3000]<0,500,0>Sacra <500,500,0>caf\u00e9 <1000,500,0>poem&apos;s <1500,500,0>don&#39;t <2000,1000,0>eta&apos;\n"
+		got, err := serve(f, true).Search(context.Background(), rec)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(got).To(HaveLen(1))
+		line := got[0].Lyrics[0].Line[0]
+		Expect(line.Value).To(Equal("Sacra caf\u00e9 poem's don't eta'"))
+		Expect(line.Cue).To(HaveLen(5))
+		for _, c := range line.Cue {
+			Expect(line.Value[c.ByteStart : c.ByteEnd+1]).To(Equal(c.Value))
+		}
+		Expect(line.Cue[2].Value).To(Equal("poem's "))
+		Expect(*line.Cue[2].Start).To(Equal(int64(2000)))
+		Expect(line.Cue[4].Value).To(Equal("eta'"))
+		Expect(got[0].Quality).To(Equal(lyrics.QualityKaraoke))
+	})
+
 	It("falls back to plain LRC and classifies it by what it contains", func() {
 		f := newFake()
 		f.krc, f.lrc = "", "[00:01.00]こんにちは\n[00:03.00]さようなら"
