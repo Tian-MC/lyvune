@@ -3,6 +3,7 @@ package lyrics
 import (
 	"math"
 	"regexp"
+	"slices"
 	"strings"
 	"unicode"
 
@@ -78,6 +79,13 @@ func ScoreMatch(rec Recording, meta Meta) Match {
 	recTitle, recTags := splitTitle(rec.Title)
 	candTitle, candTags := splitTitle(meta.Title)
 	m.Title = similarity(normalize(recTitle), normalize(candTitle))
+	// Words one title has and the other has not ("Despacito 缓缓", a cover with a
+	// title of its own) make another song, however close the letters are. Such a
+	// result can still be listed and chosen by hand; it is never verified (unless
+	// the words are a note in brackets and the lengths agree, below).
+	if extraWords(normalize(recTitle), normalize(candTitle)) {
+		m.Title = math.Min(m.Title, 0.6)
+	}
 
 	m.Artist = artistScore(rec, meta.Artist)
 
@@ -98,6 +106,16 @@ func ScoreMatch(rec Recording, meta Meta) Match {
 			m.Duration = 0.4
 		default:
 			m.Duration = 0
+		}
+	}
+
+	// A subtitle or a note one side has and the other has not ("MALAMENTE (Cap.1:
+	// Augurio)", "任性（电视剧《难哄》主题曲）") leaves the same bare title. That is
+	// the same song only when the lengths agree too: "Song (Part 2)" lasts
+	// another time. Versions (live, remix...) are still told apart below.
+	if m.Title < 0.9 && m.Duration == 1 {
+		if bare := bareTitle(rec.Title); bare != "" && bare == bareTitle(meta.Title) {
+			m.Title = 0.9
 		}
 	}
 
@@ -146,20 +164,107 @@ var featClause = regexp.MustCompile(`(?i)\s+(?:feat\.|ft\.|featuring)\s+`)
 // stripFeat removes an unbracketed featuring credit. The credit ends where a
 // bracket or a " - " suffix begins, so "Song feat. Guest (Live)" keeps "(Live)"
 // and is still told apart from the studio recording.
+//
+// A credit inside brackets ("Get Lucky (Radio Edit - feat. Pharrell Williams)")
+// is left to the bracket rules: cutting it here would take the closing bracket
+// with it and leave "Get Lucky (Radio Edit -".
 func stripFeat(s string) string {
 	loc := featClause.FindStringIndex(s)
-	if loc == nil {
+	if loc == nil || insideBrackets(s[:loc[0]]) {
 		return s
 	}
 	rest := s[loc[1]:]
 	end := len(rest)
-	if i := strings.IndexAny(rest, "([（【"); i >= 0 {
+	if i := strings.IndexAny(rest, "()[]（）【】"); i >= 0 {
 		end = i
 	}
 	if i := strings.Index(rest[:end], " - "); i >= 0 {
 		end = i
 	}
 	return s[:loc[0]] + " " + rest[end:]
+}
+
+// titleArticles are words a title may have or not and stay the same title.
+var titleArticles = map[string]bool{
+	"the": true, "a": true, "an": true, "la": true, "le": true, "les": true, "el": true, "los": true, "las": true,
+	"il": true, "lo": true, "gli": true, "i": true, "der": true, "die": true, "das": true, "o": true, "os": true,
+}
+
+// extraWords reports whether one title is the other with words added: all the
+// words of the shorter are in the longer, which has more than articles besides.
+func extraWords(a, b string) bool {
+	wa, wb := strings.Fields(a), strings.Fields(b)
+	if len(wa) > len(wb) {
+		wa, wb = wb, wa
+	}
+	if len(wa) == 0 || len(wa) == len(wb) {
+		return false
+	}
+	short := map[string]bool{}
+	for _, w := range wa {
+		short[w] = true
+	}
+	extra := 0
+	for _, w := range wb {
+		if short[w] {
+			delete(short, w)
+			continue
+		}
+		if !titleArticles[w] {
+			extra++
+		}
+	}
+	return len(short) == 0 && extra > 0
+}
+
+// insideBrackets reports whether the end of s is inside an open bracket.
+func insideBrackets(s string) bool {
+	depth := 0
+	for _, r := range s {
+		switch r {
+		case '(', '[', '（', '【':
+			depth++
+		case ')', ']', '）', '】':
+			depth = max(0, depth-1)
+		}
+	}
+	return depth > 0
+}
+
+// searchTerms is what a keyword search (KuGou, NetEase, QQ Music) is asked
+// for: the title without anything in brackets, a " - " suffix or a featuring
+// credit (the match checks those afterwards), and the first artist. These
+// services index simplified Chinese: a traditional title such as "婚禮的祝福"
+// finds nothing on KuGou. Text with kana is Japanese and is sent as it is.
+func searchTerms(rec Recording) (title, artist string) {
+	title = bracketed.ReplaceAllString(stripFeat(rec.Title), " ")
+	if i := strings.LastIndex(title, " - "); i > 0 {
+		title = title[:i]
+	}
+	title = strings.Join(strings.Fields(title), " ")
+	if title == "" {
+		title, _ = splitTitle(rec.Title)
+		title = strings.TrimSpace(title)
+	}
+	artist = primaryArtist(rec.Artist)
+	chinese := func(s string) string {
+		if strings.ContainsFunc(s, func(r rune) bool { return unicode.In(r, unicode.Hiragana, unicode.Katakana) }) {
+			return s
+		}
+		return simplifiedHan(s)
+	}
+	return chinese(title), chinese(artist)
+}
+
+// bareTitle is the title without anything in brackets, a " - " suffix or a
+// featuring credit: "MALAMENTE (Cap.1: Augurio)" and "任性（电视剧《难哄》主题曲）"
+// give "MALAMENTE" and "任性".
+func bareTitle(title string) string {
+	core := bracketed.ReplaceAllString(stripFeat(title), " ")
+	if i := strings.LastIndex(core, " - "); i > 0 {
+		core = core[:i]
+	}
+	return normalize(core)
 }
 
 var bracketed = regexp.MustCompile(`[\(\[（【]([^\)\]）】]*)[\)\]）】]`)
@@ -231,32 +336,53 @@ var artistSplit = regexp.MustCompile(`(?i)\s*(?:;|,|&|/|\+|\bfeat\.?\b|\bft\.?\b
 
 func artistNames(s string) []string {
 	var out []string
+	for _, group := range artistGroups(s) {
+		out = append(out, group...)
+	}
+	return out
+}
+
+// artistGroups splits a credit into its artists, each with the names it goes
+// by: "BTS (防弹少年团)" and "LiSA (織部里沙)" are one artist with two names, as
+// Chinese services write them.
+func artistGroups(s string) [][]string {
+	var out [][]string
 	for _, part := range artistSplit.Split(s, -1) {
-		if n := normalize(part); n != "" {
-			out = append(out, n)
+		var names []string
+		add := func(n string) {
+			if n = normalize(n); n != "" && !slices.Contains(names, n) {
+				names = append(names, n)
+			}
+		}
+		add(bracketed.ReplaceAllString(part, " "))
+		for _, m := range bracketed.FindAllStringSubmatch(part, -1) {
+			add(m[1])
+		}
+		if len(names) > 0 {
+			out = append(out, names)
 		}
 	}
 	return out
 }
 
 func artistScore(rec Recording, candArtist string) float64 {
-	cand := artistNames(candArtist)
+	cand := artistGroups(candArtist)
 	have := append(artistNames(rec.Artist), artistNames(rec.AlbumArtist)...)
 	if len(cand) == 0 || len(have) == 0 {
 		return 0.5
 	}
 	best := 0.0
 	exact := 0
-	for _, c := range cand {
-		for _, h := range have {
-			s := similarity(c, h)
-			if s > best {
-				best = s
+	for _, names := range cand {
+		matched := false
+		for _, c := range names {
+			for _, h := range have {
+				best = math.Max(best, similarity(c, h))
+				matched = matched || c == h
 			}
-			if c == h {
-				exact++
-				break
-			}
+		}
+		if matched {
+			exact++
 		}
 	}
 	// Every credited artist on the candidate is one of ours: a full match even
@@ -272,8 +398,11 @@ func artistScore(rec Recording, candArtist string) float64 {
 
 // normalize folds case, width, punctuation and (for non-CJK text) diacritics so
 // that equivalent spellings compare equal.
+//
+// Traditional Chinese characters are compared in their simplified form
+// (simplifiedHan), so "陳奕迅" is "陈奕迅".
 func normalize(s string) string {
-	s = norm.NFKC.String(s)
+	s = simplifiedHan(norm.NFKC.String(s))
 	if !hasCJK(s) {
 		t := transform.Chain(norm.NFD, runes.Remove(runes.In(unicode.Mn)), norm.NFC)
 		if folded, _, err := transform.String(t, s); err == nil {

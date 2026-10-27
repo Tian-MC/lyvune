@@ -102,8 +102,7 @@ type qqSong struct {
 }
 
 func (q *qq) Search(ctx context.Context, rec Recording) ([]Candidate, error) {
-	title, _ := splitTitle(rec.Title)
-	title, artist := strings.TrimSpace(title), primaryArtist(rec.Artist)
+	title, artist := searchTerms(rec)
 	if title == "" {
 		return nil, nil
 	}

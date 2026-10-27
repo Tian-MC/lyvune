@@ -69,3 +69,12 @@ func SetBulkWaitForTest(base, maxWait time.Duration) func() {
 	bulkBackoffBase, bulkMaxWait = base, maxWait
 	return func() { bulkBackoffBase, bulkMaxWait = oldBase, oldMax }
 }
+
+// SearchTermsForTest exposes what keyword searches are asked for.
+func SearchTermsForTest(rec Recording) (string, string) { return searchTerms(rec) }
+
+// SimplifiedHanForTest exposes the traditional to simplified folding.
+func SimplifiedHanForTest(s string) string { return simplifiedHan(s) }
+
+// HanTableSizeForTest is the number of characters the folding table maps.
+func HanTableSizeForTest() int { return len(hanTable()) }

@@ -168,4 +168,81 @@ var _ = Describe("Finding lyrics that exist", func() {
 			Expect(searched()).To(Equal([]string{"Main, Guest"}))
 		})
 	})
+	Describe("cases measured on real recordings", func() {
+		at := func(title, artist string, secs float64) lyrics.Recording {
+			return lyrics.Recording{Title: title, Artist: artist, Album: "Album", DurationSec: secs}
+		}
+		as := func(title, artist string, secs float64) lyrics.Meta {
+			return lyrics.Meta{Title: title, Artist: artist, DurationSec: secs}
+		}
+
+		It("keeps a featuring credit inside brackets to the bracket rules", func() {
+			// Before, the credit was cut with the closing bracket: "Get Lucky (Radio Edit -"
+			m := lyrics.ScoreMatch(at("Get Lucky (Radio Edit - feat. Pharrell Williams and Nile Rodgers)", "Daft Punk", 248),
+				as("Get Lucky (Radio Edit)", "Daft Punk, Pharrell Williams", 248))
+			Expect(m.Title).To(Equal(1.0))
+			Expect(m.Verified()).To(BeTrue())
+		})
+
+		It("reads traditional and simplified Chinese as the same names", func() {
+			m := lyrics.ScoreMatch(at("婚禮的祝福", "陳奕迅", 261), as("婚礼的祝福", "陈奕迅", 261))
+			Expect(m.Title).To(Equal(1.0))
+			Expect(m.Artist).To(Equal(1.0))
+			Expect(m.Verified()).To(BeTrue())
+			Expect(lyrics.ScoreMatch(at("她說", "林俊傑", 318), as("她说", "林俊杰", 320)).Verified()).To(BeTrue())
+			// and different songs stay different
+			Expect(lyrics.ScoreMatch(at("婚禮的祝福", "陳奕迅", 261), as("十年", "陈奕迅", 261)).Verified()).To(BeFalse())
+		})
+
+		It("folds only what has one simplified form, and leaves kana and hangul alone", func() {
+			Expect(lyrics.SimplifiedHanForTest("陳奕迅 婚禮的祝福 說 鄧紫棋 臺灣")).To(Equal("陈奕迅 婚礼的祝福 说 邓紫棋 台湾"))
+			Expect(lyrics.SimplifiedHanForTest("乾")).To(Equal("乾"), "乾 may stay 乾 or become 干: not guessed")
+			Expect(lyrics.SimplifiedHanForTest("夜に駆ける 강남스타일 Hello")).To(Equal("夜に駆ける 강남스타일 Hello"))
+			Expect(lyrics.HanTableSizeForTest()).To(BeNumerically(">", 6000))
+			Expect(lyrics.SimplifiedHanForTest("\U00033446")).To(Equal("\U0002A38F"), "characters outside the BMP are read from the table")
+		})
+
+		It("knows an artist by the other name written in brackets", func() {
+			Expect(lyrics.ScoreMatch(at("Dynamite", "BTS", 199), as("Dynamite", "BTS (防弹少年团)", 199)).Artist).To(Equal(1.0))
+			Expect(lyrics.ScoreMatch(at("Dynamite", "防弹少年团", 199), as("Dynamite", "BTS (防弹少年团)", 199)).Artist).To(Equal(1.0))
+			Expect(lyrics.ScoreMatch(at("紅蓮華", "LiSA", 236), as("紅蓮華", "LiSA (織部里沙)", 236)).Verified()).To(BeTrue())
+			Expect(lyrics.ScoreMatch(at("Dynamite", "Taio Cruz", 202), as("Dynamite", "BTS (防弹少年团)", 202)).Verified()).To(BeFalse())
+		})
+
+		It("accepts a subtitle or a note on one side only when the lengths agree", func() {
+			Expect(lyrics.ScoreMatch(at("MALAMENTE", "ROSALÍA", 149), as("MALAMENTE (Cap.1: Augurio)", "ROSALÍA", 150)).Verified()).To(BeTrue())
+			Expect(lyrics.ScoreMatch(at("任性（电视剧《难哄》主题曲）", "五月天", 265), as("任性", "五月天", 265)).Verified()).To(BeTrue())
+			// another part of a song lasts another time
+			Expect(lyrics.ScoreMatch(at("Song", "Band", 200), as("Song (Part 2)", "Band", 245)).Verified()).To(BeFalse())
+			Expect(lyrics.ScoreMatch(at("Song", "Band", 200), as("Song (Part 2)", "Band", 0)).Verified()).To(BeFalse(), "an unknown length is not agreement")
+			// a version is still another recording
+			Expect(lyrics.ScoreMatch(at("Song", "Band", 200), as("Song (Live)", "Band", 200)).Verified()).To(BeFalse())
+		})
+
+		It("does not take a title with words added for the song", func() {
+			// NetEase listed "Despacito 缓缓", a Chinese cover, as verified at 0.91
+			m := lyrics.ScoreMatch(at("Despacito", "Luis Fonsi", 228), as("Despacito 缓缓", "Luis Fonsi, 林俊杰", 229))
+			Expect(m.Verified()).To(BeFalse())
+			Expect(lyrics.ScoreMatch(at("Hello", "Adele", 295), as("Hello Goodbye", "Adele", 295)).Verified()).To(BeFalse())
+			// an article more or less is the same title
+			Expect(lyrics.ScoreMatch(at("The Sound Of Silence", "Simon & Garfunkel", 183), as("Sound of Silence", "Simon & Garfunkel", 183)).Verified()).To(BeTrue())
+			// a note in brackets, with the same length, still is the song
+			Expect(lyrics.ScoreMatch(at("Gangnam Style (강남스타일)", "Psy", 219), as("Gangnam Style", "PSY", 219)).Verified()).To(BeTrue())
+		})
+
+		It("asks keyword searches for the bare title, in simplified Chinese unless it is Japanese", func() {
+			for _, c := range []struct{ title, artist, wantTitle, wantArtist string }{
+				{"任性（电视剧《难哄》主题曲）", "五月天", "任性", "五月天"},
+				{"婚禮的祝福", "陳奕迅", "婚礼的祝福", "陈奕迅"},
+				{"紅蓮華", "LiSA", "红莲华", "LiSA"},
+				{"夜に駆ける", "YOASOBI", "夜に駆ける", "YOASOBI"},
+				{"Get Lucky (Radio Edit - feat. Pharrell Williams)", "Daft Punk", "Get Lucky", "Daft Punk"},
+				{"Song feat. Guest - Live at Wembley", "Main ft. Guest", "Song", "Main"},
+				{"(What's the Story) Morning Glory?", "Oasis", "Morning Glory?", "Oasis"},
+			} {
+				title, artist := lyrics.SearchTermsForTest(lyrics.Recording{Title: c.title, Artist: c.artist})
+				Expect([]string{title, artist}).To(Equal([]string{c.wantTitle, c.wantArtist}), c.title)
+			}
+		})
+	})
 })
