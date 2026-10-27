@@ -13,7 +13,7 @@
 | `docker.yml` ("Docker image: test") | a pull request or a push to `master` that changes the image, Compose files or scripts, or by hand | builds the image for `amd64` and `arm64`, each on its own architecture, and runs `scripts/docker-smoke-test.sh` against it. The image stays on the runner | works (see [Tested on](#tested-on)) |
 | `coverage-on-pr.yml`, `download-link-on-pr.yml` | after the pipeline finishes for a pull request | comment the coverage and the artifact links on that pull request | works, comments only |
 | `stale.yml` | every night, or by hand | closes and locks stale issues and pull requests of this repository | works |
-| `release.yml` ("Release: Docker image to GHCR") | by hand only, from `master`, with a tag and the word `publish` | checks the request, tests the image on amd64 and arm64, pushes it to `ghcr.io/tian-mc/lyvune` as one tag, tests the pushed image again | **used for `v0.1.0-alpha.1` to `v0.1.0-alpha.4`**; it appears in the Actions tab once its file is on `master` |
+| `release.yml` ("Release: Docker image to GHCR") | by hand only, from `master`, with a tag and the word `publish` | checks the request, tests the image on amd64 and arm64, pushes it to `ghcr.io/tian-mc/lyvune` as one tag, tests the pushed image again | **used for `v0.1.0-alpha.1` to `v0.1.0-alpha.5`**; it appears in the Actions tab once its file is on `master` |
 
 Pushing a branch, with or without commits that touch the files above, starts no workflow: the triggers are the ones in
 the table.
