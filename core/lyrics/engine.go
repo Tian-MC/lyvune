@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"hash/fnv"
 	"io/fs"
+	"math"
 	"path/filepath"
 	"slices"
 	"sort"
@@ -198,7 +199,8 @@ func (l *lyricsService) searchRecording(ctx context.Context, rec Recording, prov
 			}
 			out.Message = providers[i].Info().Reason
 		case errors.As(r.err, &rl):
-			out.Status, out.RetryAfter = OutcomeRateLimited, int(rl.RetryAfter.Seconds())
+			// Rounded up: a wait under a second is still a wait, not none
+			out.Status, out.RetryAfter = OutcomeRateLimited, max(1, int(math.Ceil(rl.RetryAfter.Seconds())))
 			out.Message = rl.Error()
 		case errors.Is(r.err, ErrProviderDisabled):
 			out.Status, out.Message = OutcomeDisabled, "Not configured or turned off"
@@ -687,14 +689,18 @@ func automaticCandidates(cands []Candidate, s Settings) []Candidate {
 	return out
 }
 
-func rateLimitOf(outcomes []ProviderOutcome) (int, bool) {
+// rateLimitOf is the longest wait the providers that asked to slow down want,
+// and which ones they are.
+func rateLimitOf(outcomes []ProviderOutcome) (int, []string, bool) {
 	retry := 0
+	var who []string
 	for _, o := range outcomes {
-		if o.Status == OutcomeRateLimited && o.RetryAfter > retry {
-			retry = o.RetryAfter
+		if o.Status == OutcomeRateLimited {
+			retry = max(retry, o.RetryAfter, 1)
+			who = append(who, o.ID)
 		}
 	}
-	return retry, retry > 0
+	return retry, who, len(who) > 0
 }
 
 func anyFailed(outcomes []ProviderOutcome) bool {
@@ -720,8 +726,8 @@ func (l *lyricsService) retrieveMissing(ctx context.Context, mf *model.MediaFile
 	}
 	cands, outcomes := l.searchAll(ctx, mf, providers)
 	cands = automaticCandidates(cands, s)
-	if retry, limited := rateLimitOf(outcomes); limited {
-		return ResolveResult{Result: ResolveUnavailable, RetryAfter: retry, Message: "A provider asked to slow down"}, nil
+	if retry, who, limited := rateLimitOf(outcomes); limited {
+		return ResolveResult{Result: ResolveUnavailable, RetryAfter: retry, LimitedBy: who, Message: "A provider asked to slow down"}, nil
 	}
 	pol := l.policy(s)
 	best, ok := Choose(usable(cands, opts), pol)
@@ -881,8 +887,8 @@ func (l *lyricsService) upgrade(ctx context.Context, mf *model.MediaFile, s Sett
 	}
 	cands, outcomes := l.searchAll(ctx, mf, providers)
 	cands = automaticCandidates(cands, s)
-	if retry, limited := rateLimitOf(outcomes); limited {
-		return ResolveResult{Result: ResolveUnavailable, RetryAfter: retry, Message: "A provider asked to slow down"}, nil
+	if retry, who, limited := rateLimitOf(outcomes); limited {
+		return ResolveResult{Result: ResolveUnavailable, RetryAfter: retry, LimitedBy: who, Message: "A provider asked to slow down"}, nil
 	}
 	var best *Candidate
 	for _, c := range Eligible(usable(cands, opts), l.policy(s)) {

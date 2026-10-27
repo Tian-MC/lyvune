@@ -308,7 +308,15 @@ Fuzz targets (`go test -fuzz`) exist for QRC, KRC, YRC, RichSync and the KRC con
 
 ### Bulk jobs
 
-One job runs at a time and works on **4 tracks at once** (`bulkWorkers` in `bulk.go`). Providers still see requests no faster than their own pacing (a request every 0.3 to 1 s, depending on the provider), so the workers overlap the waiting, not the load. A provider asking to slow down, or a cancel, stops the job: tracks already running finish, nothing new starts, and the finished ones are skipped when it is run again. Inside a job the per-search timeout is 90 s instead of 20 s, because the workers' requests to one provider queue on its pacing.
+One job runs at a time and works on **4 tracks at once** (`bulkWorkers` in `bulk.go`). Providers still see requests no faster than their own pacing (a request every 0.3 to 1 s, depending on the provider), so the workers overlap the waiting, not the load. A cancel stops the job: tracks already running finish, nothing new starts, and the finished ones are skipped when it is run again. Inside a job the per-search timeout is 90 s instead of 20 s, because the workers' requests to one provider queue on its pacing.
+
+**When a provider asks to slow down** (HTTP 429, with or without `Retry-After`), the job does not stop:
+
+- No new track starts until the wait the provider asked for is over, and at least 5 s, doubling for every refusal in a row up to 10 minutes (`bulkBackoffBase`, `bulkMaxWait`). Tracks already running finish.
+- The track the provider refused is not counted: nothing was saved or remembered for it (a resolve with a rate-limited provider never saves half an answer), and it goes back to the end of the queue. A track refused 4 times is counted as failed.
+- The status says which provider the job waits for and when new tracks start again (`waitingFor`, `resumeAt`), and counts the refusals (`rateLimited`) and the tracks tried again (`retried`). The settings page shows it with the provider's name.
+- After 8 refusals in a row the provider is not just busy: the job stops and says which provider kept refusing. What it did is kept, and running it again continues where it stopped.
+- The provider itself is asked more slowly after a refusal: its spacing doubles (up to 8 times the usual one) and comes back by a quarter of the usual spacing with every request sent after the cool-down. A wait under a second is reported as a second, never as none.
 
 ### Results that are only credits
 

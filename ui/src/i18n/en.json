@@ -859,16 +859,18 @@
         "cancelled": "Cancelled. Run it again to continue: tracks that are done are skipped.",
         "done": "Finished.",
         "failed": "The job could not be started.",
-        "hint": "One job runs at a time and works on 4 tracks at once, without asking any provider faster than it allows. It can be cancelled. Tracks that are already done are skipped, so running it again continues where it stopped.",
+        "hint": "One job runs at a time and works on 4 tracks at once, without asking any provider faster than it allows. When a provider asks to slow down, the job waits for it and goes on by itself. It can be cancelled. Tracks that are already done are skipped, so running it again continues where it stopped.",
         "missing": "Download missing lyrics",
         "progress": "Progress",
+        "rateLimited": "Providers asked to slow down %{count} times; %{retried} tracks were tried again after waiting.",
         "recheck": "Re-check everything",
         "replaceManual": "Upgrade lyrics I added myself",
         "replaceManualConfirm": "I understand",
         "replaceManualHint": "Supersede .lrc and embedded lyrics with better downloaded ones, across the library. Your files are kept, and locked tracks are skipped.",
         "summary": "%{done} of %{total} tracks (%{pct}%) · %{found} found · %{upgraded} upgraded · %{missing} not found · %{unsaved} found but not saveable · %{failed} failed",
         "title": "Whole library",
-        "upgrade": "Look for better lyrics"
+        "upgrade": "Look for better lyrics",
+        "waiting": "%{provider} asked to slow down. New tracks start again at %{time}; the tracks it refused are tried again, nothing is lost."
       },
       "error": {
         "empty": "There are no usable lyrics in that.",

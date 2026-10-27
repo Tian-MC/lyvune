@@ -106,16 +106,26 @@ func (e *RateLimitedError) Error() string {
 const maxResponseBytes = 4 << 20
 
 // pacer spaces requests to one provider and honours its Retry-After.
+//
+// A provider that asked to slow down is also asked more slowly afterwards: each
+// refusal doubles the spacing (up to pacerMaxSlowdown times the usual one), and
+// every request sent after the cool-down brings it a quarter of the usual
+// spacing back, so a service that throttles once is not hit at full speed
+// straight away.
 type pacer struct {
 	mu       sync.Mutex
+	base     time.Duration
 	interval time.Duration
 	next     time.Time
 	until    time.Time
 	name     string
 }
 
+// pacerMaxSlowdown bounds how much slower a provider is asked after refusals.
+const pacerMaxSlowdown = 8
+
 func newPacer(name string, interval time.Duration) *pacer {
-	return &pacer{name: name, interval: interval}
+	return &pacer{name: name, base: interval, interval: interval}
 }
 
 // wait blocks until a request may be sent. It fails fast during a cool-down
@@ -133,6 +143,9 @@ func (p *pacer) wait(ctx context.Context) error {
 		at = now
 	}
 	p.next = at.Add(p.interval)
+	if p.interval > p.base {
+		p.interval = max(p.base, p.interval-p.base/4)
+	}
 	p.mu.Unlock()
 
 	if d := at.Sub(now); d > 0 {
@@ -147,6 +160,7 @@ func (p *pacer) coolDown(d time.Duration) {
 	if until := time.Now().Add(d); until.After(p.until) {
 		p.until = until
 	}
+	p.interval = min(max(p.interval*2, p.base), p.base*pacerMaxSlowdown)
 }
 
 func sleep(ctx context.Context, d time.Duration) error {

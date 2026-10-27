@@ -4,6 +4,7 @@ import { useT } from '../i18n/useT'
 import { Button } from '../design/Button'
 import { ProviderCard } from './ProviderCard'
 import { errorCode, lyricsApi } from '../lyrics/manageApi'
+import { providerName } from '../lyrics/lyricsSource'
 import styles from './LyricsSettings.module.css'
 
 const POLL_MS = 1500
@@ -92,6 +93,29 @@ const Progress = ({ job, onCancel }) => {
           },
         )}
       </p>
+      {job.state === 'running' && job.waitingFor && (
+        <p className={styles.hint} data-testid="bulk-waiting">
+          {t(
+            'ui.lyrics.bulk.waiting',
+            '%{provider} asked to slow down. New tracks start again at %{time}; the tracks it refused are tried again, nothing is lost.',
+            {
+              provider: job.waitingFor.split(', ').map(providerName).join(', '),
+              time: job.resumeAt
+                ? new Date(job.resumeAt).toLocaleTimeString()
+                : '…',
+            },
+          )}
+        </p>
+      )}
+      {job.rateLimited > 0 && (
+        <p className={styles.hint}>
+          {t(
+            'ui.lyrics.bulk.rateLimited',
+            'Providers asked to slow down %{count} times; %{retried} tracks were tried again after waiting.',
+            { count: job.rateLimited, retried: job.retried ?? 0 },
+          )}
+        </p>
+      )}
       {job.message && <p className={styles.hint}>{job.message}</p>}
       {job.state === 'running' ? (
         <Button size="sm" onClick={onCancel}>
@@ -367,7 +391,7 @@ export const LyricsSettings = () => {
       <p className={styles.hint}>
         {t(
           'ui.lyrics.bulk.hint',
-          'One job runs at a time and works on 4 tracks at once, without asking any provider faster than it allows. It can be cancelled. Tracks that are already done are skipped, so running it again continues where it stopped.',
+          'One job runs at a time and works on 4 tracks at once, without asking any provider faster than it allows. When a provider asks to slow down, the job waits for it and goes on by itself. It can be cancelled. Tracks that are already done are skipped, so running it again continues where it stopped.',
         )}
       </p>
       <div className={styles.actions}>

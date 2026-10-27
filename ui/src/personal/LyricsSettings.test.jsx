@@ -652,6 +652,34 @@ describe('<LyricsSettings />', () => {
       expect(screen.getByText('Finished.')).toBeInTheDocument()
     })
 
+    it('says which provider the job waits for, and that it goes on by itself', async () => {
+      api.startBulk.mockResolvedValue(
+        job({
+          waitingFor: 'kugou, qq',
+          resumeAt: '2026-10-27T12:03:05Z',
+          rateLimited: 2,
+          retried: 2,
+        }),
+      )
+      api.bulk.mockResolvedValue(
+        job({ waitingFor: 'kugou', resumeAt: '2026-10-27T12:03:05Z' }),
+      )
+      await load()
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Download missing lyrics' }),
+      )
+      const waiting = await screen.findByTestId('bulk-waiting')
+      expect(waiting).toHaveTextContent(
+        'KuGou Music, QQ Music asked to slow down',
+      )
+      expect(waiting).toHaveTextContent('nothing is lost')
+      expect(
+        screen.getByText(
+          'Providers asked to slow down 2 times; 2 tracks were tried again after waiting.',
+        ),
+      ).toBeInTheDocument()
+    })
+
     it('can be cancelled, and explains it can be continued', async () => {
       api.startBulk.mockResolvedValue(job())
       api.cancelBulk.mockResolvedValue()

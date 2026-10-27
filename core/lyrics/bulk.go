@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"slices"
+	"strings"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	. "github.com/Masterminds/squirrel"
@@ -115,7 +115,65 @@ const bulkWorkers = 4
 // can legitimately take longer than a person would wait.
 const bulkSearchTimeout = 90 * time.Second
 
+// When a provider asks a job to slow down, no new track starts until the wait
+// it asked for is over, and the track it refused goes back in the queue: a
+// rate limit costs time, never a track. Limits in a row wait longer and longer,
+// from bulkBackoffBase up to bulkMaxWait; after bulkMaxLimits limits in a row,
+// the provider is not merely busy and the job stops, keeping what it did. A
+// track refused bulkTrackAttempts times is counted as failed.
+var (
+	bulkBackoffBase = 5 * time.Second
+	bulkMaxWait     = 10 * time.Minute
+)
+
+const (
+	bulkMaxLimits     = 8
+	bulkTrackAttempts = 4
+)
+
 type bulkCtxKey struct{}
+
+// bulkPace is the waiting of a job after providers asked it to slow down.
+type bulkPace struct {
+	mu      sync.Mutex
+	until   time.Time
+	who     string
+	inARow  int
+	stopped string
+}
+
+// limited records a refusal and returns how long new tracks wait.
+func (p *bulkPace) limited(who []string, retryAfter time.Duration, now time.Time) (time.Time, string, bool) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.inARow++
+	name := strings.Join(who, ", ")
+	if p.inARow > bulkMaxLimits {
+		if p.stopped == "" {
+			p.stopped = name
+		}
+		return p.until, p.who, true
+	}
+	wait := min(max(retryAfter, bulkBackoffBase<<(p.inARow-1)), bulkMaxWait)
+	if until := now.Add(wait); until.After(p.until) {
+		p.until, p.who = until, name
+	}
+	return p.until, p.who, false
+}
+
+// answered notes a track that no provider refused: the next limit starts the
+// backoff again.
+func (p *bulkPace) answered() {
+	p.mu.Lock()
+	p.inARow = 0
+	p.mu.Unlock()
+}
+
+func (p *bulkPace) state() (time.Time, string, string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	return p.until, p.who, p.stopped
+}
 
 func (l *lyricsService) runBulk(ctx context.Context, job *bulkJob, action string, files model.MediaFiles) {
 	defer job.cancel()
@@ -123,27 +181,103 @@ func (l *lyricsService) runBulk(ctx context.Context, job *bulkJob, action string
 	opts := ResolveOptions{Explicit: true, Recheck: action != BulkMissing, ReplaceManual: action == BulkReplaceManual, NoDisplay: true}
 
 	var (
-		stop    atomic.Bool
-		limitMu sync.Mutex
-		limited string
+		pace     bulkPace
+		queueMu  sync.Mutex
+		queue    = make([]int, len(files))
+		attempts = make([]int, len(files))
+		running  int
+		changed  = sync.NewCond(&queueMu)
 	)
-	// process handles one track and records its outcome. A provider asking to
-	// slow down stops the whole job: tracks already running finish, no new one
-	// starts.
-	process := func(mf *model.MediaFile) {
+	for i := range queue {
+		queue[i] = i
+	}
+	stopWake := context.AfterFunc(ctx, func() {
+		queueMu.Lock()
+		changed.Broadcast()
+		queueMu.Unlock()
+	})
+	defer stopWake()
+	// take returns the next track, waiting while others are still running and
+	// may put theirs back; false when there is nothing left to do
+	take := func() (int, bool) {
+		queueMu.Lock()
+		defer queueMu.Unlock()
+		for len(queue) == 0 && running > 0 && ctx.Err() == nil {
+			changed.Wait()
+		}
+		if len(queue) == 0 || ctx.Err() != nil {
+			return 0, false
+		}
+		i := queue[0]
+		queue = queue[1:]
+		running++
+		return i, true
+	}
+	finish := func(requeue int) {
+		queueMu.Lock()
+		running--
+		if requeue >= 0 {
+			queue = append(queue, requeue)
+		}
+		changed.Broadcast()
+		queueMu.Unlock()
+	}
+	// waitTurn holds a worker while the job waits for a provider
+	waitTurn := func() bool {
+		for {
+			until, _, stopped := pace.state()
+			if stopped != "" || ctx.Err() != nil {
+				return false
+			}
+			d := time.Until(until)
+			if d <= 0 {
+				job.update(func(s *BulkStatus) { s.WaitingFor, s.ResumeAt = "", nil })
+				return true
+			}
+			if sleep(ctx, d) != nil {
+				return false
+			}
+		}
+	}
+
+	// process handles one track. It returns true when a provider refused it
+	// and it is to be tried again.
+	process := func(i int) bool {
+		mf := &files[i]
 		cur, err := l.resolveCurrent(ctx, []*model.MediaFile{mf})
 		hasLyrics := err == nil && cur.list != nil
 		// "missing" fills gaps only; the upgrade actions look at what exists
 		if (action == BulkMissing && hasLyrics) || ((action == BulkUpgrade || action == BulkReplaceManual) && !hasLyrics) {
 			job.update(func(s *BulkStatus) { s.Done++; s.Kept++ })
-			return
+			return false
 		}
 		res, err := l.resolve(ctx, mf, opts)
 		if err != nil {
 			log.Warn(ctx, "Bulk lyrics failed for a track", "id", mf.ID, err)
 			job.update(func(s *BulkStatus) { s.Done++; s.Failed++ })
-			return
+			return false
 		}
+		if res.RetryAfter > 0 && res.Result == ResolveUnavailable && ctx.Err() == nil {
+			// Nothing was saved or remembered for it: it is simply not done yet
+			until, who, stop := pace.limited(res.LimitedBy, time.Duration(res.RetryAfter)*time.Second, time.Now())
+			attempts[i]++
+			again := !stop && attempts[i] < bulkTrackAttempts
+			job.update(func(s *BulkStatus) {
+				s.RateLimited++
+				if again {
+					s.Retried++
+					s.WaitingFor = who
+					t := until.UTC()
+					s.ResumeAt = &t
+				} else if !stop {
+					s.Done++
+					s.Failed++
+				}
+			})
+			log.Info(ctx, "Bulk lyrics: a provider asked to slow down", "provider", who, "until", until, "track", mf.ID, "attempt", attempts[i], "retrying", again)
+			return again
+		}
+		pace.answered()
 		job.update(func(s *BulkStatus) {
 			s.Done++
 			switch res.Result {
@@ -161,46 +295,44 @@ func (l *lyricsService) runBulk(ctx context.Context, job *bulkJob, action string
 				s.Kept++
 			}
 		})
-		if res.RetryAfter > 0 {
-			limitMu.Lock()
-			if limited == "" {
-				limited = fmt.Sprintf("A provider asked to slow down. Run it again in about %s; finished tracks are skipped.",
-					(time.Duration(res.RetryAfter) * time.Second).Round(time.Second))
-			}
-			limitMu.Unlock()
-			stop.Store(true)
-		}
+		return false
 	}
 
-	next := make(chan int)
 	var wg sync.WaitGroup
 	for range min(bulkWorkers, len(files)) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			for i := range next {
-				if ctx.Err() != nil || stop.Load() {
-					continue // drain; nothing more is started
+			for {
+				i, ok := take()
+				if !ok {
+					return
 				}
-				process(&files[i])
+				if !waitTurn() {
+					finish(-1)
+					return
+				}
+				if process(i) {
+					finish(i)
+				} else {
+					finish(-1)
+				}
 			}
 		}()
 	}
-	for i := range files {
-		if ctx.Err() != nil || stop.Load() {
-			break
-		}
-		next <- i
-	}
-	close(next)
 	wg.Wait()
 
-	state, msg := "done", limited
-	if ctx.Err() != nil {
+	_, _, stopped := pace.state()
+	state, msg := "done", ""
+	switch {
+	case ctx.Err() != nil:
 		state, msg = "cancelled", "Cancelled"
+	case stopped != "":
+		msg = fmt.Sprintf("Stopped: %s kept asking to slow down. Run it again later; finished tracks are skipped.", stopped)
 	}
 	job.update(func(s *BulkStatus) {
 		s.State, s.Message, s.Finished = state, msg, l.now().UTC()
+		s.WaitingFor, s.ResumeAt = "", nil
 	})
 }
 

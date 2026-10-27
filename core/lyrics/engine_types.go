@@ -277,6 +277,8 @@ type ResolveResult struct {
 	Message string      `json:"message,omitempty"`
 	// RetryAfter is set (in seconds) when a provider asked us to slow down.
 	RetryAfter int `json:"retryAfter,omitempty"`
+	// LimitedBy names the providers that asked to slow down.
+	LimitedBy []string `json:"limitedBy,omitempty"`
 	// Persisted is true when something was saved next to the audio. A result
 	// that was only shown has Applied set and Persisted false.
 	Persisted bool `json:"persisted"`
@@ -321,4 +323,12 @@ type BulkStatus struct {
 	Started  time.Time `json:"started"`
 	Finished time.Time `json:"finished,omitempty"`
 	Message  string    `json:"message,omitempty"`
+	// WaitingFor is the provider the job is waiting for, after it asked to slow
+	// down, and ResumeAt when new tracks start again. Both are empty otherwise.
+	WaitingFor string     `json:"waitingFor,omitempty"`
+	ResumeAt   *time.Time `json:"resumeAt,omitempty"`
+	// RateLimited counts the times a provider asked the job to slow down;
+	// Retried the tracks that were put back in the queue because of it.
+	RateLimited int `json:"rateLimited,omitempty"`
+	Retried     int `json:"retried,omitempty"`
 }
