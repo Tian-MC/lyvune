@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 	"net/url"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -88,8 +89,7 @@ type kugouLyricEntry struct {
 }
 
 func (k *kugou) Search(ctx context.Context, rec Recording) ([]Candidate, error) {
-	title, _ := splitTitle(rec.Title)
-	title, artist := strings.TrimSpace(title), primaryArtist(rec.Artist)
+	title, artist := searchTerms(rec)
 	if title == "" {
 		return nil, nil
 	}
@@ -99,14 +99,27 @@ func (k *kugou) Search(ctx context.Context, rec Recording) ([]Candidate, error) 
 			Lists []kugouSong `json:"lists"`
 		} `json:"data"`
 	}
-	q := url.Values{
-		"keyword": {strings.TrimSpace(title + " " + artist)}, "page": {"1"}, "pagesize": {"10"},
-		"filter": {"0"}, "platform": {"WebFilter"},
+	// KuGou's search comes back empty now and then for a query it answers a
+	// moment later, and some forms of the same query fail where others work
+	// ("Yellow Coldplay" empty, "Yellow" not). An empty answer is asked again
+	// in another form, at most twice, after a pause.
+	var keywords []string
+	for _, kw := range []string{title + " " + artist, title, artist + " " + title} {
+		if kw = strings.TrimSpace(kw); kw != "" && !slices.Contains(keywords, kw) {
+			keywords = append(keywords, kw)
+		}
 	}
-	endpoint := k.searchURL + "/song_search_v2?" + q.Encode()
-	for attempt := 0; attempt < 2; attempt++ {
+	for attempt, kw := range keywords {
+		q := url.Values{
+			"keyword": {kw}, "page": {"1"}, "pagesize": {"10"}, "filter": {"0"}, "platform": {"WebFilter"},
+		}
+		if attempt > 0 {
+			if err := sleep(ctx, k.emptyRetry); err != nil {
+				return nil, err
+			}
+		}
 		res.Data.Lists = nil
-		if err := k.http.getJSON(ctx, endpoint, &res); err != nil {
+		if err := k.http.getJSON(ctx, k.searchURL+"/song_search_v2?"+q.Encode(), &res); err != nil {
 			if errors.Is(err, errNotFound) {
 				return nil, nil
 			}
@@ -115,11 +128,8 @@ func (k *kugou) Search(ctx context.Context, rec Recording) ([]Candidate, error) 
 		if res.Status != 1 {
 			return nil, fmt.Errorf("%w: KuGou search answered status %d", ErrProviderUnavailable, res.Status)
 		}
-		if len(res.Data.Lists) > 0 || attempt == 1 {
+		if len(res.Data.Lists) > 0 {
 			break
-		}
-		if err := sleep(ctx, k.emptyRetry); err != nil {
-			return nil, err
 		}
 	}
 
