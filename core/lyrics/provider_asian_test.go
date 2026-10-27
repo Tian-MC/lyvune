@@ -195,6 +195,9 @@ var _ = Describe("KuGou provider", func() {
 
 	type fake struct {
 		emptyFirst bool
+		// answerOnly makes the search answer only this keyword, empty for the others
+		answerOnly string
+		keywords   []string
 		songs      []map[string]any
 		entries    []map[string]any
 		krc        string // KRC text; "" means the KRC download fails
@@ -207,7 +210,8 @@ var _ = Describe("KuGou provider", func() {
 			switch r.URL.Path {
 			case "/song_search_v2":
 				n := f.searches.Add(1)
-				if f.emptyFirst && n == 1 {
+				f.keywords = append(f.keywords, r.URL.Query().Get("keyword"))
+				if (f.emptyFirst && n == 1) || (f.answerOnly != "" && r.URL.Query().Get("keyword") != f.answerOnly) {
 					writeJSON(w, map[string]any{"status": 1, "data": map[string]any{"total": 0, "lists": []any{}}})
 					return
 				}
@@ -343,13 +347,22 @@ var _ = Describe("KuGou provider", func() {
 		Expect(f.searches.Load()).To(Equal(int32(2)))
 	})
 
+	It("asks again in another form when one form of the query comes back empty", func() {
+		f := newFake()
+		f.answerOnly = "こんにちは"
+		got, err := serve(f, true).Search(context.Background(), rec)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(got).To(HaveLen(1))
+		Expect(f.keywords).To(Equal([]string{"こんにちは テスト歌手", "こんにちは"}))
+	})
+
 	It("does not keep asking when there really is nothing", func() {
 		f := newFake()
 		f.songs = nil
 		got, err := serve(f, true).Search(context.Background(), rec)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(got).To(BeEmpty())
-		Expect(f.searches.Load()).To(Equal(int32(2)))
+		Expect(f.searches.Load()).To(Equal(int32(3)), "the query, the title alone, the artist first: then it stops")
 	})
 
 	It("rejects a different recording even when it has good karaoke", func() {

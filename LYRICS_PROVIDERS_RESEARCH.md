@@ -213,3 +213,41 @@ A working endpoint is not an authorized one, and neither is permission to keep t
 Storage is configurable per provider. A provider's *rights status* (granted, unclear, restricted) is kept apart from the administrator's *preference* to save and from the *outcome* of the last save; a preference is never described as a permission. No provider's terms on keeping lyrics could be verified, so every built-in provider is *unclear*; LRCLIB is saved by default, the others only when the administrator turns them on. A recorded restriction is honoured and not circumvented, and a save is reported only after the sidecar was read back. Details are in `LYRICS_ENGINE.md`, section *Storage policy*.
 
 Found while validating it: the application builds one lyrics service per router, so state held in memory (what is shown, provider health) has to be shared between them or the player's router never sees what the administrator's router chose. Unit tests of one service cannot show this; the shared state is covered by a test with two services and was confirmed against a running server.
+
+# Coverage measured on real recordings (27 Oct 2026)
+
+`TestLiveCoverage` (`core/lyrics/coverage_live_test.go`, opt-in, tag `live`) asks LRCLIB, NetEase, KuGou and QQ Music for the 50 recordings of `core/lyrics/testdata/coverage/corpus.json` (10 groups: English, Japanese, Chinese, Korean, Italian, Spanish, French, German, Portuguese, metal). Their title, artist, album and length come from Deezer's public catalogue, not from a lyrics service, so the providers are measured on tags they did not write. Only **verified** results count (score ≥ 0.85 and length within 5 s). "Chosen" is what automatic retrieval takes from all of them.
+
+| | any | synced or better | **word-timed** |
+| --- | --- | --- | --- |
+| Before (master `7185cccf`, alpha.4) | 49/50 (98%) | 49/50 (98%) | **41/50 (82%)** |
+| After, final run (this change) | 49/50 (98%) | 49/50 (98%) | **46/50 (92%)** |
+
+Per provider, word-timed, before → after: KuGou 35 → 43, NetEase 26 → 29, QQ 24 → 25, LRCLIB 1 → 1. An intermediate run without the "words added" rule (below) reached 48/50; the two tracks it found and the final run did not were both KuGou answering nothing that time, checked track by track in the reports, not the rule.
+
+## What was missed, and why
+
+| Track (as tagged) | Cause | Fix |
+| --- | --- | --- |
+| Get Lucky (Radio Edit - feat. Pharrell Williams and Nile Rodgers) | the featuring credit was cut with the closing bracket ("Get Lucky (Radio Edit -"), score 0.82 for KuGou and NetEase karaoke | a credit inside brackets is left to the bracket rules |
+| 她說 – 林俊傑, 婚禮的祝福 – 陳奕迅 | traditional characters against the simplified ones of Chinese services; KuGou finds nothing for a traditional query | Han characters compared in simplified form (Unicode `kSimplifiedVariant`); keyword searches sent in simplified Chinese unless the text has kana |
+| 任性（电视剧《难哄》主题曲） – 五月天 | the note "TV series theme" was part of the title; KuGou finds nothing for the query with it | bare title matches at 0.9 when the lengths agree within 2 s; keyword searches use the bare title |
+| MALAMENTE – ROSALÍA | KuGou and NetEase name it "MALAMENTE (Cap.1: Augurio)" | same rule |
+| Dynamite – BTS | Chinese services credit "BTS (防弹少年团)"; KuGou empty for one form of the query | names in brackets are aliases; empty KuGou answers asked again in another form |
+| Hello, Yellow, Anti-Hero, drivers license… (KuGou only) | KuGou's search came back empty for "Hello Adele" and answered "Hello" | the title alone, then the artist first, only after an empty answer (at most 3 requests instead of 2) |
+
+Found on the way, an accuracy problem: NetEase listed "Despacito 缓缓" (a Chinese cover credited to Luis Fonsi and 林俊杰) as a **verified** word-timed result for *Despacito*, at 0.91. A title with words added is now capped at 0.6 (listed, choosable by hand, never automatic); articles do not count.
+
+## What is still not found
+
+- **A title in another script.** "Gurenge" (Latin letters) is "紅蓮華" on KuGou, QQ and NetEase. Matching it on artist and length alone could give another song of the same artist; it is not done. LRCLIB has it line-synced.
+- **Another live performance.** "Pretender (OFFICIAL HIGE DANDISM LIVE at STADIUM 2025)" got KuGou's word-timed "Pretender (ONLINE LIVE 2020)" in two runs: both are live, 5 s apart, so the metadata cannot tell them apart. The final run had nothing from KuGou.
+- **A cover by a small artist** (うっせぇわ by Adora Bell): no service has it.
+- **Run-to-run variance.** KuGou's search comes back empty at random for some queries (a query empty in one run was answered in the next), and LRCLIB answered 503 once. A single run is a sample; KuGou varied by up to 2 tracks between runs with the same code.
+- **QQ's community cache (Better Lyrics)** reports no length; a QRC is only promoted when its line times agree with a verified QQ result. For *La solitudine* the QRC ran longer than the track and was correctly refused.
+
+## Musixmatch, official API
+
+`provider_musixmatch.go` uses only documented methods with the administrator's key: `matcher.track.get`, then `track.richsync.get` (word timing) when the track says `has_richsync`, `track.subtitle.get`, `track.lyrics.get`. A call the key's plan refuses (403) is skipped, not treated as a broken key. Third-party documentation of the API says RichSync needs a commercial plan; Musixmatch's own developer pages could not be fetched from here, and no key was available, so **nothing about it was verified against the live service** and the provider does not advertise word timing. Its rights entry stays "preview only" until the administrator records otherwise.
+
+No keyless route is used: the known ones take the token of Musixmatch's desktop application, and Apple Music lyrics through third-party catalogues come from a service that answers server clients with a bot challenge. A new source with documented access can be added as an `OnlineProvider` (see `provider.go`), with its entry in `rights.go`; the coverage harness then measures it like the others.

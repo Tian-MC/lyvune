@@ -14,9 +14,9 @@ import (
 //	{"t":0,"c":[{"tx":"credit: "},{"tx":"name"}]}          (metadata line)
 //	[lineStart,lineDuration](wordStart,wordDuration,0)text(...)text
 //
-// All times are absolute milliseconds. The online NetEase adapter does not
-// request YRC (no authorized plain endpoint returns it), so this parser serves
-// files a user supplies themselves; see LYRICS_PROVIDERS_RESEARCH.md.
+// All times are absolute milliseconds. NetEase's lyric endpoint returns YRC
+// for some songs (yv=-1), and users can import .yrc files themselves; see
+// LYRICS_PROVIDERS_RESEARCH.md.
 
 // ErrNotYRC means the text holds no YRC lines.
 var ErrNotYRC = errors.New("not a YRC file")

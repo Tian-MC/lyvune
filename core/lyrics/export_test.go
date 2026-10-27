@@ -60,3 +60,12 @@ func CueCountForTest(l model.LyricList) int { return cueCount(l) }
 func AutomaticCandidatesForTest(cands []Candidate, includeTranslations bool) []Candidate {
 	return automaticCandidates(cands, Settings{IncludeProviderTranslations: includeTranslations})
 }
+
+// SearchTermsForTest exposes what keyword searches are asked for.
+func SearchTermsForTest(rec Recording) (string, string) { return searchTerms(rec) }
+
+// SimplifiedHanForTest exposes the traditional to simplified folding.
+func SimplifiedHanForTest(s string) string { return simplifiedHan(s) }
+
+// HanTableSizeForTest is the number of characters the folding table maps.
+func HanTableSizeForTest() int { return len(hanTable()) }
