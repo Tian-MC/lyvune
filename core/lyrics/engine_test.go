@@ -891,6 +891,110 @@ var _ = Describe("Lyrics engine", func() {
 		})
 	})
 
+	Describe("HTML character references in provider lyrics", func() {
+		escapedKaraoke := func() model.LyricList {
+			line := model.Line{Start: i64(1000), Value: "senza eta&apos; \u65e5\u672c poem&apos;s end"}
+			for _, w := range []struct {
+				text string
+				at   int64
+			}{{"senza ", 1000}, {"eta&apos; ", 1500}, {"\u65e5\u672c ", 2000}, {"poem&apos;s ", 2500}, {"end", 3000}} {
+				start := len(line.Cue)
+				_ = start
+				from := 0
+				for _, c := range line.Cue {
+					from = c.ByteEnd + 1
+				}
+				line.Cue = append(line.Cue, model.Cue{Start: i64(w.at), End: i64(w.at + 400), Value: w.text, ByteStart: from, ByteEnd: from + len(w.text) - 1})
+			}
+			line.Cue[len(line.Cue)-1].ByteEnd = len(line.Value) - 1
+			line.Cue[len(line.Cue)-1].Value = "end"
+			return model.LyricList{
+				{Kind: model.LyricKindMain, Lang: "xxx", Synced: true, Line: []model.Line{line}},
+				{Kind: model.LyricKindPronunciation, Lang: "xxx", Synced: true, Line: []model.Line{{Start: i64(1000), Value: "e&apos;ta"}}},
+				{Kind: model.LyricKindTranslation, Lang: "xxx", Synced: true, Line: []model.Line{{Start: i64(1000), Value: "l&apos;et\u00e0"}}},
+			}
+		}
+		consistent := func(l model.Line) {
+			for _, c := range l.Cue {
+				Expect(l.Value[c.ByteStart : c.ByteEnd+1]).To(Equal(c.Value))
+			}
+		}
+		// saved writes a sidecar the way an earlier version did (legacy: no mark that the text was
+		// decoded), or the way the current one does
+		saved := func(provider string, list model.LyricList, legacy bool) {
+			env := lyrics.NewEnvelope(remote(provider, "earlier", list), lyrics.OriginManaged, time.Now())
+			env.TextDecoded = !legacy
+			_, err := lyrics.NewStore(hist, 10).Save(lyrics.Target{Root: mf.LibraryPath, AudioRel: mf.Path}, env)
+			Expect(err).ToNot(HaveOccurred())
+			newService()
+		}
+
+		It("restores the characters of an existing sidecar without rewriting it, keeping the policy on translations", func() {
+			saved("kugou", escapedKaraoke(), true)
+			before, err := os.ReadFile(envFile())
+			Expect(err).ToNot(HaveOccurred())
+			Expect(string(before)).ToNot(ContainSubstring("textDecoded"))
+
+			got := get()
+			Expect(got).To(HaveLen(2), "translations are still left out by default")
+			main := got[0].Line[0]
+			Expect(main.Value).To(Equal("senza eta' \u65e5\u672c poem's end"))
+			consistent(main)
+			Expect(main.Cue).To(HaveLen(5))
+			Expect(main.Cue[1].Value).To(Equal("eta' "))
+			Expect(main.Cue[3].Value).To(Equal("poem's "))
+			Expect(*main.Cue[3].Start).To(Equal(int64(2500)))
+			Expect(got[1].Line[0].Value).To(Equal("e'ta"))
+
+			setSettings(func(s *lyrics.Settings) { s.ExposeTranslationsToClients = true })
+			Expect(get()[2].Line[0].Value).To(Equal("l'et\u00e0"))
+
+			Expect(get()).To(Equal(get()), "reading again gives the same, decoded once")
+			after, err := os.ReadFile(envFile())
+			Expect(err).ToNot(HaveOccurred())
+			Expect(after).To(Equal(before), "the saved file is not changed")
+			Expect(string(after)).To(ContainSubstring(`eta\u0026apos;`), "the file still has what the provider sent")
+		})
+
+		It("keeps the offset working on the repaired lyrics", func() {
+			saved("kugou", escapedKaraoke(), true)
+			Expect(engine.SetOffset(ctx, mf, 250)).To(Succeed())
+			main := get()[0].Line[0]
+			Expect(main.Value).To(ContainSubstring("poem's"))
+			consistent(main)
+			Expect(*get()[0].Offset).To(Equal(int64(250)))
+			Expect(*main.Cue[1].Start).To(Equal(int64(1500)), "times are not changed; the offset is sent beside them, as before")
+		})
+
+		It("decodes only once: a sidecar that says its text is decoded is shown as it is", func() {
+			saved("kugou", plainOf("it&amp;apos;s a literal &apos;"), true)
+			Expect(firstLine(get())).To(Equal("it&apos;s a literal '"), "an earlier version's sidecar: one pass, what comes out is not decoded again")
+			saved("kugou", plainOf("it&amp;apos;s a literal &apos;"), false)
+			Expect(firstLine(get())).To(Equal("it&amp;apos;s a literal &apos;"), "this version's sidecar is already decoded: left alone")
+		})
+
+		It("does not touch lyrics from other providers, imports or local files", func() {
+			saved("lrclib", plainOf("rock &amp; roll &apos;n&apos; roll"), true)
+			Expect(firstLine(get())).To(Equal("rock &amp; roll &apos;n&apos; roll"))
+			saved("lrclib", plainOf("rock &amp; roll &apos;n&apos; roll"), false)
+			Expect(firstLine(get())).To(Equal("rock &amp; roll &apos;n&apos; roll"))
+
+			Expect(os.Remove(envFile())).To(Succeed())
+			newService()
+			_, err := engine.Import(ctx, mf, lyrics.ImportRequest{FileName: "mine.lrc", Content: []byte("[00:01.00]imported &quot;as is&quot;")})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(firstLine(get())).To(Equal("imported \"as is\""), "the LRC parser decodes, as it always did, before it works out any offset")
+		})
+
+		It("leaves lyrics of a listed provider without references byte for byte as they are", func() {
+			in := karaokeOf("plain caf\u00e9 \u65e5\u672c")
+			saved("kugou", in, true)
+			Expect(get()).To(Equal(in))
+			saved("kugou", in, false)
+			Expect(get()).To(Equal(in))
+		})
+	})
+
 	Describe("bulk operations", func() {
 		var files model.MediaFiles
 		var addTracks func(n int)

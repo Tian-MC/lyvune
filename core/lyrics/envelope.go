@@ -42,17 +42,21 @@ const (
 // lyrics model, so word timings, translations and pronunciation tracks survive
 // unchanged.
 type Envelope struct {
-	Format      string          `json:"format"`
-	Version     int             `json:"version"`
-	Origin      string          `json:"origin"`
-	Locked      bool            `json:"locked,omitempty"`
-	OffsetMs    int64           `json:"offsetMs,omitempty"`
-	Provider    string          `json:"provider,omitempty"`
-	ProviderID  string          `json:"providerId,omitempty"`
-	Quality     string          `json:"quality"`
-	Confidence  float64         `json:"confidence,omitempty"`
-	RetrievedAt time.Time       `json:"retrievedAt"`
-	Attribution string          `json:"attribution,omitempty"`
+	Format      string    `json:"format"`
+	Version     int       `json:"version"`
+	Origin      string    `json:"origin"`
+	Locked      bool      `json:"locked,omitempty"`
+	OffsetMs    int64     `json:"offsetMs,omitempty"`
+	Provider    string    `json:"provider,omitempty"`
+	ProviderID  string    `json:"providerId,omitempty"`
+	Quality     string    `json:"quality"`
+	Confidence  float64   `json:"confidence,omitempty"`
+	RetrievedAt time.Time `json:"retrievedAt"`
+	Attribution string    `json:"attribution,omitempty"`
+	// TextDecoded says the HTML character references of the text were decoded when
+	// the lyrics were parsed. A sidecar without it was written by an earlier
+	// version, which kept some providers' text escaped (see ForDisplay).
+	TextDecoded bool            `json:"textDecoded,omitempty"`
 	Recording   Meta            `json:"recording"`
 	Lyrics      model.LyricList `json:"lyrics"`
 }
@@ -73,6 +77,7 @@ func NewEnvelope(c Candidate, origin string, now time.Time) Envelope {
 		Confidence:  c.Match.Confidence,
 		RetrievedAt: now.UTC(),
 		Attribution: c.Attribution,
+		TextDecoded: true,
 		Recording:   c.Meta,
 		Lyrics:      c.Lyrics,
 	}
@@ -156,7 +161,16 @@ func (e Envelope) Marshal() ([]byte, error) {
 // added to any offset the lyrics already carry, so timing in the file is
 // never rewritten.
 func (e Envelope) List() model.LyricList {
-	return withOffset(e.Lyrics, e.OffsetMs)
+	return withOffset(e.Display(), e.OffsetMs)
+}
+
+// Display is the lyrics of the sidecar as they are shown: as saved, except that
+// the escaped text of an earlier version is decoded. The sidecar is not changed.
+func (e Envelope) Display() model.LyricList {
+	if e.TextDecoded {
+		return e.Lyrics
+	}
+	return ForDisplay(e.Provider, e.Lyrics)
 }
 
 func withOffset(list model.LyricList, offsetMs int64) model.LyricList {
