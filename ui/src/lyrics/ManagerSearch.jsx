@@ -71,6 +71,69 @@ const Preview = ({ lines, truncated }) => {
   )
 }
 
+// What playing the track would do with a result (the server's verdict), and why
+// a version is not taken: shown for word-timed results and for the one taken
+const AUTO = {
+  chosen: [
+    'ui.lyrics.manager.auto.chosen',
+    'Chosen automatically when the track plays.',
+  ],
+  outranked: [
+    'ui.lyrics.manager.auto.outranked',
+    'Not chosen automatically: another result ranks higher.',
+  ],
+  'not-better': [
+    'ui.lyrics.manager.auto.not_better',
+    'Not chosen automatically: the current lyrics are already as well synchronized.',
+  ],
+  match: [
+    'ui.lyrics.manager.auto.match',
+    'Not chosen automatically: the match with this track is not certain enough.',
+  ],
+  duration: [
+    'ui.lyrics.manager.auto.duration',
+    "Not chosen automatically: its length differs from the track's by more than 5 seconds, so it may be another recording.",
+  ],
+  rights: [
+    'ui.lyrics.manager.auto.rights',
+    "Not chosen automatically: this provider's lyrics may be neither saved nor shown while playing.",
+  ],
+  'provider-off': [
+    'ui.lyrics.manager.auto.provider_off',
+    'Not chosen automatically: this provider is not turned on in the lyrics settings.',
+  ],
+  locked: [
+    'ui.lyrics.manager.auto.locked',
+    "Not chosen automatically: this track's lyrics are locked.",
+  ],
+  'user-choice': [
+    'ui.lyrics.manager.auto.user_choice',
+    'Not chosen automatically: lyrics chosen by hand are never replaced automatically.',
+  ],
+  manual: [
+    'ui.lyrics.manager.auto.manual',
+    'Not chosen automatically: lyrics files and embedded lyrics are kept unless "Also upgrade lyrics I added myself" is on.',
+  ],
+  off: [
+    'ui.lyrics.manager.auto.off',
+    'Not chosen automatically: automatic retrieval or upgrades are turned off.',
+  ],
+}
+
+const AutoNote = ({ c }) => {
+  const t = useT()
+  const text = AUTO[c.auto]
+  if (!text || (!c.wordTiming && c.auto !== 'chosen')) return null
+  return (
+    <p
+      className={clsx(styles.hint, c.auto !== 'chosen' && styles.autoSkipped)}
+      data-auto={c.auto}
+    >
+      {t(text[0], text[1])}
+    </p>
+  )
+}
+
 const Candidate = ({ c, busy, onUse }) => {
   const t = useT()
   const [open, setOpen] = useState(false)
@@ -175,6 +238,7 @@ const Candidate = ({ c, busy, onUse }) => {
           )}
         </p>
         {c.attribution && <p className={styles.hint}>{c.attribution}</p>}
+        <AutoNote c={c} />
       </div>
       <div className={styles.candidateActions}>
         <Button
@@ -240,12 +304,14 @@ export const ManagerSearch = ({ search, busy, onSearch, onUse }) => {
         <Button
           variant="primary"
           icon={SearchIcon}
-          onClick={onSearch}
+          onClick={() => onSearch(search.done)}
           disabled={search.loading}
         >
           {search.loading
             ? t('ui.lyrics.manager.searching', 'Searching…')
-            : t('ui.lyrics.manager.search', 'Search online')}
+            : search.done
+              ? t('ui.lyrics.manager.searchAgain', 'Search again')
+              : t('ui.lyrics.manager.search', 'Search online')}
         </Button>
         <p className={styles.hint}>
           {t(

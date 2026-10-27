@@ -87,3 +87,50 @@ describe('ManagerSearch provider filter', () => {
     ).toBeNull()
   })
 })
+
+describe('ManagerSearch: what playing the track does with a result', () => {
+  it('says why a word-timed version is not taken', () => {
+    renderSearch([
+      cand('kugou:1', 'kugou', 'karaoke', {
+        wordTiming: true,
+        auto: 'duration',
+      }),
+      cand('netease:2', 'netease', 'karaoke', {
+        wordTiming: true,
+        auto: 'provider-off',
+      }),
+    ])
+    expect(
+      screen.getByText(/its length differs from the track's by more than 5/),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(/this provider is not turned on in the lyrics settings/),
+    ).toBeInTheDocument()
+  })
+
+  it('marks the version that is taken, and says nothing about other line-timed ones', () => {
+    renderSearch([
+      cand('lrclib:1', 'lrclib', 'synced', { auto: 'chosen' }),
+      cand('lrclib:2', 'lrclib', 'synced', { auto: 'not-better' }),
+      cand('lrclib:3', 'lrclib', 'plain'),
+    ])
+    expect(
+      screen.getAllByText('Chosen automatically when the track plays.'),
+    ).toHaveLength(1)
+    expect(screen.queryByText(/Not chosen automatically/)).toBeNull()
+  })
+
+  it('offers to search again once a search was made', () => {
+    const onSearch = vi.fn()
+    render(
+      <ManagerSearch
+        search={search([])}
+        busy={false}
+        onSearch={onSearch}
+        onUse={() => {}}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Search again' }))
+    expect(onSearch).toHaveBeenCalledWith(true)
+  })
+})

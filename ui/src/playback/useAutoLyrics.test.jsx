@@ -148,4 +148,57 @@ describe('useAutoLyrics', () => {
     await vi.advanceTimersByTimeAsync(1600)
     expect(mocks.resolve).toHaveBeenCalledTimes(2)
   })
+  describe('after a provider did not answer', () => {
+    // Plays the track and lets the request run; returns how often the server was asked
+    const play = async (id) => {
+      mocks.item = track(id)
+      const h = renderHook(() => useAutoLyrics())
+      await vi.advanceTimersByTimeAsync(1600)
+      h.unmount()
+      mocks.item = null
+      return mocks.resolve.mock.calls.filter((c) => c[0] === id).length
+    }
+
+    it('asks again on a later play, not straight away', async () => {
+      mocks.resolve.mockResolvedValueOnce({ result: 'unavailable' })
+      expect(await play('al-t1')).toBe(1)
+      await vi.advanceTimersByTimeAsync(30 * 1000)
+      expect(await play('al-t1')).toBe(1)
+      await vi.advanceTimersByTimeAsync(30 * 1000)
+      expect(await play('al-t1')).toBe(2)
+      // it answered this time: the track is not asked about again this session
+      await vi.advanceTimersByTimeAsync(5 * 60 * 1000)
+      expect(await play('al-t1')).toBe(2)
+    })
+
+    it('waits as long as a provider that asked to slow down wants', async () => {
+      mocks.resolve.mockResolvedValueOnce({
+        result: 'unavailable',
+        retryAfter: 120,
+        message: 'A provider asked to slow down',
+      })
+      expect(await play('al-t2')).toBe(1)
+      await vi.advanceTimersByTimeAsync(90 * 1000)
+      expect(await play('al-t2')).toBe(1)
+      await vi.advanceTimersByTimeAsync(40 * 1000)
+      expect(await play('al-t2')).toBe(2)
+    })
+
+    it('does not ask again for what asking cannot change', async () => {
+      mocks.resolve.mockResolvedValueOnce({
+        result: 'unavailable',
+        message: 'No lyrics provider is enabled',
+      })
+      expect(await play('al-t3')).toBe(1)
+      await vi.advanceTimersByTimeAsync(10 * 60 * 1000)
+      expect(await play('al-t3')).toBe(1)
+    })
+
+    it('asks again later when the server could not be reached', async () => {
+      mocks.resolve.mockRejectedValueOnce(new Error('offline'))
+      expect(await play('al-t4')).toBe(1)
+      await vi.advanceTimersByTimeAsync(61 * 1000)
+      expect(await play('al-t4')).toBe(2)
+    })
+  })
 })

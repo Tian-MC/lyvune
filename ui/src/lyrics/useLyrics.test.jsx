@@ -4,7 +4,7 @@ import { act, renderHook } from '@testing-library/react-hooks'
 const mocks = vi.hoisted(() => ({ get: vi.fn() }))
 vi.mock('../subsonic', () => ({ default: { getLyricsBySongId: mocks.get } }))
 
-import { useLyrics } from './useLyrics'
+import { EMPTY_TTL_MS, useLyrics } from './useLyrics'
 import { bumpLyrics, setResolving } from './lyricsSignals'
 
 const reply = (lines) => ({
@@ -134,5 +134,33 @@ describe('useLyrics', () => {
     expect(result.current.lyrics).toBeNull()
     await flush()
     expect(result.current.lyrics.lines[0].text).toBe('text of ul-b')
+  })
+  it('remembers "no lyrics" for a few minutes only, and lyrics for the whole session', async () => {
+    const now = vi.spyOn(Date, 'now')
+    const t0 = Date.parse('2026-10-27T10:00:00Z')
+    now.mockReturnValue(t0)
+    mocks.get.mockImplementation((id) =>
+      Promise.resolve(reply(id === 'ul-full' ? ['words'] : [])),
+    )
+    const open = async (id) => {
+      const h = renderHook(() => useLyrics(id))
+      await flush()
+      h.unmount()
+    }
+    await open('ul-empty')
+    await open('ul-full')
+    now.mockReturnValue(t0 + EMPTY_TTL_MS - 1000)
+    await open('ul-empty')
+    expect(mocks.get).toHaveBeenCalledTimes(2)
+
+    now.mockReturnValue(t0 + EMPTY_TTL_MS + 1000)
+    await open('ul-empty')
+    await open('ul-full')
+    expect(mocks.get.mock.calls.map((c) => c[0])).toEqual([
+      'ul-empty',
+      'ul-full',
+      'ul-empty',
+    ])
+    now.mockRestore()
   })
 })

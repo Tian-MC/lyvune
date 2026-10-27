@@ -11,6 +11,26 @@ const MAX_REMEMBERED = 500
 // (including "nothing found recently"), so asking again later is cheap.
 const asked = new Set()
 
+// When a provider did not answer or asked to slow down, the track is asked
+// about again the next time it plays, but not before this (or the wait the
+// provider asked for, when longer).
+export const TRANSIENT_RETRY_MS = 60 * 1000
+const retryAt = new Map()
+
+// "Unavailable" with no explanation is a provider that did not answer; with a
+// wait it is a rate limit. Both pass. One with an explanation ("no provider is
+// enabled", "the folder is read-only") does not change by asking again.
+const transient = (res) =>
+  res?.result === 'unavailable' && (!res.message || res.retryAfter > 0)
+
+const askLater = (trackId, waitSeconds = 0) => {
+  asked.delete(trackId)
+  retryAt.set(
+    trackId,
+    Date.now() + Math.max(TRANSIENT_RETRY_MS, waitSeconds * 1000),
+  )
+}
+
 // Fetching lyrics is for administrators only; everyone else just reads what is
 // already there. The server refuses anyone else, so this only avoids the call.
 const isAdmin = () => localStorage.getItem('role') === 'admin'
@@ -27,6 +47,7 @@ export const useAutoLyrics = () => {
 
   useEffect(() => {
     if (!trackId || asked.has(trackId) || !isAdmin()) return undefined
+    if (Date.now() < (retryAt.get(trackId) ?? 0)) return undefined
     const controller = new AbortController()
     let inFlight = false
     const timer = setTimeout(() => {
@@ -40,9 +61,12 @@ export const useAutoLyrics = () => {
           if (res.result === 'found' || res.result === 'upgraded') {
             bumpLyrics(trackId)
           }
+          if (transient(res)) askLater(trackId, res.retryAfter)
+          else retryAt.delete(trackId)
         })
-        .catch(() => {
-          // Offline, signed out, or the provider is down: nothing to show
+        .catch((e) => {
+          // Offline or signed out: nothing to show now, ask again on a later play
+          if (e?.name !== 'AbortError') askLater(trackId)
         })
         .finally(() => {
           inFlight = false
