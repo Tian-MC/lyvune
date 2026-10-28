@@ -105,7 +105,7 @@ func NewService(o Options) Lyrics {
 			NewKuGou("", ""),
 			NewNetEase(""),
 			NewQQ("", "", conf.Server.Lyrics.QQ.BetterLyricsApiKey),
-			NewAppleMusic(),
+			NewAppleMusic(""),
 		)
 	}
 	if o.Store == nil {

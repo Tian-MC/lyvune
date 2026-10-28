@@ -186,7 +186,7 @@ Some providers send escaped text: KuGou's word-timed KRC carries `eta&apos;` whe
 | **NetEase Cloud Music** | Open web endpoints, no account (unofficial) | Song search, `lrc`, `tlyric`, `romalrc`, and `yrc` (word-timed) for the songs that have it | Yes, from memory | No |
 | **QQ Music** | Open web endpoints, no account (unofficial) + Better Lyrics community cache | Line-timed lyrics and translation; word-timed **QRC** when the cache has the song (an optional Better Lyrics key makes any song available) | Yes, from memory | No |
 | **Musixmatch** | Official API, **your own key** (no authorized keyless route exists) | `matcher.track.get`, `track.richsync.get`, `track.subtitle.get`, `track.lyrics.get` | Preview in the manager only | No |
-| **Apple Music** | None | Not implemented: the timed-lyrics endpoint is private | — | — |
+| **Apple Music** | Unofficial third-party catalogue (lrc.red), no account or key | TTML with word or syllable timing for most songs; Apple itself has no public lyrics API | Yes, from memory | No |
 
 ## Storage policy
 
@@ -412,7 +412,7 @@ Automated: Go unit, provider, parser, fuzz, engine and API tests (`core/lyrics`,
 - Choosing embedded lyrics copies them into a preferred sidecar; the embedded ones stay in the audio.
 - A library folder reached through a symbolic link that leaves the library is not written to.
 - Bulk jobs run in memory: a restart stops one, and running it again skips finished tracks. A job of mostly KuGou lookups is limited by KuGou's one-request-a-second pacing, so four workers do not make that provider four times faster.
-- Musixmatch is not verified against the live service (no API key was available); Apple Music is off.
+- Musixmatch is not verified against the live service (no API key was available); Apple Music depends on a third-party catalogue (lrc.red) that can change or disappear at any time.
 - KuGou, NetEase and QQ use undocumented endpoints that can change or block a region at any time; saving their lyrics rests on the administrator's preference, not on a verified right; while that preference is off their lyrics are shown from memory only and are not available offline.
 - No provider's terms on keeping lyrics could be verified: every built-in provider is *unclear*, and LRCLIB is saved by default only as a default preference.
 - Lyrics shown but not saved are held in memory and are lost when the server restarts; after a restart the track is looked up again when an administrator plays it.

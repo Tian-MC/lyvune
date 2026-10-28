@@ -103,7 +103,7 @@ func DefaultSettings() Settings {
 		AutoUpgrade:       true,
 		AutoPersist:       true,
 		AutoReplaceManual: false,
-		Providers:         []string{lrclibID},
+		Providers:         []string{lrclibID, appleID},
 		MinConfidence:     ConfidenceAuto,
 	}
 }
