@@ -2,7 +2,7 @@
 #
 #   cp .env.example .env        # then set LYVUNE_MUSIC_DIR to your music folder
 #
-# The published image: add LYVUNE_IMAGE=ghcr.io/tian-mc/lyvune:0.1.0-alpha.5 to .env, then
+# The published image: add LYVUNE_IMAGE=ghcr.io/tian-mc/lyvune:0.1.0-alpha.6 to .env, then
 #   docker compose pull && docker compose up -d --no-build
 # From source: leave LYVUNE_IMAGE out, and the image is built from this repository
 #   docker compose up -d --build
