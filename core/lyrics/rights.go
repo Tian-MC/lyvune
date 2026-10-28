@@ -95,7 +95,10 @@ var builtinRights = map[string]providerRights{
 		Display: DisplayPreview, Status: RightsUnclear,
 		Basis: "An official API used with your own key. Its terms could not be read here; keeping lyrics depends on your plan and agreement with Musixmatch.",
 	},
-	"apple": {Display: DisplayPreview, Status: RightsUnclear, Basis: "No lyrics are retrieved from this service."},
+	appleID: {
+		Display: DisplaySession, Status: RightsUnclear,
+		Basis: "Apple's lyrics through a third-party catalogue (lrc.red). Neither Apple nor the catalogue publishes terms for this use, so it is not known whether keeping the lyrics is allowed.",
+	},
 }
 
 // StorageAuthorization documents what is known about a provider's terms. It is
@@ -211,8 +214,6 @@ func parseAuthorizations(path string) map[string]providerRights {
 		switch {
 		case !known:
 			log.Warn("Lyrics storage authorization names an unknown provider; ignored", "provider", a.Provider)
-		case a.Provider == "apple":
-			log.Warn("Lyrics storage authorization for a provider without lyrics; ignored", "provider", a.Provider)
 		case basis == "" || ref == "" || len(basis) > maxRightsFieldBytes || len(ref) > maxRightsFieldBytes:
 			log.Warn("Lyrics storage authorization needs a basis and a reference of reasonable length; ignored", "provider", a.Provider)
 		default:

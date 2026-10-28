@@ -27,6 +27,10 @@ func FastForTest(p OnlineProvider) {
 		v.http.pacer.interval, v.http.pacer.base = 0, 0
 		v.http.backoff = time.Millisecond
 		v.http.timeout = 300 * time.Millisecond
+	case *apple:
+		v.http.pacer.interval, v.http.pacer.base = 0, 0
+		v.http.backoff = time.Millisecond
+		v.http.timeout = 300 * time.Millisecond
 	case *qq:
 		v.direct.pacer.interval, v.bl.pacer.interval = 0, 0
 		v.direct.pacer.base, v.bl.pacer.base = 0, 0

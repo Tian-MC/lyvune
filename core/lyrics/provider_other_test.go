@@ -208,17 +208,3 @@ var _ = Describe("Musixmatch provider", func() {
 		Expect(string(raw)).ToNot(ContainSubstring("SECRETKEY"))
 	})
 })
-
-var _ = Describe("providers without an authorized API", func() {
-	It("says so honestly and never searches", func() {
-		p := lyrics.NewAppleMusic()
-		info := p.Info()
-		Expect(info.Status).To(Equal(lyrics.StatusUnavailable))
-		Expect(info.Reason).To(ContainSubstring("hasLyrics"))
-		Expect(info.Verified).To(BeFalse())
-		Expect(info.Plain || info.Synced || info.WordSync || info.Storable).To(BeFalse(), "no capability is claimed")
-		got, err := p.Search(context.Background(), lyrics.Recording{Title: "Song", Artist: "Band"})
-		Expect(err).To(MatchError(lyrics.ErrProviderUnavailable))
-		Expect(got).To(BeEmpty())
-	})
-})

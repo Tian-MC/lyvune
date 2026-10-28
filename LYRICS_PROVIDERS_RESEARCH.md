@@ -72,7 +72,6 @@ The private tokens used by Musixmatch's desktop and mobile apps give access to R
 
 - **QQ's own encrypted QRC** is not decoded (word timing from QQ comes from the Better Lyrics cache; see Phase 11 below).
 - **NetEase `klyric`** and `ytlrc` are not parsed.
-- **Apple Music** stays off: the timed-lyrics endpoint is private.
 - **Traditional/Simplified Chinese** artist names are not converted. A match differing only in script scores about 0.82 and is offered for manual choice, never chosen automatically (seen live with 周杰倫 / 周杰伦).
 
 ## Live results (Phase 10)
@@ -157,7 +156,7 @@ All keep real timestamps, never set a word end the source does not give, and dro
 | LRCLIB | Public API | Yes |
 | KuGou, NetEase, QQ | Open web endpoints, no terms found | **No.** Shown from memory; kept only with a written authorization |
 | Musixmatch | Official API with the user's key | **No.** Preview only; kept only with a written authorization |
-| Apple Music | Not implemented | — |
+| Apple Music | Third-party catalogue (lrc.red), unofficial, no terms found | **No.** Shown from memory; kept only with a written authorization |
 
 Retrieval and storage are separate decisions: a result can be shown and chosen for the session without being kept.
 
@@ -188,7 +187,7 @@ End to end in a browser on a temporary copy of the library: QQ's QRC for *Judas*
 | NetEase | **Unofficial** web endpoints | none | YRC, LRC, translation, romanization | Yes for some songs (seen live) | **No** |
 | QQ Music | **Unofficial** web endpoints + Better Lyrics community cache | none (optional Better Lyrics key) | QRC, LRC, translation | Only when the cache holds the song (seen live: 1 song in 8 without a key; *Judas* under one album spelling) | **No** |
 | Musixmatch | Official API | **your own key** | RichSync, LRC, plain | **Not verified** (no key) | **No** |
-| Apple Music | none | n/a | none | n/a | n/a |
+| Apple Music | **Unofficial** third-party catalogue (lrc.red, formerly lyrics-api.binimum.org), no key | none | TTML (word or syllable timing) | Yes, seen live (*Blinding Lights*: 275 word cues) | **No** |
 
 A working endpoint is not an authorized one, and neither is permission to keep the lyrics. KuGou, NetEase and QQ answer without credentials today; their terms were not found, and they can change or block a region at any time.
 
@@ -250,4 +249,4 @@ Found on the way, an accuracy problem: NetEase listed "Despacito 缓缓" (a Chin
 
 `provider_musixmatch.go` uses only documented methods with the administrator's key: `matcher.track.get`, then `track.richsync.get` (word timing) when the track says `has_richsync`, `track.subtitle.get`, `track.lyrics.get`. A call the key's plan refuses (403) is skipped, not treated as a broken key. Third-party documentation of the API says RichSync needs a commercial plan; Musixmatch's own developer pages could not be fetched from here, and no key was available, so **nothing about it was verified against the live service** and the provider does not advertise word timing. Its rights entry stays "preview only" until the administrator records otherwise.
 
-No keyless route is used: the known ones take the token of Musixmatch's desktop application, and Apple Music lyrics through third-party catalogues come from a service that answers server clients with a bot challenge. A new source with documented access can be added as an `OnlineProvider` (see `provider.go`), with its entry in `rights.go`; the coverage harness then measures it like the others.
+The Musixmatch keyless route is not used: it takes the token of Musixmatch's desktop application. Apple Music lyrics come from the lrc.red catalogue (the old lyrics-api.binimum.org host now redirects there); it answered plain server requests when checked, but it is a third party and can start challenging clients at any time. A new source with documented access can be added as an `OnlineProvider` (see `provider.go`), with its entry in `rights.go`; the coverage harness then measures it like the others.

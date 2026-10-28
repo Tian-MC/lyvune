@@ -59,7 +59,7 @@ var _ = Describe("Saving lyrics: defaults and local files", func() {
 		It("saves nothing from a provider that grants no permission, until it is allowed", func() {
 			s := lyrics.DefaultSettings()
 			Expect(s.Store).To(BeEmpty())
-			Expect(s.Providers).To(Equal([]string{"lrclib"}), "only the provider with its own permission is on")
+			Expect(s.Providers).To(Equal([]string{"lrclib", "apple"}), "both are searched, but neither is saved without permission")
 		})
 
 		It("never saves a verified karaoke result by itself when the provider may not be saved", func() {
