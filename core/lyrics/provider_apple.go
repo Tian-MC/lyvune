@@ -2,6 +2,7 @@ package lyrics
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -82,7 +83,7 @@ func (a *apple) Search(ctx context.Context, rec Recording) ([]Candidate, error) 
 		Results []appleItem `json:"results"`
 	}
 	if err := a.http.getJSON(ctx, a.baseURL+"?"+q.Encode(), &res); err != nil {
-		if err == errNotFound {
+		if errors.Is(err, errNotFound) {
 			return nil, nil
 		}
 		return nil, err
