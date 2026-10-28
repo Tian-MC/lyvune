@@ -3,8 +3,8 @@
 This guide takes you from nothing to a working Lyvune in a container, keeps your music and your data safe, and
 covers the questions that come next: permissions, a reverse proxy, backups, updates, coming from Navidrome.
 
-> **The alpha is out, and its image is published:** `ghcr.io/tian-mc/lyvune:0.1.0-alpha.5`, for `amd64` and `arm64`.
-> It is an alpha, so read the [release notes](https://github.com/Tian-MC/lyvune/releases/tag/v0.1.0-alpha.5) for what to expect. You can also
+> **The alpha is out, and its image is published:** `ghcr.io/tian-mc/lyvune:0.1.0-alpha.6`, for `amd64` and `arm64`.
+> It is an alpha, so read the [release notes](https://github.com/Tian-MC/lyvune/releases/tag/v0.1.0-alpha.6) for what to expect. You can also
 > [build the image yourself](#build-it-from-source-instead). See [Images](#images) for the tags.
 
 ## What you need
@@ -20,7 +20,7 @@ covers the questions that come next: permissions, a reverse proxy, backups, upda
 ## Quick start
 
 ```sh
-git clone --branch v0.1.0-alpha.5 https://github.com/Tian-MC/lyvune.git
+git clone --branch v0.1.0-alpha.6 https://github.com/Tian-MC/lyvune.git
 cd lyvune
 cp .env.example .env
 ```
@@ -30,7 +30,7 @@ the published image:
 
 ```env
 LYVUNE_MUSIC_DIR=/srv/music
-LYVUNE_IMAGE=ghcr.io/tian-mc/lyvune:0.1.0-alpha.5
+LYVUNE_IMAGE=ghcr.io/tian-mc/lyvune:0.1.0-alpha.6
 ```
 
 Then:
@@ -87,7 +87,7 @@ The settings in `.env`:
 | `LYVUNE_PORT` | the port on this computer | `4533` |
 | `LYVUNE_USER` | `uid:gid` the server runs as | `1000:1000` |
 | `TZ` | time zone, for the scan schedule and log times | `UTC` |
-| `LYVUNE_IMAGE` | the image to run, for example `ghcr.io/tian-mc/lyvune:0.1.0-alpha.5` | `lyvune:local`, built here |
+| `LYVUNE_IMAGE` | the image to run, for example `ghcr.io/tian-mc/lyvune:0.1.0-alpha.6` | `lyvune:local`, built here |
 
 Everything else Lyvune can be told is an `ND_` environment variable, exactly as in Navidrome (`ND_LOGLEVEL`,
 `ND_BASEURL`, `ND_SCANNER_SCHEDULE`, ...), or a line in `lyvune.toml` in the data folder. Add them under
@@ -308,6 +308,7 @@ that off; Lyvune then contacts no other host. The lyrics providers can also be s
 
 | Image | What it is |
 | --- | --- |
+| `ghcr.io/tian-mc/lyvune:0.1.0-alpha.6` | **published**: the image of [v0.1.0-alpha.6](https://github.com/Tian-MC/lyvune/releases/tag/v0.1.0-alpha.6), for `linux/amd64` and `linux/arm64`. Its digest is in the release notes |
 | `ghcr.io/tian-mc/lyvune:0.1.0-alpha.5` | **published**: the image of [v0.1.0-alpha.5](https://github.com/Tian-MC/lyvune/releases/tag/v0.1.0-alpha.5), for `linux/amd64` and `linux/arm64`. Its digest is in the release notes |
 | `ghcr.io/tian-mc/lyvune:0.1.0-alpha.4` | **published**: the image of [v0.1.0-alpha.4](https://github.com/Tian-MC/lyvune/releases/tag/v0.1.0-alpha.4), for `linux/amd64` and `linux/arm64`. Its digest is in the release notes |
 | `ghcr.io/tian-mc/lyvune:0.1.0-alpha.3` | **published**: the image of [v0.1.0-alpha.3](https://github.com/Tian-MC/lyvune/releases/tag/v0.1.0-alpha.3), for `linux/amd64` and `linux/arm64`. Its digest is in the release notes |
@@ -323,7 +324,7 @@ the right one. What was actually run on each is in [Tested on](RELEASING.md#test
 ```sh
 docker build -t lyvune:local .                       # the image, without Compose
 scripts/docker-smoke-test.sh                          # builds it and tests it end to end
-scripts/docker-smoke-test.sh --image ghcr.io/tian-mc/lyvune:0.1.0-alpha.5   # tests the published image instead
+scripts/docker-smoke-test.sh --image ghcr.io/tian-mc/lyvune:0.1.0-alpha.6   # tests the published image instead
 python3 scripts/smoke_test.py check http://localhost:4533   # the same checks, against a server that is running
 ```
 
